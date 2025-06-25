@@ -5,10 +5,27 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { CheckCircle, Star, DollarSign, BarChart3, Share2, Settings, Car, Trophy, ArrowRight, Menu, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const Index = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    // Check if we're on a mobile device based on viewport width
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+    
+    // Set initial value
+    handleResize();
+    
+    // Add event listener for window resize
+    window.addEventListener('resize', handleResize);
+    
+    // Cleanup
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const features = [
     {
@@ -146,7 +163,7 @@ const Index = () => {
       <HeroSection />
       
       {/* Problem Section */}
-      <section className="py-20 bg-slate-900 dark:bg-slate-950 text-white">
+      <section className="py-12 sm:py-16 lg:py-20 bg-slate-900 dark:bg-slate-950 text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-8 text-white">We've All Been There...</h2>
           
@@ -154,7 +171,7 @@ const Index = () => {
             You post your latest build on Instagram or TikTok. The comments explode:
           </p>
           
-          <div className="grid md:grid-cols-2 gap-6 mb-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-8 sm:mb-10">
             {[
               "What wheels are those?",
               "Turbo kit specs?",
@@ -183,7 +200,7 @@ const Index = () => {
       </section>
 
       {/* Solution Section */}
-      <section className="py-20 bg-gradient-to-r from-blue-50 to-slate-50 dark:from-slate-900 dark:to-blue-950">
+      <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-r from-blue-50 to-slate-50 dark:from-slate-900 dark:to-blue-950">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
@@ -192,7 +209,7 @@ const Index = () => {
             <p className="text-xl text-muted-foreground">The Simple 4-Step Process</p>
           </div>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
             {[
               {
                 step: "1",
@@ -230,7 +247,7 @@ const Index = () => {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20 bg-background">
+      <section id="features" className="py-12 sm:py-16 lg:py-20 bg-background">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
@@ -238,7 +255,7 @@ const Index = () => {
             </h2>
           </div>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {features.map((feature, index) => (
               <Card key={index} className="hover:shadow-lg transition-shadow border-border bg-card">
                 <CardContent className="p-6">
@@ -257,7 +274,7 @@ const Index = () => {
       </section>
 
       {/* Testimonials Section */}
-      <section id="testimonials" className="py-20 bg-muted/50">
+      <section id="testimonials" className="py-12 sm:py-16 lg:py-20 bg-muted/50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
@@ -304,9 +321,9 @@ const Index = () => {
           </div>
           
           {/* Results Dashboard Preview */}
-          <div className="mt-16 bg-slate-900 dark:bg-slate-950 rounded-2xl p-8 text-white border border-slate-800 dark:border-slate-700">
+          <div className="mt-12 sm:mt-16 bg-slate-900 dark:bg-slate-950 rounded-2xl p-5 sm:p-8 text-white border border-slate-800 dark:border-slate-700 overflow-x-hidden">
             <h3 className="text-xl font-bold mb-6 text-center text-white">This Month's Top Performers</h3>
-            <div className="grid md:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
               <div className="text-center">
                 <div className="text-2xl mb-2">🥇</div>
                 <p className="font-semibold text-white">Mike's S2000 Build</p>
@@ -346,7 +363,7 @@ const Index = () => {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-20 bg-background">
+      <section id="pricing" className="py-12 sm:py-16 lg:py-20 bg-background">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
@@ -405,7 +422,7 @@ const Index = () => {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-20 bg-muted/50">
+      <section className="py-12 sm:py-16 lg:py-20 bg-muted/50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
@@ -427,7 +444,7 @@ const Index = () => {
       </section>
 
       {/* Final CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-800 dark:to-blue-900 text-white">
+      <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-800 dark:to-blue-900 text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">
             Ready to Turn Your Car Knowledge Into Income?
@@ -455,9 +472,9 @@ const Index = () => {
             </div>
           </div>
           
-          <Button size="lg" className="bg-white text-blue-600 hover:bg-slate-50 dark:bg-white dark:text-blue-600 dark:hover:bg-slate-100 text-lg px-8 py-4 mb-6">
+          <Button size="lg" className="bg-white text-blue-600 hover:bg-slate-50 dark:bg-white dark:text-blue-600 dark:hover:bg-slate-100 text-base sm:text-lg px-4 sm:px-8 py-2 sm:py-4 mb-6 whitespace-normal h-auto">
             Start Building Your Portfolio - Free
-            <ArrowRight className="ml-2 h-5 w-5" />
+            <ArrowRight className="ml-2 h-5 w-5 flex-shrink-0" />
           </Button>
           
           <p className="text-sm opacity-75 text-white">
@@ -467,12 +484,12 @@ const Index = () => {
       </section>
 
       {/* Trust Signals Footer */}
-      <footer className="py-16 bg-slate-900 dark:bg-slate-950 text-white">
+      <footer className="py-12 sm:py-16 bg-slate-900 dark:bg-slate-950 text-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h3 className="text-2xl font-bold mb-8 text-white">Trusted by the Automotive Community</h3>
             
-            <div className="grid grid-cols-2 md:grid-cols-6 gap-6 mb-12">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 sm:gap-6 mb-8 sm:mb-12">
               <div className="text-center">
                 <div className="text-2xl font-bold text-orange-400">2,500+</div>
                 <div className="text-sm text-slate-400">Active Users</div>
@@ -504,12 +521,12 @@ const Index = () => {
           
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center mb-4 md:mb-0">
-              <Car className="h-8 w-8 text-orange-600 dark:text-orange-500" />
+              <Car className="h-6 sm:h-8 w-6 sm:w-8 text-orange-600 dark:text-orange-500" />
               <span className="ml-2 text-xl font-bold text-white">CarFolio</span>
             </div>
             
             <div className="text-center md:text-right">
-              <p className="text-sm text-slate-400 mb-2">
+              <p className="text-xs sm:text-sm text-slate-400 mb-2">
                 <strong className="text-white">Partnered with:</strong> Amazon Associates, Summit Racing, FCP Euro, Tire Rack, AutoZone, RockAuto, 1A Auto, CARiD, and 40+ more retailers.
               </p>
               <p className="text-xs text-slate-500">

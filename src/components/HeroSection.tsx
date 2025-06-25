@@ -4,6 +4,9 @@ import { Button } from '@/components/ui/button';
 import { AnimatedGroup } from '@/components/ui/animated-group';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { cn } from '@/lib/utils';
+import { useUser } from '@clerk/clerk-react';
+import { Link } from 'react-router-dom';
+
 const transitionVariants = {
   item: {
     hidden: {
@@ -23,6 +26,7 @@ const transitionVariants = {
     }
   }
 };
+
 export function HeroSection() {
   return <>
             <HeroHeader />
@@ -78,10 +82,12 @@ export function HeroSection() {
                 }
               }} className="mt-12 flex flex-col items-center justify-center gap-2 md:flex-row">
                                     <div className="bg-foreground/10 rounded-[14px] border p-0.5">
-                                        <Button size="lg" className="rounded-xl px-5 text-base bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600">
-                                            <span className="text-nowrap">Start Building Your Portfolio - Free</span>
-                                            <ArrowRight className="ml-2 h-5 w-5" />
-                                        </Button>
+                                        <Link to="/sign-up">
+                                          <Button size="lg" className="rounded-xl px-5 text-base bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600">
+                                              <span className="text-nowrap">Start Building Your Portfolio - Free</span>
+                                              <ArrowRight className="ml-2 h-5 w-5" />
+                                          </Button>
+                                        </Link>
                                     </div>
                                     <Button size="lg" variant="ghost" className="h-10.5 rounded-xl px-5 hover:bg-slate-100 dark:hover:bg-slate-800">
                                         <span className="text-nowrap">See Example Portfolio</span>
@@ -134,6 +140,7 @@ export function HeroSection() {
             </main>
         </>;
 }
+
 const menuItems = [{
   name: 'Features',
   href: '#features'
@@ -147,6 +154,7 @@ const menuItems = [{
   name: 'About',
   href: '#about'
 }];
+
 const HeroHeader = () => {
   const [menuState, setMenuState] = React.useState(false);
   const [isScrolled, setIsScrolled] = React.useState(false);
@@ -200,15 +208,21 @@ const HeroHeader = () => {
                                 <div className="hidden lg:block">
                                     <ThemeToggle />
                                 </div>
-                                <Button variant="outline" size="sm" className={cn(isScrolled && 'lg:hidden')}>
-                                    <span>Sign In</span>
-                                </Button>
-                                <Button size="sm" className={cn(isScrolled && 'lg:hidden', 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600')}>
-                                    <span>Sign Up</span>
-                                </Button>
-                                <Button size="sm" className={cn(isScrolled ? 'lg:inline-flex' : 'hidden', 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600')}>
-                                    <span>Get Started</span>
-                                </Button>
+                                <Link to="/sign-in">
+                                  <Button variant="outline" size="sm" className={cn(isScrolled && 'lg:hidden')}>
+                                      <span>Sign In</span>
+                                  </Button>
+                                </Link>
+                                <Link to="/sign-up">
+                                  <Button size="sm" className={cn(isScrolled && 'lg:hidden', 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600')}>
+                                      <span>Sign Up</span>
+                                  </Button>
+                                </Link>
+                                <Link to="/sign-up">
+                                  <Button size="sm" className={cn(isScrolled ? 'lg:inline-flex' : 'hidden', 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600')}>
+                                      <span>Get Started</span>
+                                  </Button>
+                                </Link>
                             </div>
                         </div>
                     </div>
