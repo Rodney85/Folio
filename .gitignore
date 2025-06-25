@@ -7,10 +7,22 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies
 node_modules
 dist
 dist-ssr
 *.local
+
+# Environment Variables - CRITICAL
+.env
+.env.*
+!.env.example
+
+# Documentation with sensitive information
+/src/Md/
+
+# Convex local dev files
+.convex/
 
 # Editor directories and files
 .vscode/*
