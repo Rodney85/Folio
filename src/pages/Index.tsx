@@ -1,4 +1,4 @@
-
+import { HeroSection } from "@/components/HeroSection";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -141,99 +141,9 @@ const Index = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
-      {/* Navigation */}
-      <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <Car className="h-8 w-8 text-orange-600" />
-              <span className="ml-2 text-xl font-bold text-slate-900">CarFolio</span>
-            </div>
-            
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-8">
-              <a href="#features" className="text-slate-600 hover:text-slate-900 transition-colors">Features</a>
-              <a href="#pricing" className="text-slate-600 hover:text-slate-900 transition-colors">Pricing</a>
-              <a href="#testimonials" className="text-slate-600 hover:text-slate-900 transition-colors">Success Stories</a>
-              <Button variant="outline" className="mr-2">Sign In</Button>
-              <Button className="bg-orange-600 hover:bg-orange-700">Start Free Trial</Button>
-            </div>
-
-            {/* Mobile menu button */}
-            <div className="md:hidden">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-              >
-                {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Mobile Navigation */}
-        {isMenuOpen && (
-          <div className="md:hidden bg-white border-t border-slate-200">
-            <div className="px-4 py-2 space-y-2">
-              <a href="#features" className="block py-2 text-slate-600 hover:text-slate-900">Features</a>
-              <a href="#pricing" className="block py-2 text-slate-600 hover:text-slate-900">Pricing</a>
-              <a href="#testimonials" className="block py-2 text-slate-600 hover:text-slate-900">Success Stories</a>
-              <div className="pt-2 space-y-2">
-                <Button variant="outline" className="w-full">Sign In</Button>
-                <Button className="w-full bg-orange-600 hover:bg-orange-700">Start Free Trial</Button>
-              </div>
-            </div>
-          </div>
-        )}
-      </nav>
-
-      {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28">
-          <div className="text-center">
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-slate-900 mb-6 leading-tight">
-              Stop Giving Away Your
-              <span className="block text-orange-600">Car Expertise for Free</span>
-            </h1>
-            
-            <p className="text-xl md:text-2xl text-slate-600 mb-8 max-w-4xl mx-auto leading-relaxed">
-              The professional platform where automotive enthusiasts create stunning digital showcases for their builds, organize parts lists, and earn affiliate commissions with every recommendation.
-            </p>
-            
-            <p className="text-lg text-slate-500 mb-10 max-w-2xl mx-auto">
-              Like Linktree, but built specifically for car enthusiasts. One clean link showcases your entire build with organized, shoppable parts lists.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Button size="lg" className="bg-orange-600 hover:bg-orange-700 text-lg px-8 py-4">
-                Start Building Your Portfolio - Free
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-              <Button size="lg" variant="outline" className="text-lg px-8 py-4">
-                See Example Portfolio
-              </Button>
-            </div>
-            
-            <div className="mt-12 flex flex-wrap justify-center items-center gap-8 text-sm text-slate-500">
-              <div className="flex items-center">
-                <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                14-day free trial
-              </div>
-              <div className="flex items-center">
-                <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                No credit card required
-              </div>
-              <div className="flex items-center">
-                <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                Cancel anytime
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
+    <div className="min-h-screen">
+      <HeroSection />
+      
       {/* Problem Section */}
       <section className="py-20 bg-slate-900 text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -272,7 +182,7 @@ const Index = () => {
       </section>
 
       {/* Solution Section */}
-      <section className="py-20 bg-gradient-to-r from-orange-50 to-slate-50">
+      <section className="py-20 bg-gradient-to-r from-blue-50 to-slate-50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-6">
@@ -306,7 +216,7 @@ const Index = () => {
             ].map((item, index) => (
               <Card key={index} className="relative overflow-hidden hover:shadow-lg transition-shadow">
                 <CardContent className="p-6">
-                  <div className="absolute top-0 right-0 w-16 h-16 bg-orange-600 text-white flex items-center justify-center font-bold text-xl rounded-bl-2xl">
+                  <div className="absolute top-0 right-0 w-16 h-16 bg-blue-600 text-white flex items-center justify-center font-bold text-xl rounded-bl-2xl">
                     {item.step}
                   </div>
                   <h3 className="text-lg font-semibold text-slate-900 mb-3 pr-8">{item.title}</h3>
@@ -332,7 +242,7 @@ const Index = () => {
               <Card key={index} className="hover:shadow-lg transition-shadow border-0 shadow-sm">
                 <CardContent className="p-6">
                   <div className="flex items-center mb-4">
-                    <div className="p-2 bg-orange-100 rounded-lg text-orange-600 mr-4">
+                    <div className="p-2 bg-blue-100 rounded-lg text-blue-600 mr-4">
                       {feature.icon}
                     </div>
                     <h3 className="text-lg font-semibold text-slate-900">{feature.title}</h3>
@@ -445,10 +355,10 @@ const Index = () => {
           
           <div className="grid md:grid-cols-3 gap-8">
             {pricingPlans.map((plan, index) => (
-              <Card key={index} className={`relative hover:shadow-lg transition-shadow ${plan.popular ? 'border-orange-500 border-2' : ''}`}>
+              <Card key={index} className={`relative hover:shadow-lg transition-shadow ${plan.popular ? 'border-blue-500 border-2' : ''}`}>
                 {plan.popular && (
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <Badge className="bg-orange-600 text-white px-4 py-1">Most Popular</Badge>
+                    <Badge className="bg-blue-600 text-white px-4 py-1">Most Popular</Badge>
                   </div>
                 )}
                 <CardContent className="p-8">
@@ -474,7 +384,7 @@ const Index = () => {
                   </div>
                   
                   <Button 
-                    className={`w-full ${plan.popular ? 'bg-orange-600 hover:bg-orange-700' : ''}`}
+                    className={`w-full ${plan.popular ? 'bg-blue-600 hover:bg-blue-700' : ''}`}
                     variant={plan.popular ? 'default' : 'outline'}
                   >
                     {plan.cta}
@@ -516,7 +426,7 @@ const Index = () => {
       </section>
 
       {/* Final CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-orange-600 to-orange-700 text-white">
+      <section className="py-20 bg-gradient-to-r from-blue-600 to-blue-700 text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">
             Ready to Turn Your Car Knowledge Into Income?
