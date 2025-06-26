@@ -44,13 +44,13 @@ export const WelcomeScreen = () => {
         
         <div className="space-y-4 mt-8">
           <Button className="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600">
-            <Link to="/dashboard" className="w-full flex items-center justify-center">
+            <Link to="/profile" className="w-full flex items-center justify-center">
               Start Building Your Portfolio
             </Link>
           </Button>
           
           <Button variant="outline" className="w-full">
-            <Link to="/explore" className="w-full flex items-center justify-center">
+            <Link to="/analytics" className="w-full flex items-center justify-center">
               Explore Examples
             </Link>
           </Button>

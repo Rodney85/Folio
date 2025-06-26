@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "@/components/theme-provider";
 import AuthSyncProvider from "@/components/AuthSyncProvider";
 import { useUser } from "@clerk/clerk-react";
@@ -12,6 +12,13 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
+
+// Import new pages
+import ProfilePage from "./pages/ProfilePage";
+import EditProfilePage from "./pages/EditProfilePage";
+import ProfileMenuPage from "./pages/ProfileMenuPage";
+import AddCarPage from "./pages/AddCarPage";
+import AnalyticsPage from "./pages/AnalyticsPage";
 
 const queryClient = new QueryClient();
 
@@ -22,11 +29,26 @@ const AppContent = () => {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Show welcome screen if user is signed in, otherwise show landing page */}
-        <Route path="/" element={isSignedIn ? <WelcomeScreen /> : <Index />} />
+        {/* Show profile page if user is signed in, otherwise show landing page */}
+        <Route path="/" element={isSignedIn ? <ProfilePage /> : <Index />} />
+        {/* Welcome screen still available at this route */}
+        <Route path="/welcome" element={isSignedIn ? <WelcomeScreen /> : <Navigate to="/" />} />
+        
         {/* Authentication routes */}
         <Route path="/sign-in/*" element={<SignIn />} />
         <Route path="/sign-up/*" element={<SignUp />} />
+        
+        {/* App feature routes - protected by authentication */}
+        {isSignedIn && (
+          <>
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/profile/edit" element={<EditProfilePage />} />
+            <Route path="/profile/menu" element={<ProfileMenuPage />} />
+            <Route path="/add-car" element={<AddCarPage />} />
+            <Route path="/analytics" element={<AnalyticsPage />} />
+          </>
+        )}
+        
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
