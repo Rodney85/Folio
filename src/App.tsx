@@ -15,10 +15,14 @@ import SignUp from "./pages/SignUp";
 
 // Import new pages
 import ProfilePage from "./pages/ProfilePage";
+import CarsPage from "./pages/CarsPage";
 import EditProfilePage from "./pages/EditProfilePage";
 import ProfileMenuPage from "./pages/ProfileMenuPage";
-import AddCarPage from "./pages/AddCarPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
+import AddCarPage from "./pages/AddCarPage";
+import CarDetailsPage from "./pages/CarDetailsPage";
+import CarGalleryPage from "./pages/CarGalleryPage";
+import EditCarPage from "./pages/EditCarPage";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +50,10 @@ const AppContent = () => {
             <Route path="/profile/menu" element={<ProfileMenuPage />} />
             <Route path="/add-car" element={<AddCarPage />} />
             <Route path="/analytics" element={<AnalyticsPage />} />
+            <Route path="/cars" element={<CarsPage />} />
+            <Route path="/car/:id" element={<CarDetailsPage />} />
+            <Route path="/car/:id/gallery" element={<CarGalleryPage />} />
+            <Route path="/edit-car/:id" element={<EditCarPage />} />
           </>
         )}
         

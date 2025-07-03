@@ -1,12 +1,19 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@clerk/clerk-react";
-import { ChevronLeft, ChevronRight, Shield, CreditCard, Monitor, Flag, LogOut } from "lucide-react";
+import { ChevronLeft, ChevronRight, Shield, CreditCard, Monitor, Flag, LogOut, Car } from "lucide-react";
 
 const ProfileMenuPage = () => {
   const navigate = useNavigate();
   const { signOut } = useAuth();
 
   const menuItems = [
+    {
+      title: "My Cars",
+      icon: <Car className="h-5 w-5" />,
+      onClick: () => {
+        navigate('/cars');
+      }
+    },
     {
       title: "Security",
       icon: <Shield className="h-5 w-5" />,

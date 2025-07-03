@@ -16,9 +16,12 @@ export default defineSchema({
     make: v.string(),
     model: v.string(),
     year: v.number(),
+    power: v.string(),
     description: v.optional(v.string()),
     images: v.optional(v.array(v.string())),
     isPublished: v.boolean(),
+    createdAt: v.optional(v.string()),
+    updatedAt: v.optional(v.string()),
   }).index("by_user", ["userId"]),
   
   parts: defineTable({
