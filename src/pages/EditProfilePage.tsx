@@ -1,162 +1,84 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useUser } from "@clerk/clerk-react";
-import { ChevronLeft, Camera } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/use-toast";
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useUser } from '@clerk/clerk-react';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft, Camera, Loader2 } from 'lucide-react';
+import { toast } from '@/components/ui/use-toast';
+import ProfileSetupForm from '@/components/ProfileSetupForm';
 
-const EditProfilePage = () => {
+export default function EditProfilePage() {
   const { user } = useUser();
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const [imageUploading, setImageUploading] = useState(false);
   
-  const [username, setUsername] = useState(user?.username || "");
-  const [bio, setBio] = useState(user?.publicMetadata?.bio as string || "");
-  const [instagram, setInstagram] = useState(user?.publicMetadata?.instagram as string || "");
-  const [tiktok, setTiktok] = useState(user?.publicMetadata?.tiktok as string || "");
-  const [youtube, setYoutube] = useState(user?.publicMetadata?.youtube as string || "");
-  const [loading, setLoading] = useState(false);
-
-  const handleSave = async () => {
-    setLoading(true);
+  // Handle profile image upload using Clerk
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    setImageUploading(true);
+    
     try {
-      // Update user metadata in Clerk
-      await user?.update({
-        username: username,
-        publicMetadata: {
-          ...user.publicMetadata,
-          bio: bio,
-          instagram: instagram,
-          tiktok: tiktok,
-          youtube: youtube
-        }
-      });
-      
-      toast({
-        title: "Profile updated",
-        description: "Your profile has been updated successfully.",
-      });
-      
-      navigate('/profile');
+      if (user) {
+        await user.setProfileImage({ file });
+        toast({
+          title: "Profile photo updated",
+          description: "Your profile photo has been updated.",
+        });
+      }
     } catch (error) {
+      console.error("Error uploading profile image:", error);
       toast({
-        title: "Error updating profile",
-        description: "There was an error updating your profile. Please try again.",
+        title: "Image upload failed",
+        description: "We couldn't upload your profile image.",
         variant: "destructive",
       });
-      console.error(error);
     } finally {
-      setLoading(false);
+      setImageUploading(false);
     }
   };
 
   return (
-    <div className="flex flex-col h-screen bg-background">
-      {/* Top bar */}
-      <div className="flex justify-between items-center p-4 border-b">
-        <button onClick={() => navigate('/profile')} className="flex items-center">
-          <ChevronLeft className="h-5 w-5 mr-1" />
-        </button>
-        <h1 className="text-lg font-medium flex-1 text-center">Edit Profile</h1>
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={handleSave}
-          disabled={loading}
-        >
-          Save
-        </Button>
-      </div>
-
-      {/* Profile photo */}
-      <div className="flex flex-col items-center p-6 pb-8">
+    <div className="container mx-auto p-4 max-w-md">
+      <Button
+        variant="ghost"
+        className="mb-4"
+        onClick={() => navigate(-1)}
+      >
+        <ArrowLeft className="h-4 w-4 mr-2" />
+        Back
+      </Button>
+      
+      <div className="mb-6 flex flex-col items-center">
         <div className="relative">
           <img 
-            src={user?.imageUrl || "https://via.placeholder.com/100"} 
-            alt="Profile"
+            src={user?.imageUrl || '/placeholder-avatar.png'} 
+            alt="Profile" 
             className="w-24 h-24 rounded-full object-cover"
           />
-          <button 
-            className="absolute bottom-0 right-0 bg-primary text-primary-foreground p-2 rounded-full"
-            onClick={() => {
-              // In a real app, this would open a file picker 
-              toast({
-                title: "Feature coming soon",
-                description: "Photo upload will be available soon!"
-              });
-            }}
+          <label 
+            htmlFor="profileImage" 
+            className="absolute bottom-0 right-0 bg-primary text-white p-1 rounded-full cursor-pointer"
           >
-            <Camera size={16} />
-          </button>
+            {imageUploading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Camera className="h-4 w-4" />
+            )}
+          </label>
+          <input 
+            id="profileImage" 
+            type="file" 
+            accept="image/*" 
+            className="hidden" 
+            onChange={handleImageUpload}
+            disabled={imageUploading}
+          />
         </div>
-        <span className="text-sm text-muted-foreground mt-3">Change photo</span>
       </div>
       
-      {/* Form fields */}
-      <div className="px-4 space-y-6">
-        <div className="space-y-1">
-          <label className="text-sm font-medium">About you</label>
-          <div className="space-y-3">
-            <div>
-              <label className="text-xs text-muted-foreground">Username</label>
-              <Input 
-                value={username} 
-                onChange={(e) => setUsername(e.target.value)}
-                className="mt-1"
-              />
-            </div>
-            
-            <div>
-              <label className="text-xs text-muted-foreground">Bio</label>
-              <Textarea 
-                value={bio} 
-                onChange={(e) => setBio(e.target.value)} 
-                className="mt-1 min-h-[80px]"
-                placeholder="Tell others a bit about yourself..."
-              />
-            </div>
-          </div>
-        </div>
-        
-        <div className="space-y-1">
-          <label className="text-sm font-medium">Socials</label>
-          <div className="space-y-3">
-            <div>
-              <label className="text-xs text-muted-foreground">Instagram</label>
-              <Input 
-                value={instagram} 
-                onChange={(e) => setInstagram(e.target.value)} 
-                className="mt-1"
-                placeholder="Your Instagram username"
-              />
-            </div>
-            
-            <div>
-              <label className="text-xs text-muted-foreground">Tiktok</label>
-              <Input 
-                value={tiktok} 
-                onChange={(e) => setTiktok(e.target.value)} 
-                className="mt-1"
-                placeholder="Your Tiktok username"
-              />
-            </div>
-            
-            <div>
-              <label className="text-xs text-muted-foreground">Youtube</label>
-              <Input 
-                value={youtube} 
-                onChange={(e) => setYoutube(e.target.value)} 
-                className="mt-1"
-                placeholder="Your Youtube channel name"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* Use our reusable ProfileSetupForm component for the edit form */}
+      <ProfileSetupForm />
     </div>
   );
 };
-
-export default EditProfilePage;

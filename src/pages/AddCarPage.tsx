@@ -10,6 +10,7 @@ import { Camera, X, PlusCircle, Link, ShoppingBag, Loader2 } from "lucide-react"
 import { useMutation, useConvex } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { uploadToBackblaze } from "@/utils/storageService";
+import { useMediaQuery } from "../hooks/useMediaQuery";
 
 const AddCarPage = () => {
   const navigate = useNavigate();
@@ -113,6 +114,9 @@ const AddCarPage = () => {
   const createCar = useMutation(api.cars.createCar);
   const createPart = useMutation(api.parts.createPart);
   
+  // Detect if we're on mobile
+  const isMobile = useMediaQuery("(max-width: 767px)");
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -233,7 +237,6 @@ const AddCarPage = () => {
       // Reset loading state
       setLoading(false);
       setUploading(false);
-      
     } catch (error) {
       console.error('Error adding car:', error);
       toast({
@@ -246,36 +249,26 @@ const AddCarPage = () => {
     }
   };
 
-  return (
-    <MobileLayout>
-      {/* Glassmorphic Loading Modal */}
-      {(uploading || loading) && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-700/50 p-6 rounded-xl w-80 shadow-xl">
-            <div className="flex flex-col items-center">
-              <Loader2 className="h-12 w-12 text-blue-500 animate-spin mb-4" />
-              <h3 className="text-white font-medium text-lg mb-2">
-                {loading && !uploading ? 'Creating your car...' : 'Uploading images...'}
-              </h3>
-              {uploadProgress > 0 && (
-                <div className="w-full mt-2">
-                  <div className="w-full bg-slate-700 h-2 rounded-full overflow-hidden">
-                    <div 
-                      className="bg-gradient-to-r from-blue-500 to-blue-600 h-full rounded-full transition-all duration-300 ease-out" 
-                      style={{ width: `${uploadProgress}%` }}
-                    ></div>
-                  </div>
-                  <p className="text-slate-300 text-xs mt-1 text-center">
-                    {uploadProgress}% Complete
-                  </p>
-                </div>
-              )}
+  // Content to be rendered in both mobile and desktop layouts
+  const pageContent = (
+  <div className={`container ${isMobile ? 'max-w-md' : 'max-w-2xl'} mx-auto p-4`}>
+    {/* Loading overlay */}
+    {(uploading || loading) && (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-700/50 p-6 rounded-xl w-80 shadow-xl">
+          <div className="flex flex-col items-center gap-3">
+            <Loader2 className="h-8 w-8 animate-spin" />
+            <div className="text-center">
+              <p className="font-medium">
+                {uploading ? `Uploading Images (${Math.round(uploadProgress)}%)` : "Adding your car..."}
+              </p>
             </div>
           </div>
         </div>
-      )}
-      <div className="p-4">
-        <h1 className="text-2xl font-bold mb-6">Add a New Car</h1>
+      </div>
+    )}
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-6">Add a New Car</h1>
         
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Car Photos - Up to 8 images */}
@@ -508,7 +501,19 @@ const AddCarPage = () => {
           </Button>
         </form>
       </div>
+    </div>
+  );
+
+  // Conditionally wrap with MobileLayout only on mobile
+  return isMobile ? (
+    <MobileLayout>
+      {pageContent}
     </MobileLayout>
+  ) : (
+    // On desktop/tablet, content is directly rendered inside AppLayout (from App.tsx)
+    <div className="bg-slate-900 text-white min-h-screen py-6">
+      {pageContent}
+    </div>
   );
 };
 

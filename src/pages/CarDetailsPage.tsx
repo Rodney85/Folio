@@ -6,6 +6,8 @@ import { Id } from '../../convex/_generated/dataModel';
 import { ArrowLeft, ExternalLink, ShoppingBag, X } from 'lucide-react';
 import CarImageWithUrl from '@/components/cars/CarImageWithUrl';
 import { Button } from '@/components/ui/button';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
+import MobileLayout from '@/components/layout/MobileLayout';
 import {
   Dialog,
   DialogContent,
@@ -19,6 +21,7 @@ const CarDetailsPage = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const isMobile = useMediaQuery("(max-width: 767px)");
 
   // Fetch car details using the ID from params
   const car = useQuery(api.cars.getCarById, { carId: id as Id<"cars"> });
@@ -73,8 +76,9 @@ const CarDetailsPage = () => {
     });
   };
 
-  return (
-    <div className="flex flex-col h-screen bg-slate-900 text-white">
+  // Define content to be rendered in both mobile and desktop layouts
+  const carDetailsContent = (
+    <div className="flex flex-col h-full">
       {/* Header with back button and edit button */}
       <header className="p-4 flex items-center justify-between sticky top-0 bg-slate-900 z-10 border-b border-slate-800 shadow-sm">
         <button 
@@ -94,7 +98,7 @@ const CarDetailsPage = () => {
       {/* Main content */}
       <div className="flex-1 overflow-auto pb-24">
         {/* Main image */}
-        <div className="w-full aspect-[4/5] bg-slate-800 mb-3">
+        <div className={`w-full ${isMobile ? 'aspect-[4/5]' : 'aspect-[16/9]'} bg-slate-800 ${isMobile ? 'mb-3' : 'mb-6 rounded-lg shadow-lg'} relative`}>
         {car.images && car.images.length > 0 ? (
           <>
             {/* Main visible image with high priority */}
@@ -113,101 +117,106 @@ const CarDetailsPage = () => {
                 return idx !== currentImageIndex ? (
                   <CarImageWithUrl 
                     key={`preload-${idx}`}
-                    storageId={img}
-                    alt={`preload ${idx}`} 
+                    storageId={img} 
+                    alt={`${car.make} ${car.model} preload ${idx}`}
+                    className="hidden"
+                    priority={false} // Low priority for preloaded images
                   />
                 ) : null;
               })}
             </div>
+            
+            {/* Thumbnails */}
+            {car.images && car.images.length > 1 && (
+            <div className={`flex gap-2 px-4 ${isMobile ? 'mt-2' : 'mt-4'} overflow-x-auto pb-2`}>
+              {car.images.map((image, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleThumbnailClick(index)}
+                  className={`flex-shrink-0 ${isMobile ? 'w-16 h-16' : 'w-24 h-24'} rounded-md ${currentImageIndex === index ? 'ring-2 ring-blue-500' : 'opacity-70 hover:opacity-100'} transition-all`}
+                >
+                  <CarImageWithUrl
+                    storageId={image}
+                    alt={`${car.make} ${car.model} thumbnail ${index + 1}`}
+                    className="w-full h-full object-cover rounded-md"
+                  />
+                </button>
+              ))}
+            </div>
+            )}
+            
+            {/* Image navigation buttons for desktop */}
+            {car.images.length > 1 && (
+              <>
+                <button 
+                  onClick={handlePrevImage}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/30 backdrop-blur-sm hover:bg-black/50 transition-all"
+                  aria-label="Previous image"
+                >
+                  <ArrowLeft className="w-5 h-5 text-white" />
+                </button>
+                <button 
+                  onClick={handleNextImage}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/30 backdrop-blur-sm hover:bg-black/50 transition-all"
+                  aria-label="Next image"
+                >
+                  <ArrowLeft className="w-5 h-5 text-white transform rotate-180" />
+                </button>
+              </>
+            )}
           </>
         ) : (
-          <div className="flex items-center justify-center h-full">
-            <p className="text-slate-400">No image available</p>
+          <div className="flex items-center justify-center w-full h-full bg-slate-800">
+            <p className="text-slate-500">No images available</p>
           </div>
         )}
-      </div>
-
-        {/* Thumbnail gallery */}
-        {car.images && car.images.length > 0 && (
-          <div className="grid grid-cols-4 gap-3 px-4 mb-6">
-            {/* Show only up to 4 images */}
-            {car.images.slice(0, Math.min(4, car.images.length)).map((image, index) => (
-              <div 
-                key={index}
-                onClick={() => handleThumbnailClick(index)} 
-                className={`aspect-[4/5] rounded-md overflow-hidden cursor-pointer transition border-2 ${
-                  currentImageIndex === index ? 'border-blue-500' : 'border-transparent'
-                } relative`}
-              >
-                <CarImageWithUrl 
-                  storageId={image} 
-                  alt={`Thumbnail ${index + 1}`} 
-                  className="w-full h-full object-cover"
-                  priority={index < 2} // High priority for first two thumbnails
-                />
-                
-                {/* Add +N overlay on the 4th image if there are more images */}
-                {index === 3 && car.images.length > 4 && (
-                  <div 
-                    className="absolute inset-0 bg-black/60 flex items-center justify-center cursor-pointer"
-                    onClick={(e) => {
-                      e.stopPropagation(); // Prevent thumbnail click handler from firing
-                      navigate(`/car/${car._id}/gallery`);
-                    }}
-                  >
-                    <span className="text-white font-bold text-xl">+{car.images.length - 4}</span>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Car title */}
-        <div className="px-4 mb-6">
-          <h1 className="text-2xl font-bold uppercase tracking-wide">
-            {car.make} {car.model}
-          </h1>
         </div>
 
-        {/* Car specs */}
-        <div className="px-4 mb-8">
-          <div className="flex border-b border-slate-700/50 py-4">
-            <div className="w-1/3">
-              <h3 className="text-slate-300 text-lg font-medium">Year</h3>
+        {/* Title & Info */}
+        <div className={`${isMobile ? 'px-4' : 'px-0'} mt-4`}>
+          <h1 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold text-white`}>
+            {car.make} {car.model}
+          </h1>
+          <p className="text-slate-400 text-lg">{car.year}</p>
+        </div>
+
+        {/* Performance Specs */}
+        <div className={`${isMobile ? 'px-4' : 'px-0'} mt-6 mb-6`}>
+          <h3 className="text-slate-300 mb-4 text-lg font-medium">Performance</h3>
+          <div className={`grid ${isMobile ? 'grid-cols-2' : 'grid-cols-4'} gap-4 text-center`}>
+            <div className="bg-slate-800 p-3 rounded-lg shadow-md transition-transform hover:transform hover:scale-105">
+              <p className="text-sm text-slate-400">Horsepower</p>
+              <p className="font-medium text-lg">{car.power || '450 HP'}</p>
             </div>
-            <div className="w-2/3 text-right">
-              <p className="font-medium text-lg">{car.year}</p>
-            </div>
-          </div>
-          <div className="flex border-b border-slate-700/50 py-4">
-            <div className="w-1/3">
-              <h3 className="text-slate-300 text-lg font-medium">Power</h3>
-            </div>
-            <div className="w-2/3 text-right">
-              <p className="font-medium text-lg">{car.power} bhp</p>
-            </div>
-          </div>
-          <div className="flex py-4">
-            <div className="w-1/3">
-              <h3 className="text-slate-300 text-lg font-medium">Torque</h3>
-            </div>
-            <div className="w-2/3 text-right">
+            <div className="bg-slate-800 p-3 rounded-lg shadow-md transition-transform hover:transform hover:scale-105">
+              <p className="text-sm text-slate-400">Torque</p>
               <p className="font-medium text-lg">550 Nm</p>
             </div>
+            {!isMobile && (
+              <>
+                <div className="bg-slate-800 p-3 rounded-lg shadow-md transition-transform hover:transform hover:scale-105">
+                  <p className="text-sm text-slate-400">0-60 mph</p>
+                  <p className="font-medium text-lg">3.9s</p>
+                </div>
+                <div className="bg-slate-800 p-3 rounded-lg shadow-md transition-transform hover:transform hover:scale-105">
+                  <p className="text-sm text-slate-400">Top Speed</p>
+                  <p className="font-medium text-lg">188 mph</p>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
         {/* Description */}
-        <div className="px-4 mb-6">
+        <div className={`${isMobile ? 'px-4' : 'px-0'} mb-6`}>
           <h3 className="text-slate-300 mb-4 text-lg font-medium">Description</h3>
-          <p className="text-base text-slate-400 leading-relaxed">
+          <p className={`${isMobile ? 'text-base' : 'text-lg'} text-slate-400 leading-relaxed ${!isMobile ? 'max-w-3xl' : ''}`}>
             {car.description || "To use Convex Sheets as your backend for lead generation and perfuming in your React waitlist app, you'll need to set up a connection between your React frontend and Google Sheets. Here's a comprehensive solution"}
           </p>
         </div>
         
         {/* Shop the Build Button - moved below description */}
-        <div className="px-4 pb-24">
+        <div className={`${isMobile ? 'px-4' : 'px-0 max-w-md'} pb-24`}>
           <Button 
             className="w-full bg-blue-600 hover:bg-blue-700 text-white py-5 rounded-md font-semibold text-center uppercase tracking-wide"
             onClick={() => {
@@ -282,6 +291,20 @@ const CarDetailsPage = () => {
           </div>
         </DialogContent>
       </Dialog>
+    </div>
+  );
+
+  // Conditionally wrap with MobileLayout only on mobile
+  return isMobile ? (
+    <MobileLayout>
+      {carDetailsContent}
+    </MobileLayout>
+  ) : (
+    // On desktop/tablet, content is directly rendered with improved layout
+    <div className="flex flex-col h-screen bg-slate-900 text-white">
+      <div className="max-w-7xl mx-auto w-full px-6 py-4">
+        {carDetailsContent}
+      </div>
     </div>
   );
 };

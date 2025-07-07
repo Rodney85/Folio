@@ -2,10 +2,12 @@ import React from 'react';
 import { useQuery } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import { Id } from '../../../convex/_generated/dataModel';
-import { Loader, Camera } from 'lucide-react';
+import { Loader, Camera, Car } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import CarThumbnail from '@/components/cars/CarThumbnail';
+import { useMediaQuery } from '../../hooks/useMediaQuery';
+import CarImageWithUrl from './CarImageWithUrl';
 
 interface Car {
   _id: Id<"cars">;
@@ -23,11 +25,21 @@ interface Car {
 interface CarGridProps {
   userId?: string;
   limit?: number;
+  className?: string;
+  showAddButton?: boolean;
+  instagramStyle?: boolean;
 }
 
-const CarGrid: React.FC<CarGridProps> = ({ userId, limit = 12 }) => {
+const CarGrid: React.FC<CarGridProps> = ({ 
+  userId, 
+  limit = 12, 
+  className = '',
+  showAddButton = true,
+  instagramStyle = false
+}) => {
   const navigate = useNavigate();
-
+  const isMobile = useMediaQuery("(max-width: 767px)");
+  
   // Fetch cars based on userId if provided, otherwise fetch all published cars
   const cars = useQuery(api.cars.getUserCars) || [];
 
@@ -61,28 +73,64 @@ const CarGrid: React.FC<CarGridProps> = ({ userId, limit = 12 }) => {
     );
   }
 
+  // Determine the grid style based on props and viewport
+  const gridStyles = instagramStyle && !isMobile 
+    ? 'grid grid-cols-3 gap-[2px]' // Instagram style with consistent 3 columns for tablet/desktop
+    : isMobile 
+      ? 'grid grid-cols-2 gap-3' // Original style for mobile (unchanged)
+      : 'grid grid-cols-3 gap-4'; // Consistent 3 columns like Instagram for tablet/desktop
+
   return (
     <>
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+      <div className={`${gridStyles} ${className}`}>
         {cars.map((car) => (
-          <CarThumbnail 
-            key={car._id}
-            car={car}
-            onClick={() => handleCarClick(car)}
-          />
+          instagramStyle && !isMobile ? (
+            // Instagram-style card for desktop
+            <div 
+              key={car._id} 
+              className="relative pb-[100%] w-full overflow-hidden cursor-pointer"
+              onClick={() => handleCarClick(car)}
+            >
+              {car.images && car.images.length > 0 ? (
+                <CarImageWithUrl
+                  storageId={car.images[0]}
+                  alt={`${car.make} ${car.model}`}
+                  className="absolute inset-0 w-full h-full object-cover hover:opacity-90 transition-opacity"
+                />
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center bg-muted hover:bg-muted/80 transition-colors">
+                  <Car className="h-6 w-6 text-muted-foreground" />
+                </div>
+              )}
+            </div>
+          ) : (
+            // Original card style for mobile
+            <CarThumbnail 
+              key={car._id}
+              car={car}
+              onClick={() => handleCarClick(car)}
+            />
+          )
         ))}
         
-        {/* Add car tile - Always present at the end */}
-        <div 
-          onClick={handleAddCarClick}
-          className="relative aspect-square rounded-md cursor-pointer border-2 border-dashed border-muted-foreground/20 hover:border-muted-foreground/40 transition flex flex-col items-center justify-center bg-muted/50 hover:bg-muted/80 group"
-        >
-          <Camera className="h-8 w-8 mb-2 text-muted-foreground group-hover:text-foreground transition-colors" />
-          <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">Add Car</span>
-        </div>
+        {/* Add car tile - conditionally shown */}
+        {showAddButton && (
+          <div 
+            onClick={handleAddCarClick}
+            className={`cursor-pointer ${instagramStyle && !isMobile 
+              ? 'relative pb-[100%] w-full overflow-hidden' 
+              : isMobile 
+                ? 'relative aspect-square rounded-md border-2 border-dashed border-muted-foreground/20 hover:border-muted-foreground/40 transition'
+                : 'relative aspect-square rounded-lg border-2 border-dashed border-muted-foreground/20 hover:border-muted-foreground/40 transition shadow-sm hover:shadow-md'}
+              flex flex-col items-center justify-center bg-muted/50 hover:bg-muted/80 group`}
+          >
+            <div className={instagramStyle && !isMobile ? 'absolute inset-0 flex flex-col items-center justify-center' : ''}>
+              <Camera className="h-8 w-8 mb-2 text-muted-foreground group-hover:text-foreground transition-colors" />
+              <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">Add Car</span>
+            </div>
+          </div>
+        )}
       </div>
-
-      {/* No modal needed as we're navigating to a dedicated page */}
     </>
   );
 };

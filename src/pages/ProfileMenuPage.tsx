@@ -1,24 +1,32 @@
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@clerk/clerk-react";
-import { ChevronLeft, ChevronRight, Shield, CreditCard, Monitor, Flag, LogOut, Car } from "lucide-react";
+import { useAuth, useUser, useClerk } from "@clerk/clerk-react";
+import { ChevronLeft, ChevronRight, Shield, CreditCard, Monitor, Flag, LogOut, Car, Key, UserCircle } from "lucide-react";
 
 const ProfileMenuPage = () => {
   const navigate = useNavigate();
   const { signOut } = useAuth();
+  const { user } = useUser();
+  const clerk = useClerk();
 
   const menuItems = [
+    // My Cars option removed as requested
+    // Account Management option removed as requested
     {
-      title: "My Cars",
-      icon: <Car className="h-5 w-5" />,
-      onClick: () => {
-        navigate('/cars');
-      }
-    },
-    {
-      title: "Security",
+      title: "Security & Password",
       icon: <Shield className="h-5 w-5" />,
       onClick: () => {
-        // Navigate to security page or open clerk security UI
+        // Open Clerk user profile with security/password section
+        // Note: Using just appearance options as initialPage isn't supported in this version
+        clerk.openUserProfile({
+          appearance: {
+            elements: {
+              rootBox: {
+                boxShadow: "none",
+                width: "100%"
+              },
+            }
+          },
+        });
       }
     },
     {

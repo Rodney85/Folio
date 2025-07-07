@@ -9,8 +9,12 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart3, TrendingUp, Calendar, Fuel } from "lucide-react";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 const AnalyticsPage = () => {
+  // Check screen size for responsive layout
+  const isMobile = useMediaQuery("(max-width: 767px)");
+
   // Mock data for analytics
   const [statistics] = useState({
     totalCars: 9,
@@ -32,13 +36,13 @@ const AnalyticsPage = () => {
     { month: "Jun", mileage: 1330 },
   ]);
 
-  return (
-    <MobileLayout>
-      <div className="p-4 pb-20">
-        <h1 className="text-2xl font-bold mb-4">Car Analytics</h1>
-        <p className="text-muted-foreground mb-6">
-          Track and analyze your car collection performance
-        </p>
+  // Define content to render in both layouts
+  const analyticsContent = (
+    <div className="p-4 pb-20">
+      <h1 className="text-2xl font-bold mb-4">Car Analytics</h1>
+      <p className="text-muted-foreground mb-6">
+        Track and analyze your car collection performance
+      </p>
 
         <Tabs defaultValue="overview" className="mb-8">
           <TabsList className="grid grid-cols-3">
@@ -129,11 +133,11 @@ const AnalyticsPage = () => {
                 <CardDescription>Mileage tracked per month</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-[200px] w-full flex items-end justify-between space-x-2">
+                <div className={`h-[200px] w-full flex items-end justify-between ${isMobile ? 'space-x-2' : 'space-x-4'}`}>
                   {usageData.map((item, index) => (
                     <div key={index} className="flex flex-col items-center">
                       <div 
-                        className="bg-primary rounded-t w-8" 
+                        className={`bg-primary rounded-t ${isMobile ? 'w-8' : 'w-12'}`}
                         style={{ height: `${(item.mileage / 1500) * 150}px` }}
                       ></div>
                       <span className="text-xs mt-2">{item.month}</span>
@@ -187,7 +191,18 @@ const AnalyticsPage = () => {
           </TabsContent>
         </Tabs>
       </div>
+  );
+
+  // Conditionally wrap with MobileLayout only on mobile
+  return isMobile ? (
+    <MobileLayout>
+      {analyticsContent}
     </MobileLayout>
+  ) : (
+    // On desktop/tablet, content is directly rendered inside AppLayout (from App.tsx)
+    <div className="bg-slate-900 text-white min-h-screen py-6">
+      {analyticsContent}
+    </div>
   );
 };
 

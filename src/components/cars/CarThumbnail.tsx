@@ -2,6 +2,7 @@ import React from 'react';
 import { Id } from '../../../convex/_generated/dataModel';
 import { cn } from '@/lib/utils';
 import CarImageWithUrl from './CarImageWithUrl';
+import { useMediaQuery } from '../../hooks/useMediaQuery';
 
 interface Car {
   _id: Id<"cars">;
@@ -31,6 +32,7 @@ const CarThumbnail: React.FC<CarThumbnailProps> = ({
   showDetails = true,
   size = 'md'
 }) => {
+  const isMobile = useMediaQuery("(max-width: 767px)");
   const sizeClasses = {
     sm: 'aspect-square',
     md: 'aspect-square',
@@ -44,7 +46,8 @@ const CarThumbnail: React.FC<CarThumbnailProps> = ({
   return (
     <div 
       className={cn(
-        "relative overflow-hidden rounded-md cursor-pointer group",
+        "relative overflow-hidden cursor-pointer group",
+        isMobile ? "rounded-md" : "rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300",
         sizeClasses[size],
         className
       )}
@@ -71,6 +74,9 @@ const CarThumbnail: React.FC<CarThumbnailProps> = ({
               {car.make} {car.model}
             </h3>
             <p className="text-white/80 text-sm">{car.year}</p>
+            {!isMobile && car.power && (
+              <p className="text-white/70 text-xs mt-1">{car.power}</p>
+            )}
           </div>
         </div>
       )}

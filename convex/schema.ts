@@ -7,6 +7,15 @@ export default defineSchema({
     email: v.string(),
     pictureUrl: v.optional(v.string()),
     tokenIdentifier: v.string(),
+    // Profile information
+    username: v.optional(v.string()),
+    bio: v.optional(v.string()),
+    instagram: v.optional(v.string()),
+    tiktok: v.optional(v.string()),
+    youtube: v.optional(v.string()),
+    profileCompleted: v.optional(v.boolean()), // Flag to track if profile setup is complete
+    createdAt: v.optional(v.string()),
+    updatedAt: v.optional(v.string()),
   }).index("by_token", ["tokenIdentifier"]),
   
   // You can add more tables for your car portfolio data
@@ -22,6 +31,7 @@ export default defineSchema({
     isPublished: v.boolean(),
     createdAt: v.optional(v.string()),
     updatedAt: v.optional(v.string()),
+    order: v.optional(v.number()),
   }).index("by_user", ["userId"]),
   
   parts: defineTable({

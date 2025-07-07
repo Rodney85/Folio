@@ -5,9 +5,11 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "@/components/theme-provider";
+import AppLayout from "@/components/layout/AppLayout";
 import AuthSyncProvider from "@/components/AuthSyncProvider";
 import { useUser } from "@clerk/clerk-react";
 import WelcomeScreen from "@/components/WelcomeScreen";
+import ProfileOnboarding from "@/components/ProfileOnboarding";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import SignIn from "./pages/SignIn";
@@ -32,6 +34,10 @@ const AppContent = () => {
   
   return (
     <BrowserRouter>
+      {/* Show the onboarding component for signed-in users */}
+      {isSignedIn && <ProfileOnboarding />}
+      
+      {/* Use AppLayout for authenticated routes, except special cases */}
       <Routes>
         {/* Show profile page if user is signed in, otherwise show landing page */}
         <Route path="/" element={isSignedIn ? <ProfilePage /> : <Index />} />
@@ -45,15 +51,15 @@ const AppContent = () => {
         {/* App feature routes - protected by authentication */}
         {isSignedIn && (
           <>
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/profile/edit" element={<EditProfilePage />} />
-            <Route path="/profile/menu" element={<ProfileMenuPage />} />
-            <Route path="/add-car" element={<AddCarPage />} />
-            <Route path="/analytics" element={<AnalyticsPage />} />
-            <Route path="/cars" element={<CarsPage />} />
-            <Route path="/car/:id" element={<CarDetailsPage />} />
-            <Route path="/car/:id/gallery" element={<CarGalleryPage />} />
-            <Route path="/edit-car/:id" element={<EditCarPage />} />
+            <Route path="/profile" element={<AppLayout><ProfilePage /></AppLayout>} />
+            <Route path="/profile/edit" element={<AppLayout><EditProfilePage /></AppLayout>} />
+            <Route path="/profile/menu" element={<AppLayout><ProfileMenuPage /></AppLayout>} />
+            <Route path="/add-car" element={<AppLayout><AddCarPage /></AppLayout>} />
+            <Route path="/analytics" element={<AppLayout><AnalyticsPage /></AppLayout>} />
+            <Route path="/cars" element={<AppLayout><CarsPage /></AppLayout>} />
+            <Route path="/car/:id" element={<AppLayout><CarDetailsPage /></AppLayout>} />
+            <Route path="/car/:id/gallery" element={<AppLayout><CarGalleryPage /></AppLayout>} />
+            <Route path="/edit-car/:id" element={<AppLayout><EditCarPage /></AppLayout>} />
           </>
         )}
         

@@ -13,7 +13,6 @@ import { api } from "../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import CarImageWithUrl from "@/components/cars/CarImageWithUrl";
 import ShareModal from "@/components/ShareModal";
-import DraggableCarGrid from "@/components/cars/DraggableCarGrid";
 
 const ProfilePage = () => {
   const { user } = useUser();
@@ -33,7 +32,7 @@ const ProfilePage = () => {
   const baseUrl = window.location.origin;
   const profileUrl = `${baseUrl}/profile/${profile?.username || user?.firstName?.toLowerCase() || "itsrod"}`;
   
-    const handleCarClick = (car) => {
+  const handleCarClick = (car) => {
     navigate(`/car/${car._id}`);
   };
   
@@ -41,7 +40,7 @@ const ProfilePage = () => {
 
   // Create profile content for both layouts
   const profileContent = (
-    <div className={`flex flex-col bg-slate-900 text-white min-h-screen ${!isMobile ? 'p-6' : ''}`}>
+    <div className="flex flex-col bg-slate-900 text-white min-h-screen">
       {/* Top bar - Only visible on mobile */}
       {isMobile && (
         <div className="flex justify-between items-center p-4 pb-2">
@@ -143,7 +142,7 @@ const ProfilePage = () => {
       <div className="w-full h-[1px] bg-gray-300/20 dark:bg-gray-700/20 my-5"></div>
 
       {/* Car grid - Instagram-style */}
-      <div className={`w-full mt-1 ${isMobile ? 'px-[10px]' : ''}`}>
+      <div className="w-full mt-1">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-bold text-lg">My Cars</h2>
           <Button 
@@ -161,11 +160,30 @@ const ProfilePage = () => {
             <Loader className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
         ) : userCars.length > 0 ? (
-          <DraggableCarGrid 
-            instagramStyle={true} 
-            showAddButton={false} 
-            className="w-full"
-          />
+          <div className="grid grid-cols-3 gap-[2px] w-full">
+            {userCars.map((car) => (
+              <div 
+                key={car._id} 
+                className="relative pb-[100%] w-full overflow-hidden"
+              >
+                {car.images && car.images.length > 0 ? (
+                  <CarImageWithUrl
+                    storageId={car.images[0]}
+                    alt={`${car.make} ${car.model}`}
+                    className="absolute inset-0 w-full h-full object-cover rounded-[5px]"
+                    onClick={() => handleCarClick(car)}
+                  />
+                ) : (
+                  <div 
+                    className="absolute inset-0 flex items-center justify-center bg-muted rounded-[5px]"
+                    onClick={() => handleCarClick(car)}
+                  >
+                    <Car className="h-6 w-6 text-muted-foreground" />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-10 space-y-4">
             <Car className="h-12 w-12 text-muted-foreground" />
@@ -186,7 +204,7 @@ const ProfilePage = () => {
     </div>
   );
 
-  // Always use the same layout regardless of viewport
+  // Different rendering based on viewport size
   return (
     <>
       {/* Share Modal */}
@@ -203,7 +221,7 @@ const ProfilePage = () => {
           {profileContent}
         </MobileLayout>
       ) : (
-        <ResponsiveLayout>
+        <ResponsiveLayout onShareClick={() => setShareModalOpen(true)}>
           {profileContent}
         </ResponsiveLayout>
       )}
