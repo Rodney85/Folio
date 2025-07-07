@@ -48,6 +48,7 @@ interface DraggableCarGridProps {
   className?: string;
   showAddButton?: boolean;
   instagramStyle?: boolean;
+  editMode?: boolean;
 }
 
 const DraggableCarGrid: React.FC<DraggableCarGridProps> = ({ 
@@ -55,14 +56,16 @@ const DraggableCarGrid: React.FC<DraggableCarGridProps> = ({
   limit = 12, 
   className = '',
   showAddButton = true,
-  instagramStyle = false
+  instagramStyle = false,
+  editMode = false
 }) => {
   // Initialize hooks first - following React hook rules
   const navigate = useNavigate();
   const isMobile = useMediaQuery("(max-width: 767px)");
   
   // Feature flag to check if DnD should be enabled
-  const [dndEnabled, setDndEnabled] = useState<boolean>(true);
+  // Use the editMode prop as the initial state, but maintain local state for library availability
+  const [dndEnabled, setDndEnabled] = useState<boolean>(editMode);
   
   // Query for sorted cars
   const sortedCars = useQuery(api.carOrder?.getUserCarsSorted);
@@ -76,6 +79,11 @@ const DraggableCarGrid: React.FC<DraggableCarGridProps> = ({
   // Determine which cars to use
   const fetchedCars = sortedCars || userCars || [];
   
+  // Update dndEnabled when editMode prop changes
+  useEffect(() => {
+    setDndEnabled(editMode);
+  }, [editMode]);
+
   // Disable DnD if the required libraries aren't available
   useEffect(() => {
     try {

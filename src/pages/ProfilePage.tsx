@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
 import { toast } from "sonner";
-import { Share, Menu, Car, Plus, Loader } from "lucide-react";
+import { Share, Menu, Car, Plus, Loader, GripHorizontal } from "lucide-react";
 import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTiktok, faInstagram, faYoutube } from "@fortawesome/free-brands-svg-icons";
@@ -11,6 +11,7 @@ import { useMediaQuery } from "../hooks/useMediaQuery";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import CarImageWithUrl from "@/components/cars/CarImageWithUrl";
 import ShareModal from "@/components/ShareModal";
 import DraggableCarGrid from "@/components/cars/DraggableCarGrid";
@@ -19,6 +20,7 @@ const ProfilePage = () => {
   const { user } = useUser();
   const navigate = useNavigate();
   const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [editMode, setEditMode] = useState(false);
   const isMobile = useMediaQuery("(max-width: 767px)");
   
   // Get user's cars from Convex
@@ -146,14 +148,22 @@ const ProfilePage = () => {
       <div className={`w-full mt-1 ${isMobile ? 'px-[10px]' : ''}`}>
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-bold text-lg">My Cars</h2>
-          <Button 
-            size="sm" 
-            variant="ghost" 
-            className="text-muted-foreground"
-            onClick={() => navigate('/cars')}
-          >
-            View All
-          </Button>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">
+              {editMode ? "Rearrange" : "View"}
+            </span>
+            <div className="flex items-center space-x-2">
+              <Switch 
+                id="edit-mode" 
+                checked={editMode} 
+                onCheckedChange={setEditMode}
+                aria-label="Toggle edit mode"
+              />
+              <GripHorizontal 
+                className={`h-4 w-4 ${editMode ? 'text-primary' : 'text-muted-foreground'}`} 
+              />
+            </div>
+          </div>
         </div>
         
         {loading ? (
@@ -165,6 +175,7 @@ const ProfilePage = () => {
             instagramStyle={true} 
             showAddButton={false} 
             className="w-full"
+            editMode={editMode}
           />
         ) : (
           <div className="flex flex-col items-center justify-center py-10 space-y-4">
