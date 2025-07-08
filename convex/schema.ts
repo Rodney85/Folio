@@ -16,7 +16,8 @@ export default defineSchema({
     profileCompleted: v.optional(v.boolean()), // Flag to track if profile setup is complete
     createdAt: v.optional(v.string()),
     updatedAt: v.optional(v.string()),
-  }).index("by_token", ["tokenIdentifier"]),
+  }).index("by_token", ["tokenIdentifier"])
+  .index("by_username", ["username"]),
   
   // You can add more tables for your car portfolio data
   // For example:

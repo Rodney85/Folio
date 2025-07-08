@@ -1,7 +1,7 @@
 import React, { ReactNode, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useUser, useAuth, useClerk } from '@clerk/clerk-react';
-import { BarChart3, Plus, UserCircle2, Menu, X, Home, Shield, CreditCard, Monitor, Flag, LogOut, ChevronRight } from 'lucide-react';
+import { BarChart3, Plus, UserCircle2, Menu, X, Home, Shield, CreditCard, Monitor, Flag, LogOut, ChevronRight, Share, Eye } from 'lucide-react';
 import SquirrelIcon from '@/components/icons/SquirrelIcon';
 import ShareModal from '@/components/ShareModal';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
@@ -60,13 +60,6 @@ export const ResponsiveLayout = ({ children }: ResponsiveLayoutProps) => {
   // Navigation items for mobile bottom nav and main navigation
   const navItems = [
     {
-      to: "/",
-      icon: <Home size={24} />,
-      label: "Home",
-      active: location.pathname === "/",
-      mobileOnly: true // Only show Home in mobile views
-    },
-    {
       to: "/profile",
       icon: <UserCircle2 size={24} />,
       label: "Profile",
@@ -86,8 +79,26 @@ export const ResponsiveLayout = ({ children }: ResponsiveLayoutProps) => {
     }
   ];
 
-  // Define the menu items from ProfileMenuPage for sidebar (reduced to just Subscription and Report an Issue)
+  // Helper function to open public profile in new tab
+  const openPublicProfile = () => {
+    if (profile?.username) {
+      // Open the public profile in a new tab
+      window.open(`/u/${profile.username}`, '_blank');
+    }
+  };
+
+  // Define the menu items from ProfileMenuPage for sidebar 
   const menuItems = [
+    {
+      title: "Preview Public Profile",
+      icon: <Eye className="h-5 w-5" />,
+      onClick: openPublicProfile
+    },
+    {
+      title: "Share Profile",
+      icon: <Share className="h-5 w-5" />,
+      onClick: handleShare
+    },
     {
       title: "Subscription",
       icon: <CreditCard className="h-5 w-5" />,
@@ -213,15 +224,42 @@ export const ResponsiveLayout = ({ children }: ResponsiveLayoutProps) => {
         {isMobile && (
           <div className="fixed bottom-0 left-0 right-0 border-t bg-background shadow-md">
             <div className="flex justify-around py-2">
-              {navItems.slice(0, 3).map((item, index) => (
-                <NavItem 
-                  key={index}
-                  to={item.to}
-                  icon={item.icon}
-                  label={item.label}
-                  active={item.active}
-                />
-              ))}
+              {/* Profile navigation item */}
+              <NavItem 
+                key="profile"
+                to="/profile"
+                icon={<UserCircle2 size={24} />}
+                label="Profile"
+                active={location.pathname.startsWith('/profile')}
+              />
+              
+              {/* Preview button */}
+              <button 
+                onClick={openPublicProfile}
+                className="flex flex-col items-center justify-center px-4 text-muted-foreground hover:text-foreground"
+                disabled={!profile?.username}
+              >
+                <Eye size={24} />
+                <span className="text-xs mt-1">Preview</span>
+              </button>
+              
+              {/* Add Car navigation item */}
+              <NavItem 
+                key="add-car"
+                to="/add-car"
+                icon={<Plus size={24} />}
+                label="Add Car"
+                active={location.pathname.startsWith('/add-car')}
+              />
+              
+              {/* Analytics navigation item */}
+              <NavItem 
+                key="analytics"
+                to="/analytics"
+                icon={<BarChart3 size={24} />}
+                label="Analytics"
+                active={location.pathname.startsWith('/analytics')}
+              />
             </div>
           </div>
         )}

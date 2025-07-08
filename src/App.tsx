@@ -25,6 +25,10 @@ import AddCarPage from "./pages/AddCarPage";
 import CarDetailsPage from "./pages/CarDetailsPage";
 import CarGalleryPage from "./pages/CarGalleryPage";
 import EditCarPage from "./pages/EditCarPage";
+import PublicProfilePage from "./pages/PublicProfilePage";
+import PublicCarDetailsPage from "./pages/PublicCarDetailsPage";
+import FindCars from "./debug/FindCars";
+import AllCars from "./debug/AllCars";
 
 const queryClient = new QueryClient();
 
@@ -62,6 +66,14 @@ const AppContent = () => {
             <Route path="/edit-car/:id" element={<AppLayout><EditCarPage /></AppLayout>} />
           </>
         )}
+        
+        {/* Public Profile Pages - accessible to all users */}
+        <Route path="/u/:username" element={<PublicProfilePage />} />
+        <Route path="/u/:username/car/:id" element={<PublicCarDetailsPage />} />
+        
+        {/* Debug routes for development purposes */}
+        <Route path="/debug/cars" element={<FindCars />} />
+        <Route path="/debug/all-cars" element={<AllCars />} />
         
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />

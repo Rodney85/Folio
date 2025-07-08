@@ -1,73 +1,102 @@
-# Welcome to your Lovable project
+# 🚗 Carfolio
 
-## Project info
+A modern platform for car enthusiasts to showcase, organize, and share their vehicle collection.
 
-**URL**: https://lovable.dev/projects/4ec36673-73f0-4b44-a837-cf0a505e8f9a
+![Carfolio Banner](https://via.placeholder.com/800x200?text=Carfolio+Car+Showcase+Platform)
 
-## How can I edit this code?
+## ✨ Features
 
-There are several ways of editing your application.
+- **Car Collection Management**: Add, organize, and customize your vehicle showcase
+- **Drag & Drop Interface**: Easily rearrange your cars with intuitive controls
+- **Public Profiles**: Share your collection with anyone via custom URLs
+- **Responsive Design**: Perfect experience on desktop, tablet, and mobile devices
+- **Social Media Integration**: Link your Instagram, TikTok, and YouTube accounts
+- **QR Code Sharing**: Generate QR codes for easy sharing of your profile
+- **Car Details**: Display comprehensive information about each vehicle
+- **Image Gallery**: Showcase multiple images for each car
 
-**Use Lovable**
+## 🛠️ Technologies
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/4ec36673-73f0-4b44-a837-cf0a505e8f9a) and start prompting.
+### Frontend
+- React
+- TypeScript
+- Vite
+- TailwindCSS
+- Framer Motion
+- Lucide Icons
+- shadcn/ui Components
 
-Changes made via Lovable will be committed automatically to this repo.
+### Backend
+- Convex (backend as a service)
+- Backblaze (image/video storage)
 
-**Use your preferred IDE**
+### Authentication
+- Clerk
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Payments
+- Paystack
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## 🚀 Getting Started
 
-Follow these steps:
+### Prerequisites
+- Node.js (v16+)
+- npm or yarn
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### Installation
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/carfolio.git
+cd carfolio
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Install dependencies
+npm install
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Set up environment variables
+# Copy the example .env file and fill in your credentials
+cp .env.example .env
+
+# Start the development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## 🌐 Environment Variables
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Create a `.env` file in the root directory with the following variables:
 
-**Use GitHub Codespaces**
+```
+# Convex
+CONVEX_DEPLOYMENT=your_convex_deployment_id
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+# Clerk
+CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
 
-## What technologies are used for this project?
+# Backblaze
+BACKBLAZE_BUCKET_ID=your_backblaze_bucket_id
+BACKBLAZE_APP_KEY=your_backblaze_app_key
 
-This project is built with:
+# Paystack (if implemented)
+PAYSTACK_PUBLIC_KEY=your_paystack_public_key
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## 📱 Mobile App
 
-## How can I deploy this project?
+A React Native mobile app version is planned for future development, allowing users to manage their car collection on the go.
 
-Simply open [Lovable](https://lovable.dev/projects/4ec36673-73f0-4b44-a837-cf0a505e8f9a) and click on Share -> Publish.
+## 🔒 Security
 
-## Can I connect a custom domain to my Lovable project?
+- Authentication via Clerk ensures secure user access
+- User data is protected and only public profiles are accessible to unauthenticated users
 
-Yes, you can!
+## 🤝 Contributing
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🙏 Acknowledgements
+
+- All car enthusiasts who inspired this project
+- The open source community for providing amazing tools

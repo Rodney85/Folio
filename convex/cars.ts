@@ -140,9 +140,7 @@ export const updateCar = mutation({
 
 // Delete a car
 export const deleteCar = mutation({
-  args: {
-    carId: v.id("cars"),
-  },
+  args: { carId: v.id("cars") },
   handler: async (ctx, args) => {
     try {
       const user = await getUser(ctx);
@@ -162,6 +160,41 @@ export const deleteCar = mutation({
       
       return { success: true };
     } catch (error) {
+      throw new ConvexError("Not authorized");
+    }
+  },
+});
+
+// Publish all user cars - makes all cars visible on public profile
+export const publishAllCars = mutation({
+  args: {},
+  handler: async (ctx) => {
+    try {
+      const user = await getUser(ctx);
+      
+      // Get all user's cars
+      const cars = await ctx.db
+        .query("cars")
+        .withIndex("by_user", (q) => q.eq("userId", user.id))
+        .collect();
+      
+      console.log(`Found ${cars.length} cars for user ${user.id}`);
+      
+      // Force update all cars to ensure they're published
+      // This addresses potential data inconsistencies
+      for (const car of cars) {
+        // Force update every car to ensure isPublished is true
+        await ctx.db.patch(car._id, {
+          isPublished: true
+        });
+      }
+      
+      return { 
+        success: true,
+        message: `Force-published all ${cars.length} cars. They should now be visible on your public profile.`
+      };
+    } catch (error) {
+      console.error("Error publishing cars:", error);
       throw new ConvexError("Not authorized");
     }
   },

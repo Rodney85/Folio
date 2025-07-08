@@ -28,6 +28,8 @@ interface CarGridProps {
   className?: string;
   showAddButton?: boolean;
   instagramStyle?: boolean;
+  readOnly?: boolean;
+  cars?: Car[];
 }
 
 const CarGrid: React.FC<CarGridProps> = ({ 
@@ -35,13 +37,19 @@ const CarGrid: React.FC<CarGridProps> = ({
   limit = 12, 
   className = '',
   showAddButton = true,
-  instagramStyle = false
+  instagramStyle = false,
+  readOnly = false,
+  cars: propCars
 }) => {
   const navigate = useNavigate();
   const isMobile = useMediaQuery("(max-width: 767px)");
   
-  // Fetch cars based on userId if provided, otherwise fetch all published cars
-  const cars = useQuery(api.cars.getUserCars) || [];
+  // Use provided cars or fetch them
+  const fetchedCars = useQuery(api.cars.getUserCars);
+  const cars = propCars || fetchedCars || [];
+  
+  // If in readOnly mode, don't allow adding cars
+  showAddButton = readOnly ? false : showAddButton;
 
   const handleCarClick = (car: Car) => {
     navigate(`/car/${car._id}`);

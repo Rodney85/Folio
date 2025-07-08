@@ -121,6 +121,9 @@ const DraggableCarGrid: React.FC<DraggableCarGridProps> = ({
   // Save the reordered cars back to the database
   const updateCarOrder = useMutation(api.carOrder?.updateCarOrder);
   
+  // Get mutation to update car details (for publishing)
+  const updateCar = useMutation(api.cars.updateCar);
+  
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -149,13 +152,23 @@ const DraggableCarGrid: React.FC<DraggableCarGridProps> = ({
           order: index
         }));
         
-        // Save the new order to the database
+        // Save the new order to the database and ensure all cars are published
         updatedCars.forEach(car => {
+          // Update car order
           if (car.order !== undefined) {
             updateCarOrder({
               id: car._id,
               order: car.order
             });
+            
+            // Ensure car is published
+            // This ensures the public profile will show the car with the updated order
+            if (!car.isPublished) {
+              updateCar({
+                carId: car._id,
+                isPublished: true
+              });
+            }
           }
         });
         

@@ -1,17 +1,24 @@
 import { useNavigate } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
 import { toast } from "sonner";
-import { Share, Menu, Car, Plus, Loader, GripHorizontal } from "lucide-react";
+import { Share, Menu, Car, Plus, Loader, GripHorizontal, Sparkles, HelpCircle } from "lucide-react";
 import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTiktok, faInstagram, faYoutube } from "@fortawesome/free-brands-svg-icons";
 import MobileLayout from "@/components/layout/MobileLayout";
 import { ResponsiveLayout } from "@/components/layout/ResponsiveLayout";
 import { useMediaQuery } from "../hooks/useMediaQuery";
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
 import CarImageWithUrl from "@/components/cars/CarImageWithUrl";
 import ShareModal from "@/components/ShareModal";
 import DraggableCarGrid from "@/components/cars/DraggableCarGrid";
@@ -21,6 +28,7 @@ const ProfilePage = () => {
   const navigate = useNavigate();
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
+
   const isMobile = useMediaQuery("(max-width: 767px)");
   
   // Get user's cars from Convex
@@ -31,11 +39,11 @@ const ProfilePage = () => {
   const profile = useQuery(api.users.getProfile);
   const isProfileComplete = useQuery(api.users.isProfileComplete);
   
-  // Define the profile URL for QR code
+  // Define the profile URL for QR code - using public profile URL format
   const baseUrl = window.location.origin;
-  const profileUrl = `${baseUrl}/profile/${profile?.username || user?.firstName?.toLowerCase() || "itsrod"}`;
+  const profileUrl = `${baseUrl}/u/${profile?.username || user?.firstName?.toLowerCase() || "itsrod"}`;
   
-    const handleCarClick = (car) => {
+  const handleCarClick = (car) => {
     navigate(`/car/${car._id}`);
   };
   
@@ -147,7 +155,7 @@ const ProfilePage = () => {
       {/* Car grid - Instagram-style */}
       <div className={`w-full mt-1 ${isMobile ? 'px-[10px]' : ''}`}>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-bold text-lg">My Cars</h2>
+          {/* Publish All button removed - all cars are now auto-published */}
           <div className="flex items-center gap-2">
             <span className="text-xs text-muted-foreground">
               {editMode ? "Rearrange" : "View"}
@@ -162,6 +170,16 @@ const ProfilePage = () => {
               <GripHorizontal 
                 className={`h-4 w-4 ${editMode ? 'text-primary' : 'text-muted-foreground'}`} 
               />
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent className="bg-slate-800 text-white border-slate-700 p-3 max-w-[250px]">
+                    <p>Toggle between <strong>View</strong> and <strong>Rearrange</strong> modes. In rearrange mode, you can drag and drop cars to change their order. The order will be saved automatically and shown in your public profile.</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </div>
         </div>

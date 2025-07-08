@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,13 +19,27 @@ const ProfileSetupForm = ({ isOnboarding = false, onComplete }: ProfileSetupForm
   const { user } = useUser();
   const navigate = useNavigate();
   const updateProfile = useMutation(api.users.updateProfile);
-
+  
+  // Get current profile data
+  const profileData = useQuery(api.users.getProfile);
+  
   const [username, setUsername] = useState("");
   const [bio, setBio] = useState("");
   const [instagram, setInstagram] = useState("");
   const [tiktok, setTiktok] = useState("");
   const [youtube, setYoutube] = useState("");
   const [loading, setLoading] = useState(false);
+  
+  // Initialize form with current user data when available
+  useEffect(() => {
+    if (profileData) {
+      setUsername(profileData.username || "");
+      setBio(profileData.bio || "");
+      setInstagram(profileData.instagram || "");
+      setTiktok(profileData.tiktok || "");
+      setYoutube(profileData.youtube || "");
+    }
+  }, [profileData]);
 
   // Helper function to extract username from social media URLs
   const extractSocialUsername = (url: string, domain: string) => {
@@ -71,12 +85,13 @@ const ProfileSetupForm = ({ isOnboarding = false, onComplete }: ProfileSetupForm
       // Only send fields that have values
       const profileData: Record<string, string | undefined> = {};
       
-      // Only add fields that have values or are being intentionally cleared
-      if (username.trim() !== '') profileData.username = username.trim();
-      if (bio !== undefined) profileData.bio = bio.trim();
-      if (instagramUsername !== undefined) profileData.instagram = instagramUsername;
-      if (tiktokUsername !== undefined) profileData.tiktok = tiktokUsername;
-      if (youtubeUsername !== undefined) profileData.youtube = youtubeUsername;
+      // For non-onboarding updates, all fields should be sent to maintain existing data
+      // This prevents fields from being unintentionally reset
+      profileData.username = username.trim();
+      profileData.bio = bio.trim();
+      profileData.instagram = instagramUsername;
+      profileData.tiktok = tiktokUsername;
+      profileData.youtube = youtubeUsername;
       
       // Update profile in Convex database
       await updateProfile(profileData);
