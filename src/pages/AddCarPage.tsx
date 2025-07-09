@@ -23,7 +23,8 @@ const AddCarPage = () => {
     brand: "",
     model: "",
     year: "",
-    power: "",
+    power: "", // Keeping field name as power in state for backend compatibility
+    torque: "", // Adding torque field
     description: ""
   });
 
@@ -184,6 +185,7 @@ const AddCarPage = () => {
         model: formData.model,
         year: yearValue,
         power: formData.power,
+        torque: formData.torque ? parseInt(formData.torque) : undefined,
         description: formData.description || undefined,
         images: imageUrls,
         isPublished: true,
@@ -215,6 +217,7 @@ const AddCarPage = () => {
         model: "",
         year: "",
         power: "",
+        torque: "",
         description: ""
       });
       
@@ -272,147 +275,135 @@ const AddCarPage = () => {
         
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Car Photos - Up to 8 images */}
-          <div className="flex flex-col items-center">
-            <input 
-              type="file" 
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              className="hidden"
-              accept="image/*" 
-              multiple 
-            />
-            
-            {/* Image Upload Preview Section */}
-            <div className="w-full mb-4">
-              <Label className="block mb-2">Images</Label>
-              <div className="grid grid-cols-4 gap-2 mb-2">
-                {/* Image previews */}
+          <div className="space-y-4 mb-4">
+            <div>
+              <Label className="text-base font-medium mb-2 block">Images</Label>
+              <p className="text-xs text-slate-400 mb-3">Upload high-quality photos of your car (max 8)</p>
+              
+              {/* Image Grid */}
+              <div className="grid grid-cols-4 gap-3 mb-3">
+                {/* Upload Button */}
+                {images.length < 8 && (
+                  <div 
+                    onClick={triggerFileInput} 
+                    className="aspect-square border-2 border-dashed border-slate-700 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 transition-colors bg-slate-800/50"
+                  >
+                    <Camera size={24} className="text-slate-300" />
+                    <span className="text-xs mt-2 text-slate-300 font-medium">Add</span>
+                  </div>
+                )}
+                
+                {/* Image Previews */}
                 {imagePreviewUrls.map((url, index) => (
-                  <div key={index} className="relative aspect-[4/5]">
+                  <div key={index} className="aspect-square bg-slate-800 rounded-lg relative shadow-md overflow-hidden group">
                     <img 
                       src={url} 
-                      alt={`Preview ${index + 1}`} 
-                      className="w-full h-full object-cover rounded-md" 
+                      alt={`Preview ${index}`} 
+                      className="w-full h-full object-cover rounded-lg" 
                     />
                     <button
                       type="button"
                       onClick={() => handleRemoveImage(index)}
-                      className="absolute top-1 right-1 bg-black bg-opacity-50 rounded-full p-0.5"
+                      className="absolute top-2 right-2 bg-black/70 rounded-full p-1.5 opacity-70 hover:opacity-100 group-hover:opacity-100 transition-opacity"
+                      aria-label="Remove image"
                     >
                       <X size={14} className="text-white" />
                     </button>
                   </div>
                 ))}
-                
-                {/* Add image button - only show if less than 8 images */}
-                {images.length < 8 && (
-                  <button
-                    type="button"
-                    onClick={triggerFileInput}
-                    className="w-full aspect-[4/5] border-2 border-dashed border-muted-foreground/20 rounded-md flex items-center justify-center"
-                  >
-                    <div className="flex flex-col items-center justify-center text-muted-foreground">
-                      <Camera size={24} />
-                      <span className="text-xs mt-1">Add</span>
-                    </div>
-                  </button>
-                )}
               </div>
               
-              {/* Upload Progress Indicator */}
-              {uploading && (
-                <div className="mb-4">
-                  <div className="w-full bg-gray-200 rounded-full h-2.5 mb-1">
-                    <div 
-                      className="bg-blue-600 h-2.5 rounded-full transition-all duration-300" 
-                      style={{ width: `${uploadProgress}%` }}
-                    ></div>
-                  </div>
-                  <p className="text-xs text-center text-muted-foreground">
-                    Uploading: {Math.round(uploadProgress)}%
-                  </p>
-                </div>
-              )}
-              
-              <span className="text-xs text-muted-foreground">
-                Upload high-quality photos of your car (max: 8)
-              </span>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                accept="image/jpeg, image/png"
+                multiple
+                className="hidden"
+              />
+              <p className="text-xs text-slate-400 mt-2">JPG, PNG images only</p>
             </div>
-            
-            <span className="text-xs text-muted-foreground">JPG, PNG images only</span>
+          </div>
 
-            {/* Car Details */}
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="brand">Brand</Label>
-                  <Input 
-                    id="brand"
-                    name="brand"
-                    value={formData.brand}
-                    onChange={handleChange}
-                    placeholder="e.g., BMW, Mercedes"
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="model">Model</Label>
-                  <Input 
-                    id="model"
-                    name="model"
-                    value={formData.model}
-                    onChange={handleChange}
-                    placeholder="e.g., M3, C-Class"
-                  />
-                </div>
-              </div>
-              
+          {/* Car Details */}
+          <div className="space-y-6">
+            {/* Top Fields - Brand, Model */}
+            <div className="grid grid-cols-1 gap-4 mb-4">
               <div className="space-y-2">
-                <Label htmlFor="model">Model</Label>
-                <Input 
+                <Label htmlFor="brand" className="text-sm font-medium">Brand</Label>
+                <Input
+                  id="brand"
+                  name="brand"
+                  value={formData.brand}
+                  onChange={handleChange}
+                  placeholder="e.g., BMW, Mercedes"
+                  required
+                  className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-400 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="model" className="text-sm font-medium">Model</Label>
+                <Input
                   id="model"
                   name="model"
                   value={formData.model}
                   onChange={handleChange}
                   placeholder="e.g., M3, C-Class"
+                  required
+                  className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-400 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
             </div>
-
-            <div className="grid grid-cols-2 gap-4">
+            
+            {/* Year, Power, Torque */}
+            <div className="grid grid-cols-3 gap-4 mb-4">
               <div className="space-y-2">
-                <Label htmlFor="year">Year</Label>
-                <Input 
+                <Label htmlFor="year" className="text-sm font-medium">Year</Label>
+                <Input
                   id="year"
                   name="year"
                   value={formData.year}
                   onChange={handleChange}
                   placeholder="e.g., 2023"
-                  type="number"
+                  required
+                  className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-400 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
-              
               <div className="space-y-2">
-                <Label htmlFor="power">Power</Label>
-                <Input 
+                <Label htmlFor="power" className="text-sm font-medium">Power</Label>
+                <Input
                   id="power"
                   name="power"
                   value={formData.power}
                   onChange={handleChange}
                   placeholder="e.g., 300 HP"
+                  className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-400 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="torque" className="text-sm font-medium">Torque</Label>
+                <Input
+                  id="torque"
+                  name="torque"
+                  value={formData.torque}
+                  onChange={handleChange}
+                  placeholder="e.g., 450 Nm"
+                  className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-400 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea 
+            {/* Description */}
+            <div className="space-y-2 mb-4">
+              <Label htmlFor="description" className="text-sm font-medium">Description</Label>
+              <Textarea
                 id="description"
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
                 placeholder="Tell us about your car..."
                 rows={4}
+                className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-400 focus:ring-blue-500 focus:border-blue-500 resize-y min-h-[100px] whitespace-pre-line"
               />
             </div>
             
@@ -494,10 +485,15 @@ const AddCarPage = () => {
 
           <Button 
             type="submit" 
-            className="w-full" 
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-6 rounded-md font-semibold text-center tracking-wide" 
             disabled={loading}
           >
-            {loading ? (uploading ? `Uploading (${Math.round(uploadProgress)}%)` : "Adding Car...") : "Add Car"}
+            {loading ? (
+              <>
+                <Loader2 size={20} className="mr-2 animate-spin" />
+                {uploading ? `Uploading (${Math.round(uploadProgress)}%)` : "Adding Car..."}
+              </>
+            ) : "Add Car"}
           </Button>
         </form>
       </div>

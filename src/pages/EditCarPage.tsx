@@ -31,6 +31,8 @@ const EditCarPage = () => {
     brand: "",
     model: "",
     year: "",
+    power: "",
+    torque: "",
     description: ""
   });
 
@@ -52,6 +54,8 @@ const EditCarPage = () => {
         brand: car.make || "",
         model: car.model || "",
         year: car.year?.toString() || "",
+        power: car.power || "",
+        torque: car.torque?.toString() || "",
         description: car.description || ""
       });
       
@@ -172,6 +176,8 @@ const EditCarPage = () => {
         brand: formData.brand,
         model: formData.model,
         year: parseInt(formData.year) || new Date().getFullYear(),
+        power: formData.power,
+        torque: formData.torque ? parseInt(formData.torque) : undefined,
         description: formData.description,
         images: allImages
       });
@@ -366,6 +372,31 @@ const EditCarPage = () => {
                   placeholder="e.g., 2023"
                   type="number"
                 />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="power">Horsepower</Label>
+                  <Input 
+                    id="power"
+                    name="power"
+                    value={formData.power}
+                    onChange={handleChange}
+                    placeholder="e.g., 280"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="torque">Torque (Nm)</Label>
+                  <Input 
+                    id="torque"
+                    name="torque"
+                    value={formData.torque}
+                    onChange={handleChange}
+                    placeholder="e.g., 350"
+                    type="number"
+                  />
+                </div>
               </div>
               
               <div className="space-y-2">

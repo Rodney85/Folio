@@ -100,6 +100,7 @@ export const updateCar = mutation({
     model: v.optional(v.string()),
     year: v.optional(v.number()),
     power: v.optional(v.string()),
+    torque: v.optional(v.number()),
     description: v.optional(v.string()),
     images: v.optional(v.array(v.string())),
     isPublished: v.optional(v.boolean()),
@@ -124,6 +125,7 @@ export const updateCar = mutation({
       if (args.model !== undefined) updates.model = args.model;
       if (args.year !== undefined) updates.year = args.year;
       if (args.power !== undefined) updates.power = args.power;
+      if (args.torque !== undefined) updates.torque = args.torque;
       if (args.description !== undefined) updates.description = args.description;
       if (args.images !== undefined) updates.images = args.images;
       if (args.isPublished !== undefined) updates.isPublished = args.isPublished;
