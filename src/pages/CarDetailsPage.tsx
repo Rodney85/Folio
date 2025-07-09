@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useQuery } from 'convex/react';
+import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import { Id } from '../../convex/_generated/dataModel';
-import { ArrowLeft, ExternalLink, ShoppingBag, X } from 'lucide-react';
+import { ArrowLeft, ExternalLink, ShoppingBag, X, Trash2 } from 'lucide-react';
 import CarImageWithUrl from '@/components/cars/CarImageWithUrl';
 import { Button } from '@/components/ui/button';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import MobileLayout from '@/components/layout/MobileLayout';
+import { useSwipeable } from 'react-swipeable';
 import {
   Dialog,
   DialogContent,
@@ -29,6 +30,13 @@ const CarDetailsPage = () => {
   // Fetch parts/products for this car
   const parts = useQuery(api.parts.getCarParts, id ? { carId: id as Id<"cars"> } : "skip");
   
+  // State for shop dialog and delete confirmation
+  const [shopDialogOpen, setShopDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  
+  // Delete car mutation
+  const deleteCarMutation = useMutation(api.cars.deleteCar);
+  
   // Debug: Log parts data whenever it changes
   useEffect(() => {
     if (parts) {
@@ -38,8 +46,47 @@ const CarDetailsPage = () => {
     }
   }, [parts, id]);
   
-  // State for shop dialog
-  const [shopDialogOpen, setShopDialogOpen] = useState(false);
+  // Define handlers for image navigation - safe to call even if car is undefined
+  const handleImageNavigation = {
+    next: (eventData?: any) => {
+      if (eventData && 'preventDefault' in eventData) {
+        eventData.preventDefault();
+        eventData.stopPropagation();
+      }
+      if (car?.images && car.images.length > 0) {
+        setCurrentImageIndex((prev) => (prev === car.images!.length - 1 ? 0 : prev + 1));
+      }
+    },
+    prev: (eventData?: any) => {
+      if (eventData && 'preventDefault' in eventData) {
+        eventData.preventDefault();
+        eventData.stopPropagation();
+      }
+      if (car?.images && car.images.length > 0) {
+        setCurrentImageIndex((prev) => (prev === 0 ? car.images!.length - 1 : prev - 1));
+      }
+    },
+    thumbnail: (index: number) => {
+      // Force immediate state update and rerender
+      setCurrentImageIndex(index);
+      
+      // Ensure the image element gets updated immediately
+      window.requestAnimationFrame(() => {
+        // This runs on the next animation frame to ensure UI is responsive
+        window.requestAnimationFrame(() => {
+          // Double requestAnimationFrame for smoother transition
+        });
+      });
+    }
+  };
+  
+  // Setup swipe handlers - IMPORTANT: Must be before any conditional returns
+  const swipeHandlers = useSwipeable({
+    onSwipedLeft: () => handleImageNavigation.next(),
+    onSwipedRight: () => handleImageNavigation.prev(),
+    trackMouse: true,
+    preventScrollOnSwipe: true,
+  });
 
   if (!car) {
     return (
@@ -49,37 +96,10 @@ const CarDetailsPage = () => {
     );
   }
 
-  const handleNextImage = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (car.images && car.images.length > 0) {
-      setCurrentImageIndex((prev) => (prev + 1) % car.images!.length);
-    }
-  };
-
-  const handlePrevImage = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (car.images && car.images.length > 0) {
-      setCurrentImageIndex((prev) => (prev === 0 ? car.images!.length - 1 : prev - 1));
-    }
-  };
-
-  const handleThumbnailClick = (index: number) => {
-    // Force immediate state update and rerender
-    setCurrentImageIndex(index);
-    
-    // Ensure the image element gets updated immediately
-    window.requestAnimationFrame(() => {
-      // This runs on the next animation frame to ensure UI is responsive
-      window.requestAnimationFrame(() => {
-        // Double requestAnimationFrame for smoother transition
-      });
-    });
-  };
-
   // Define content to be rendered in both mobile and desktop layouts
   const carDetailsContent = (
     <div className="flex flex-col h-full">
-      {/* Header with back button and edit button */}
+      {/* Header with back button, edit button and delete button */}
       <header className="p-4 flex items-center justify-between sticky top-0 bg-slate-900 z-10 border-b border-slate-800 shadow-sm">
         <button 
           onClick={() => navigate(-1)}
@@ -87,18 +107,29 @@ const CarDetailsPage = () => {
         >
           <ArrowLeft className="h-5 w-5 text-white" />
         </button>
-        <button 
-          onClick={() => navigate(`/edit-car/${id}`)} 
-          className="bg-slate-800 rounded-full px-5 py-2 text-sm font-medium shadow-sm border border-slate-700 text-white"
-        >
-          Edit
-        </button>
+        <div className="flex space-x-2">
+          <button 
+            onClick={() => navigate(`/edit-car/${id}`)} 
+            className="bg-slate-800 rounded-full px-5 py-2 text-sm font-medium shadow-sm border border-slate-700 text-white"
+          >
+            Edit
+          </button>
+          <button
+            onClick={() => setDeleteDialogOpen(true)}
+            className="bg-red-800 hover:bg-red-700 rounded-full px-5 py-2 text-sm font-medium shadow-sm border border-red-700 text-white flex items-center"
+          >
+            <Trash2 className="h-4 w-4 mr-1" />
+            Delete
+          </button>
+        </div>
       </header>
 
       {/* Main content */}
       <div className="flex-1 overflow-auto pb-24">
-        {/* Main image */}
-        <div className={`w-full ${isMobile ? 'aspect-[4/5]' : 'aspect-[16/9]'} bg-slate-800 ${isMobile ? 'mb-3' : 'mb-6 rounded-lg shadow-lg'} relative`}>
+        {/* Main image - with swipe gesture support */}
+        <div 
+          {...swipeHandlers}
+          className={`w-full ${isMobile ? 'aspect-[4/5]' : 'aspect-[16/9]'} bg-slate-800 ${isMobile ? 'mb-3' : 'mb-6 rounded-lg shadow-lg'} relative`}>
         {car.images && car.images.length > 0 ? (
           <>
             {/* Main visible image with high priority */}
@@ -132,7 +163,7 @@ const CarDetailsPage = () => {
               {car.images.map((image, index) => (
                 <button
                   key={index}
-                  onClick={() => handleThumbnailClick(index)}
+                  onClick={() => handleImageNavigation.thumbnail(index)}
                   className={`flex-shrink-0 ${isMobile ? 'w-16 h-16' : 'w-24 h-24'} rounded-md ${currentImageIndex === index ? 'ring-2 ring-blue-500' : 'opacity-70 hover:opacity-100'} transition-all`}
                 >
                   <CarImageWithUrl
@@ -145,25 +176,7 @@ const CarDetailsPage = () => {
             </div>
             )}
             
-            {/* Image navigation buttons for desktop */}
-            {car.images.length > 1 && (
-              <>
-                <button 
-                  onClick={handlePrevImage}
-                  className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/30 backdrop-blur-sm hover:bg-black/50 transition-all"
-                  aria-label="Previous image"
-                >
-                  <ArrowLeft className="w-5 h-5 text-white" />
-                </button>
-                <button 
-                  onClick={handleNextImage}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/30 backdrop-blur-sm hover:bg-black/50 transition-all"
-                  aria-label="Next image"
-                >
-                  <ArrowLeft className="w-5 h-5 text-white transform rotate-180" />
-                </button>
-              </>
-            )}
+            {/* Image navigation now handled by swipe gestures */}
           </>
         ) : (
           <div className="flex items-center justify-center w-full h-full bg-slate-800">
@@ -210,7 +223,7 @@ const CarDetailsPage = () => {
         {/* Description */}
         <div className={`${isMobile ? 'px-4' : 'px-0'} mb-6`}>
           <h3 className="text-slate-300 mb-4 text-lg font-medium">Description</h3>
-          <p className={`${isMobile ? 'text-base' : 'text-lg'} text-slate-400 leading-relaxed ${!isMobile ? 'max-w-3xl' : ''}`}>
+          <p className={`${isMobile ? 'text-base' : 'text-lg'} text-slate-400 leading-relaxed ${!isMobile ? 'max-w-3xl' : ''} whitespace-pre-line`}>
             {car.description || "To use Convex Sheets as your backend for lead generation and perfuming in your React waitlist app, you'll need to set up a connection between your React frontend and Google Sheets. Here's a comprehensive solution"}
           </p>
         </div>
@@ -287,6 +300,46 @@ const CarDetailsPage = () => {
               className="border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white"
             >
               Close
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-md bg-slate-900 border border-slate-800 text-white">
+          <DialogHeader>
+            <DialogTitle className="text-red-500 flex items-center gap-2">
+              <Trash2 className="h-5 w-5" />
+              <span>Delete Car</span>
+            </DialogTitle>
+            <DialogDescription className="text-slate-400">
+              Are you sure you want to delete this {car.make} {car.model}? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="mt-6 flex justify-end gap-3">
+            <Button 
+              variant="outline" 
+              onClick={() => setDeleteDialogOpen(false)}
+              className="border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white"
+            >
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive" 
+              className="bg-red-600 hover:bg-red-700"
+              onClick={async () => {
+                try {
+                  await deleteCarMutation({ carId: id as Id<"cars"> });
+                  setDeleteDialogOpen(false);
+                  navigate('/profile', { replace: true });
+                } catch (error) {
+                  console.error('Failed to delete car:', error);
+                }
+              }}
+            >
+              Delete
             </Button>
           </div>
         </DialogContent>

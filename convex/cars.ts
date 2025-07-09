@@ -11,6 +11,7 @@ export const createCar = mutation({
     model: v.string(),
     year: v.number(),
     power: v.string(),
+    torque: v.optional(v.number()),
     description: v.optional(v.string()),
     images: v.optional(v.array(v.string())),
     isPublished: v.optional(v.boolean()),
