@@ -88,7 +88,8 @@ const EditCarPage = () => {
         return;
       }
       
-      const newImages = [...images, ...newFiles];
+      // Reverse the order so first selected appears first in the array
+      const newImages = [...newFiles.reverse(), ...images];
       setImages(newImages);
       
       // Create preview URLs

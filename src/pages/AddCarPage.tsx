@@ -84,7 +84,8 @@ const AddCarPage = () => {
       const newFiles = Array.from(e.target.files);
       
       // Limit to 8 images total
-      const totalImages = [...images, ...newFiles].slice(0, 8);
+      // Reverse the order so first selected appears first in the array
+      const totalImages = [...newFiles.reverse(), ...images].slice(0, 8);
       setImages(totalImages);
       
       // Create preview URLs
