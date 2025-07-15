@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import { Id } from '../../convex/_generated/dataModel';
-import { getDeviceType } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import { ArrowLeft, Pencil, ExternalLink, ShoppingBag, Trash2, Loader } from 'lucide-react';
 import CarImageWithUrl from '@/components/cars/CarImageWithUrl';
 import { Button } from '@/components/ui/button';
@@ -44,7 +44,7 @@ const CarDetailsPage = () => {
       logAnalytics({
         type: "car_view",
         carId: id as Id<"cars">,
-        visitorDevice: getDeviceType(),
+        visitorDevice: isMobile ? "mobile" : "desktop",
         referrer: document.referrer || undefined,
         utmSource: new URLSearchParams(window.location.search).get("utm_source") || undefined,
         utmMedium: new URLSearchParams(window.location.search).get("utm_medium") || undefined,
@@ -459,7 +459,7 @@ const CarDetailsPage = () => {
                 logAnalytics({
                   type: "shop_build_click",
                   carId: id as Id<"cars">,
-                  visitorDevice: getDeviceType(),
+                  visitorDevice: isMobile ? "mobile" : "desktop",
                 });
                 
                 // If first part has purchaseUrl, open it, otherwise open shop dialog
