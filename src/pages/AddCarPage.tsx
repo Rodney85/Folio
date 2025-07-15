@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import MobileLayout from "@/components/layout/MobileLayout";
+import ResponsiveLayout from "@/components/layout/ResponsiveLayout";
 import { Camera, X, PlusCircle, Link, ShoppingBag, Loader2 } from "lucide-react";
 import { useMutation, useConvex } from "convex/react";
 import { api } from "../../convex/_generated/api";
@@ -253,26 +254,27 @@ const AddCarPage = () => {
     }
   };
 
-  // Content to be rendered in both mobile and desktop layouts
+  // Content to be rendered
   const pageContent = (
-  <div className={`container ${isMobile ? 'max-w-md' : 'max-w-2xl'} mx-auto p-4`}>
-    {/* Loading overlay */}
-    {(uploading || loading) && (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-700/50 p-6 rounded-xl w-80 shadow-xl">
-          <div className="flex flex-col items-center gap-3">
-            <Loader2 className="h-8 w-8 animate-spin" />
-            <div className="text-center">
-              <p className="font-medium">
-                {uploading ? `Uploading Images (${Math.round(uploadProgress)}%)` : "Adding your car..."}
-              </p>
+    <div className="container mx-auto p-4">
+      {/* Loading overlay */}
+      {(uploading || loading) && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-700/50 p-6 rounded-xl w-80 shadow-xl">
+            <div className="flex flex-col items-center gap-3">
+              <Loader2 className="h-8 w-8 animate-spin" />
+              <div className="text-center">
+                <p className="font-medium">
+                  {uploading ? `Uploading Images (${Math.round(uploadProgress)}%)` : "Adding your car..."}
+                </p>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    )}
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-6">Add a New Car</h1>
+      )}
+      
+      <div className="p-4">
+        <h1 className="text-2xl font-bold mb-6">Add a New Car</h1>
         
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Car Photos - Up to 8 images */}
@@ -501,16 +503,11 @@ const AddCarPage = () => {
     </div>
   );
 
-  // Conditionally wrap with MobileLayout only on mobile
-  return isMobile ? (
-    <MobileLayout>
+  // Use ResponsiveLayout for consistent navigation across the app
+  return (
+    <ResponsiveLayout>
       {pageContent}
-    </MobileLayout>
-  ) : (
-    // On desktop/tablet, content is directly rendered inside AppLayout (from App.tsx)
-    <div className="bg-slate-900 text-white min-h-screen py-6">
-      {pageContent}
-    </div>
+    </ResponsiveLayout>
   );
 };
 

@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useQuery } from 'convex/react';
+import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import { Id } from '../../convex/_generated/dataModel';
 import { ArrowLeft, ExternalLink, ShoppingBag, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -27,11 +27,25 @@ const PublicCarDetailsPage = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const isMobile = useMediaQuery("(max-width: 767px)");
 
+  // Analytics tracking
+  const logAnalytics = useMutation(api.analytics.logEvent);
+
   // Fetch car details using the ID from params
   const car = useQuery(api.cars.getCarById, { carId: id as Id<"cars"> });
   
-  // Debug: Log car data to see what's coming from the database
-  console.log('Car data from API:', car);
+  // Track car view when data loads
+  useEffect(() => {
+    if (car) {
+      // Log car view analytics event
+      logAnalytics({
+        type: "car_view",
+        carId: id as Id<"cars">,
+        visitorId: crypto.randomUUID(), // Generate a random visitor ID
+        visitorDevice: navigator.userAgent,
+        referrer: document.referrer || null
+      });
+    }
+  }, [car, id, logAnalytics]);
   
   // Fetch parts/products for this car - same as authenticated view, but no edit features
   const parts = useQuery(api.parts.getCarParts, id ? { carId: id as Id<"cars"> } : "skip");
@@ -124,7 +138,7 @@ const PublicCarDetailsPage = () => {
       {/* Main content */}
       <div className="flex-1 overflow-auto flex flex-col">
         {/* Main image with swipe gestures */}
-        <div className="relative w-full aspect-[4/3] bg-slate-800 mb-4">
+        <div className="relative w-full aspect-[4/3] bg-slate-800 mb-3">
           {car.images && car.images.length > 0 ? (
             <>
               {/* Swipeable container */}
@@ -136,38 +150,29 @@ const PublicCarDetailsPage = () => {
                   <img 
                     src={car.images[currentImageIndex]} 
                     alt={`${car.make} ${car.model}`}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain"
                   />
                 ) : (
                   <CarImageWithUrl 
                     key={`main-image-${currentImageIndex}`} 
                     storageId={car.images[currentImageIndex]} 
                     alt={`${car.make} ${car.model}`}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain"
                     priority={true}
                     withFallback={true}
                   />
                 )}
               </div>
               
-              {/* Image counter indicator only */}
               {car.images.length > 1 && (
-                <div className="absolute bottom-2 left-0 right-0 flex justify-center">
-                  <div className="bg-black bg-opacity-50 rounded-full px-3 py-1 text-xs text-white">
-                    {currentImageIndex + 1} / {car.images.length}
-                  </div>
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/60 px-3 py-1 rounded-full text-sm text-white">
+                  {currentImageIndex + 1} / {car.images.length}
                 </div>
               )}
             </>
           ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <svg className="h-12 w-12 text-slate-600" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2-2c-.7-.6-1.7-1-3-1H8c-.8 0-1.5.4-2 1L3.5 11c-.4.4-.6.9-.5 1.5.1.5.5 1 1.2" />
-                <path d="M9 17h1" />
-                <path d="M14 17h1" />
-                <circle cx="7" cy="17" r="2" />
-                <circle cx="17" cy="17" r="2" />
-              </svg>
+            <div className="w-full h-full flex items-center justify-center bg-slate-800">
+              <p className="text-slate-400">No image available</p>
             </div>
           )}
         </div>
@@ -195,8 +200,9 @@ const PublicCarDetailsPage = () => {
         <div className="px-4 mb-8">
           <h1 className="text-2xl font-bold text-white">{car.year} {car.make} {car.model}</h1>
           
-          {/* Performance stats - Styled to match authenticated view */}
-          <div className="mt-6 grid grid-cols-2 gap-4">
+          {/* Specifications section - moved above description */}
+          <h3 className="text-slate-300 mt-6 mb-4 text-lg font-medium">Specifications</h3>
+          <div className="grid grid-cols-2 gap-4">
             <div className="p-6 bg-slate-800 rounded-lg">
               <h3 className="text-sm text-slate-400 mb-1">Horsepower</h3>
               <p className="text-2xl font-bold text-white">{car.power || '–'} Hp</p>
@@ -213,9 +219,33 @@ const PublicCarDetailsPage = () => {
           <div className="px-4 mb-8">
             <h3 className="text-slate-300 mb-4 text-lg font-medium">Description</h3>
             <div className={`${isMobile ? 'text-base' : 'text-lg'} text-slate-400 leading-relaxed ${!isMobile ? 'max-w-3xl' : ''}`}>
-              {car.description.split('\n').map((paragraph, index) => (
-                <p key={index} className="mb-2">{paragraph}</p>
-              ))}
+              {car.description.split('\n').map((line, index) => {
+                // Check if line starts with list markers
+                const isListItem = /^\s*[-*•]\s+/.test(line);
+                const isNumberedItem = /^\s*\d+\.\s+/.test(line);
+                
+                if (isListItem) {
+                  // Handle bullet list items
+                  return (
+                    <div key={index} className="flex items-start mb-2">
+                      <span className="mr-2">•</span>
+                      <span>{line.replace(/^\s*[-*•]\s+/, '')}</span>
+                    </div>
+                  );
+                } else if (isNumberedItem) {
+                  // Handle numbered list items
+                  const number = line.match(/^\s*(\d+)\.\s+/)[1];
+                  return (
+                    <div key={index} className="flex items-start mb-2">
+                      <span className="mr-2">{number}.</span>
+                      <span>{line.replace(/^\s*\d+\.\s+/, '')}</span>
+                    </div>
+                  );
+                } else {
+                  // Regular paragraph
+                  return <p key={index} className="mb-2">{line}</p>;
+                }
+              })}
             </div>
           </div>
         )}
@@ -261,6 +291,16 @@ const PublicCarDetailsPage = () => {
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="text-blue-400 flex items-center gap-1 hover:text-blue-300 transition-colors"
+                        onClick={() => {
+                          // Log product click analytics event
+                          logAnalytics({
+                            type: "product_click",
+                            partId: part._id,
+                            carId: id as Id<"cars">,
+                            visitorId: crypto.randomUUID(), // Generate a random visitor ID
+                            visitorDevice: navigator.userAgent
+                          });
+                        }}
                       >
                         <span>View</span> 
                         <ExternalLink size={14} />

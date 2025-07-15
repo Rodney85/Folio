@@ -3,7 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import { Id } from '../../convex/_generated/dataModel';
-import { ArrowLeft, ExternalLink, ShoppingBag, X, Trash2 } from 'lucide-react';
+import { getDeviceType } from '@/lib/utils';
+import { ArrowLeft, Pencil, ExternalLink, ShoppingBag, Trash2, Loader } from 'lucide-react';
 import CarImageWithUrl from '@/components/cars/CarImageWithUrl';
 import { Button } from '@/components/ui/button';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
@@ -16,7 +17,6 @@ import {
   DialogTitle,
   DialogDescription
 } from "@/components/ui/dialog";
-import { Loader } from 'lucide-react';
 
 const CarDetailsPage = () => {
   const navigate = useNavigate();
@@ -24,29 +24,36 @@ const CarDetailsPage = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const isMobile = useMediaQuery("(max-width: 767px)");
 
+  // Dialog states
+  const [shopDialogOpen, setShopDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
   // Fetch car details using the ID from params
   const car = useQuery(api.cars.getCarById, { carId: id as Id<"cars"> });
   
   // Fetch parts/products for this car
   const parts = useQuery(api.parts.getCarParts, id ? { carId: id as Id<"cars"> } : "skip");
   
-  // State for shop dialog and delete confirmation
-  const [shopDialogOpen, setShopDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  
   // Delete car mutation
   const deleteCarMutation = useMutation(api.cars.deleteCar);
   
-  // Debug: Log parts data whenever it changes
+  // Track car view when data loads
+  const logAnalytics = useMutation(api.analytics.logEvent);
   useEffect(() => {
-    if (parts) {
-      console.log('Parts data loaded:', parts);
-      console.log('Parts count:', parts.length);
-      console.log('Car ID used for query:', id);
+    if (car) {
+      logAnalytics({
+        type: "car_view",
+        carId: id as Id<"cars">,
+        visitorDevice: getDeviceType(),
+        referrer: document.referrer || undefined,
+        utmSource: new URLSearchParams(window.location.search).get("utm_source") || undefined,
+        utmMedium: new URLSearchParams(window.location.search).get("utm_medium") || undefined,
+        utmCampaign: new URLSearchParams(window.location.search).get("utm_campaign") || undefined,
+      });
     }
-  }, [parts, id]);
+  }, [car, id, logAnalytics]);
   
-  // Define handlers for image navigation - safe to call even if car is undefined
+  // Define handlers for image navigation
   const handleImageNavigation = {
     next: (eventData?: any) => {
       if (eventData && 'preventDefault' in eventData) {
@@ -67,20 +74,11 @@ const CarDetailsPage = () => {
       }
     },
     thumbnail: (index: number) => {
-      // Force immediate state update and rerender
       setCurrentImageIndex(index);
-      
-      // Ensure the image element gets updated immediately
-      window.requestAnimationFrame(() => {
-        // This runs on the next animation frame to ensure UI is responsive
-        window.requestAnimationFrame(() => {
-          // Double requestAnimationFrame for smoother transition
-        });
-      });
     }
   };
   
-  // Setup swipe handlers - IMPORTANT: Must be before any conditional returns
+  // Setup swipe handlers
   const swipeHandlers = useSwipeable({
     onSwipedLeft: () => handleImageNavigation.next(),
     onSwipedRight: () => handleImageNavigation.prev(),
@@ -96,269 +94,403 @@ const CarDetailsPage = () => {
     );
   }
 
-  // Define content to be rendered in both mobile and desktop layouts
+  // Shop dialog for parts that don't have external URLs
+  const shopDialog = (
+    <Dialog open={shopDialogOpen} onOpenChange={setShopDialogOpen}>
+      <DialogContent className="bg-slate-900 border-slate-800">
+        <DialogHeader>
+          <DialogTitle className="text-white">Contact for Purchase</DialogTitle>
+          <DialogDescription className="text-slate-400">
+            This product is available through direct contact.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="text-white">
+          <p>Please contact us to purchase this product or for more information.</p>
+          <p className="mt-4">
+            <a href="mailto:info@carfolio.app" className="text-blue-400 hover:underline">info@carfolio.app</a>
+            <br />
+            <a href="tel:+15551234567" className="text-blue-400 hover:underline">+1 (555) 123-4567</a>
+          </p>
+        </div>
+        <Button 
+          onClick={() => setShopDialogOpen(false)} 
+          className="mt-4 w-full bg-blue-600 hover:bg-blue-700"
+        >
+          Close
+        </Button>
+      </DialogContent>
+    </Dialog>
+  );
+  
+  // Delete confirmation dialog
+  const deleteDialog = (
+    <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+      <DialogContent className="bg-slate-900 border-slate-800">
+        <DialogHeader>
+          <DialogTitle className="text-white">Delete Car</DialogTitle>
+          <DialogDescription className="text-slate-400">
+            Are you sure you want to delete this car?
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex justify-end space-x-4 mt-4">
+          <Button 
+            variant="outline" 
+            onClick={() => setDeleteDialogOpen(false)}
+            className="bg-transparent border-slate-700 text-white hover:bg-slate-800"
+          >
+            Cancel
+          </Button>
+          <Button 
+            variant="destructive"
+            onClick={async () => {
+              if (id) {
+                await deleteCarMutation({ carId: id as Id<"cars"> });
+                setDeleteDialogOpen(false);
+                navigate(-1); // Go back after deletion
+              }
+            }}
+            className="bg-red-600 hover:bg-red-700 text-white"
+          >
+            Delete
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+
+  // Define the car details content
   const carDetailsContent = (
     <div className="flex flex-col h-full">
-      {/* Header with back button, edit button and delete button */}
+      {/* Header with conditional back button (only on mobile), edit button and delete button */}
       <header className="p-4 flex items-center justify-between sticky top-0 bg-slate-900 z-10 border-b border-slate-800 shadow-sm">
-        <button 
-          onClick={() => navigate(-1)}
-          className="rounded-full p-2 bg-slate-800 border border-slate-700 shadow-sm flex items-center justify-center"
-        >
-          <ArrowLeft className="h-5 w-5 text-white" />
-        </button>
+        {isMobile ? (
+          <button 
+            onClick={() => navigate(-1)}
+            className="rounded-full p-2 bg-slate-800 border border-slate-700 shadow-sm flex items-center justify-center"
+          >
+            <ArrowLeft className="h-5 w-5 text-white" />
+          </button>
+        ) : (
+          <div>{/* Empty div to maintain flex spacing on tablet/desktop */}</div>
+        )}
         <div className="flex space-x-2">
           <button 
             onClick={() => navigate(`/edit-car/${id}`)} 
-            className="bg-slate-800 rounded-full px-5 py-2 text-sm font-medium shadow-sm border border-slate-700 text-white"
+            className="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-md text-white text-sm flex items-center gap-1 transition-colors border border-slate-700"
           >
-            Edit
+            <Pencil className="h-4 w-4 mr-1" />
+            {!isMobile && 'Edit'}
           </button>
-          <button
-            onClick={() => setDeleteDialogOpen(true)}
-            className="bg-red-800 hover:bg-red-700 rounded-full px-5 py-2 text-sm font-medium shadow-sm border border-red-700 text-white flex items-center"
+          <button 
+            onClick={() => setDeleteDialogOpen(true)} 
+            className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-md text-white text-sm flex items-center gap-1 transition-colors"
           >
             <Trash2 className="h-4 w-4 mr-1" />
-            Delete
+            {!isMobile && 'Delete'}
           </button>
         </div>
       </header>
 
       {/* Main content */}
       <div className="flex-1 overflow-auto pb-24">
-        {/* Main image - with swipe gesture support */}
-        <div 
-          {...swipeHandlers}
-          className={`w-full ${isMobile ? 'aspect-[4/5]' : 'aspect-[16/9]'} bg-slate-800 ${isMobile ? 'mb-3' : 'mb-6 rounded-lg shadow-lg'} relative`}>
-        {car.images && car.images.length > 0 ? (
-          <>
-            {/* Main visible image with high priority */}
-            <CarImageWithUrl 
-              key={`main-image-${currentImageIndex}`} // Force re-render on index change
-              storageId={car.images[currentImageIndex]} 
-              alt={`${car.make} ${car.model}`}
-              className="w-full h-full object-cover"
-              priority={true} // High priority for visible image
-              withFallback={true}
-            />
-            
-            {/* Preload all images for faster transitions */}
-            <div className="hidden">
-              {car.images.map((img, idx) => {
-                return idx !== currentImageIndex ? (
-                  <CarImageWithUrl 
-                    key={`preload-${idx}`}
-                    storageId={img} 
-                    alt={`${car.make} ${car.model} preload ${idx}`}
-                    className="hidden"
-                    priority={false} // Low priority for preloaded images
-                  />
-                ) : null;
-              })}
-            </div>
-            
-            {/* Thumbnails */}
-            {car.images && car.images.length > 1 && (
-            <div className={`flex gap-2 px-4 ${isMobile ? 'mt-2' : 'mt-4'} overflow-x-auto pb-2`}>
-              {car.images.map((image, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleImageNavigation.thumbnail(index)}
-                  className={`flex-shrink-0 ${isMobile ? 'w-16 h-16' : 'w-24 h-24'} rounded-md ${currentImageIndex === index ? 'ring-2 ring-blue-500' : 'opacity-70 hover:opacity-100'} transition-all`}
-                >
-                  <CarImageWithUrl
-                    storageId={image}
-                    alt={`${car.make} ${car.model} thumbnail ${index + 1}`}
-                    className="w-full h-full object-cover rounded-md"
-                  />
-                </button>
-              ))}
-            </div>
-            )}
-            
-            {/* Image navigation now handled by swipe gestures */}
-          </>
-        ) : (
-          <div className="flex items-center justify-center w-full h-full bg-slate-800">
-            <p className="text-slate-500">No images available</p>
-          </div>
-        )}
-        </div>
-
-        {/* Title & Info */}
-        <div className={`${isMobile ? 'px-4' : 'px-0'} mt-4`}>
-          <h1 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold text-white`}>
-            {car.make} {car.model}
-          </h1>
-          <p className="text-slate-400 text-lg">{car.year}</p>
-        </div>
-
-        {/* Performance Specs */}
-        <div className={`${isMobile ? 'px-4' : 'px-0'} mt-6 mb-6`}>
-          <h3 className="text-slate-300 mb-4 text-lg font-medium">Performance</h3>
-          <div className={`grid ${isMobile ? 'grid-cols-2' : 'grid-cols-4'} gap-4 text-center`}>
-            <div className="bg-slate-800 p-3 rounded-lg shadow-md transition-transform hover:transform hover:scale-105">
-              <p className="text-sm text-slate-400">Horsepower</p>
-              <p className="font-medium text-lg">{car.power || '450 HP'}</p>
-            </div>
-            <div className="bg-slate-800 p-3 rounded-lg shadow-md transition-transform hover:transform hover:scale-105">
-              <p className="text-sm text-slate-400">Torque</p>
-              <p className="font-medium text-lg">550 Nm</p>
-            </div>
-            {!isMobile && (
-              <>
-                <div className="bg-slate-800 p-3 rounded-lg shadow-md transition-transform hover:transform hover:scale-105">
-                  <p className="text-sm text-slate-400">0-60 mph</p>
-                  <p className="font-medium text-lg">3.9s</p>
+        {/* Desktop layout */}
+        {!isMobile ? (
+          <div className="flex flex-row gap-10 p-6">
+            {/* Left column: Image gallery */}
+            <div className="w-[55%]">
+              <div {...swipeHandlers} className="w-full aspect-[4/3] bg-slate-800 rounded-lg shadow-md relative overflow-hidden">
+                {car.images && car.images.length > 0 ? (
+                  <>
+                    <CarImageWithUrl
+                      storageId={car.images[currentImageIndex]}
+                      alt={`${car.make} ${car.model} main image`}
+                      className="w-full h-full object-cover"
+                    />
+                    {car.images.length > 1 && (
+                      <>
+                        {/* Image Navigation Controls */}
+                        <button
+                          onClick={handleImageNavigation.prev}
+                          className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full p-2 bg-black/60 hover:bg-black/80 transition-all"
+                        >
+                          <ArrowLeft className="h-5 w-5 text-white" />
+                        </button>
+                        <button
+                          onClick={handleImageNavigation.next}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-2 bg-black/60 hover:bg-black/80 transition-all"
+                        >
+                          <ArrowLeft className="h-5 w-5 text-white rotate-180" />
+                        </button>
+                        
+                        {/* Image Counter */}
+                        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/60 px-3 py-1 rounded-full text-sm text-white">
+                          {currentImageIndex + 1} / {car.images.length}
+                        </div>
+                      </>
+                    )}
+                  </>
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-slate-800">
+                    <p className="text-slate-400">No image available</p>
+                  </div>
+                )}
+              </div>
+              
+              {/* Desktop Thumbnails */}
+              {car.images && car.images.length > 1 && (
+                <div className="grid grid-cols-6 gap-2 mt-4">
+                  {car.images.map((image, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handleImageNavigation.thumbnail(index)}
+                      className={`flex-shrink-0 aspect-square rounded-md ${currentImageIndex === index ? 'ring-2 ring-blue-500' : 'opacity-70 hover:opacity-100'} transition-all`}
+                    >
+                      <CarImageWithUrl
+                        storageId={image}
+                        alt={`${car.make} ${car.model} thumbnail ${index + 1}`}
+                        className="w-full h-full object-cover rounded-md"
+                      />
+                    </button>
+                  ))}
                 </div>
-                <div className="bg-slate-800 p-3 rounded-lg shadow-md transition-transform hover:transform hover:scale-105">
-                  <p className="text-sm text-slate-400">Top Speed</p>
-                  <p className="font-medium text-lg">188 mph</p>
+              )}
+            </div>
+
+            {/* Right column: Car details */}
+            <div className="w-[45%]">
+              {/* Title, Year Badge, then Description */}
+              <div>
+                <h1 className="text-4xl font-bold text-white mb-4">
+                  {car.make} {car.model}
+                </h1>
+                
+                {/* Year Badge */}
+                <div className="mb-5">
+                  <span className="bg-slate-800 px-6 py-2 rounded-full text-white font-medium">{car.year || '2022'}</span>
                 </div>
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Description */}
-        <div className={`${isMobile ? 'px-4' : 'px-0'} mb-6`}>
-          <h3 className="text-slate-300 mb-4 text-lg font-medium">Description</h3>
-          <p className={`${isMobile ? 'text-base' : 'text-lg'} text-slate-400 leading-relaxed ${!isMobile ? 'max-w-3xl' : ''} whitespace-pre-line`}>
-            {car.description || "To use Convex Sheets as your backend for lead generation and perfuming in your React waitlist app, you'll need to set up a connection between your React frontend and Google Sheets. Here's a comprehensive solution"}
-          </p>
-        </div>
-        
-        {/* Shop the Build Button - moved below description */}
-        <div className={`${isMobile ? 'px-4' : 'px-0 max-w-md'} pb-24`}>
-          <Button 
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-5 rounded-md font-semibold text-center uppercase tracking-wide"
-            onClick={() => {
-              setShopDialogOpen(true);
-            }}
-            disabled={!parts || parts.length === 0}
-          >
-            {parts && parts.length > 0 ? (
-              <>
-                <ShoppingBag className="mr-2 h-5 w-5" />
-                SHOP THE BUILD ({parts.length})
-              </>
-            ) : "NO PRODUCTS AVAILABLE"}
-          </Button>
-        </div>
-      </div>
-
-      {/* Shop the Build Dialog */}
-      <Dialog open={shopDialogOpen} onOpenChange={setShopDialogOpen}>
-        <DialogContent className="sm:max-w-md bg-slate-900 border border-slate-800 text-white">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <ShoppingBag className="h-5 w-5" />
-              <span>Shop the Build</span>
-            </DialogTitle>
-            <DialogDescription className="text-slate-400">
-              Products and parts used in this {car.make} {car.model}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 mt-4">
-            {parts && parts.length > 0 ? (
-              <div className="divide-y divide-slate-800">
-                {parts.map((part) => (
-                  <div key={part._id} className="py-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-medium text-white">{part.name}</h3>
-                      <a 
-                        href={part.purchaseUrl} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-blue-400 flex items-center gap-1 hover:text-blue-300 transition-colors"
-                      >
-                        <span>View</span> 
-                        <ExternalLink size={14} />
-                      </a>
+                
+                {/* Car Specs Grid - Moved before description */}
+                <div className="mb-8 mt-4">
+                  <h3 className="text-2xl font-semibold text-white mb-4">Specifications</h3>
+                  <div className="grid grid-cols-2 gap-8">
+                    <div>
+                      <p className="text-slate-400 mb-2">Horsepower</p>
+                      <p className="text-3xl font-semibold text-white">{car.power || '742'}</p>
                     </div>
-                    {part.description && (
-                      <p className="text-sm text-slate-400 mt-1">{part.description}</p>
+                    <div>
+                      <p className="text-slate-400 mb-2">Torque</p>
+                      <p className="text-3xl font-semibold text-white">{car.torque || '750'}</p>
+                    </div>
+                    {/* Engine and Drive sections removed as requested */}
+                  </div>
+                </div>
+                
+                {/* Description with flexible height */}
+                <div className="min-h-[60px] mb-6">
+                  <div className="text-slate-400">
+                    {car.description ? (
+                      car.description.split('\n').map((line, index) => {
+                        // Check if line starts with list markers
+                        const isListItem = /^\s*[-*•]\s+/.test(line);
+                        const isNumberedItem = /^\s*\d+\.\s+/.test(line);
+                        
+                        if (isListItem) {
+                          // Handle bullet list items
+                          return (
+                            <div key={index} className="flex items-start mb-2">
+                              <span className="mr-2">•</span>
+                              <span>{line.replace(/^\s*[-*•]\s+/, '')}</span>
+                            </div>
+                          );
+                        } else if (isNumberedItem) {
+                          // Handle numbered list items
+                          const number = line.match(/^\s*(\d+)\.\s+/)[1];
+                          return (
+                            <div key={index} className="flex items-start mb-2">
+                              <span className="mr-2">{number}.</span>
+                              <span>{line.replace(/^\s*\d+\.\s+/, '')}</span>
+                            </div>
+                          );
+                        } else {
+                          // Regular paragraph
+                          return <p key={index} className="mb-2">{line}</p>;
+                        }
+                      })
+                    ) : (
+                      <p>This is just a demo test to see if everything is working well.</p>
                     )}
-                    {part.price && (
-                      <p className="text-sm font-bold text-green-500 mt-1">${part.price.toFixed(2)}</p>
-                    )}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Price and contact sections removed as requested */}
+              
+              {/* Parts section will be shown elsewhere */}
+            </div>
+          </div>
+        ) : (
+          /* Mobile layout */
+          <>
+            {/* Mobile Image Gallery - Styled to match public view */}
+            <div className="relative w-full aspect-[4/3] bg-slate-800 mb-3">
+              {car.images && car.images.length > 0 ? (
+                <>
+                  {/* Swipeable container */}
+                  <div
+                    {...swipeHandlers}
+                    className="w-full h-full"
+                  >
+                    <CarImageWithUrl
+                      storageId={car.images[currentImageIndex]}
+                      alt={`${car.make} ${car.model}`}
+                      className="w-full h-full object-contain"
+                      priority={true}
+                      withFallback={true}
+                    />
+                  </div>
+
+                  {car.images.length > 1 && (
+                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/60 px-3 py-1 rounded-full text-sm text-white">
+                      {currentImageIndex + 1} / {car.images.length}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-slate-800">
+                  <p className="text-slate-400">No image available</p>
+                </div>
+              )}
+            </div>
+            
+            {/* Mobile Thumbnails - Styled to match public view */}
+            {car.images && car.images.length > 1 && (
+              <div className="grid grid-cols-6 gap-2 px-4 mb-6">
+                {car.images.map((image, index) => (
+                  <div 
+                    key={index}
+                    onClick={() => handleImageNavigation.thumbnail(index)}
+                    className={`aspect-square rounded overflow-hidden cursor-pointer border-2 ${index === currentImageIndex ? 'border-blue-600' : 'border-transparent'}`}
+                  >
+                    <CarImageWithUrl
+                      storageId={image}
+                      alt={`${car.make} ${car.model} thumbnail ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                 ))}
               </div>
-            ) : (
-              <div className="text-center text-slate-400 py-8">
-                <p>No products available for this build.</p>
-              </div>
             )}
-          </div>
 
-          <div className="mt-4 flex justify-end">
-            <Button 
-              variant="outline" 
-              onClick={() => setShopDialogOpen(false)}
-              className="border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white"
-            >
-              Close
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent className="sm:max-w-md bg-slate-900 border border-slate-800 text-white">
-          <DialogHeader>
-            <DialogTitle className="text-red-500 flex items-center gap-2">
-              <Trash2 className="h-5 w-5" />
-              <span>Delete Car</span>
-            </DialogTitle>
-            <DialogDescription className="text-slate-400">
-              Are you sure you want to delete this {car.make} {car.model}? This action cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="mt-6 flex justify-end gap-3">
-            <Button 
-              variant="outline" 
-              onClick={() => setDeleteDialogOpen(false)}
-              className="border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white"
-            >
-              Cancel
-            </Button>
-            <Button 
-              variant="destructive" 
-              className="bg-red-600 hover:bg-red-700"
-              onClick={async () => {
-                try {
-                  await deleteCarMutation({ carId: id as Id<"cars"> });
-                  setDeleteDialogOpen(false);
-                  navigate('/profile', { replace: true });
-                } catch (error) {
-                  console.error('Failed to delete car:', error);
+            {/* Mobile Title & Info */}
+            <div className="px-4 mt-6">
+              <h1 className="text-3xl font-bold text-white mb-4">
+                {car.make} {car.model}
+              </h1>
+              
+              {/* Year Badge - Moved before description */}
+              <div className="mb-5">
+                <span className="bg-slate-800 px-6 py-2 rounded-full text-white font-medium">{car.year || '2022'}</span>
+              </div>
+              
+              {/* Mobile Specifications - Moved before description */}
+              <h3 className="text-xl font-semibold text-white mb-4">Specifications</h3>
+            
+              {/* Mobile Car Specs */}
+              <div className="mb-6">
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="border-b border-slate-700 py-4">
+                    <p className="text-slate-400 mb-1">Horsepower</p>
+                    <p className="text-2xl font-semibold text-white">{car.power || '742'}</p>
+                  </div>
+                  <div className="border-b border-slate-700 py-4">
+                    <p className="text-slate-400 mb-1">Torque</p>
+                    <p className="text-2xl font-semibold text-white">{car.torque || '750'}</p>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Description with flexible height */}
+              <div className="min-h-[60px] mb-6">
+                <h3 className="text-xl font-semibold text-white mb-4">Description</h3>
+                <div className="text-slate-400">
+                  {car.description ? (
+                    car.description.split('\n').map((line, index) => {
+                      // Check if line starts with list markers
+                      const isListItem = /^\s*[-*•]\s+/.test(line);
+                      const isNumberedItem = /^\s*\d+\.\s+/.test(line);
+                      
+                      if (isListItem) {
+                        // Handle bullet list items
+                        return (
+                          <div key={index} className="flex items-start mb-2">
+                            <span className="mr-2">•</span>
+                            <span>{line.replace(/^\s*[-*•]\s+/, '')}</span>
+                          </div>
+                        );
+                      } else if (isNumberedItem) {
+                        // Handle numbered list items
+                        const number = line.match(/^\s*(\d+)\.\s+/)[1];
+                        return (
+                          <div key={index} className="flex items-start mb-2">
+                            <span className="mr-2">{number}.</span>
+                            <span>{line.replace(/^\s*\d+\.\s+/, '')}</span>
+                          </div>
+                        );
+                      } else {
+                        // Regular paragraph
+                        return <p key={index} className="mb-2">{line}</p>;
+                      }
+                    })
+                  ) : (
+                    <p>This is just a demo test to see if everything is working well.</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+        
+        {/* Shop the Build Button */}
+        {parts && parts.length > 0 && (
+          <div className={`${isMobile ? 'px-4' : 'px-6'} ${isMobile ? 'mt-8 mb-8' : 'mt-6 mb-10'}`}>
+            <button 
+              onClick={() => {
+                // Log analytics event for all parts
+                logAnalytics({
+                  type: "shop_build_click",
+                  carId: id as Id<"cars">,
+                  visitorDevice: getDeviceType(),
+                });
+                
+                // If first part has purchaseUrl, open it, otherwise open shop dialog
+                if (parts[0]?.purchaseUrl) {
+                  window.open(parts[0].purchaseUrl, '_blank');
+                } else {
+                  setShopDialogOpen(true);
                 }
               }}
+              className="w-full bg-blue-600 hover:bg-blue-700 py-4 px-6 rounded-md text-white font-semibold text-lg flex items-center justify-center gap-2 shadow-md transition-all duration-200 hover:shadow-lg hover:scale-[1.01]"
             >
-              Delete
-            </Button>
+              <ShoppingBag className="w-5 h-5" />
+              Shop the build
+            </button>
           </div>
-        </DialogContent>
-      </Dialog>
+        )}
+      </div>
     </div>
   );
 
-  // Conditionally wrap with MobileLayout only on mobile
-  return isMobile ? (
-    <MobileLayout>
-      {carDetailsContent}
-    </MobileLayout>
-  ) : (
-    // On desktop/tablet, content is directly rendered with improved layout
-    <div className="flex flex-col h-screen bg-slate-900 text-white">
-      <div className="max-w-7xl mx-auto w-full px-6 py-4">
-        {carDetailsContent}
-      </div>
-    </div>
+  // Render the page using MobileLayout
+  return (
+    <>
+      <MobileLayout>
+        <div className="bg-slate-900 flex flex-col h-full">
+          {carDetailsContent}
+        </div>
+      </MobileLayout>
+      {shopDialog}
+      {deleteDialog}
+    </>
   );
 };
 
