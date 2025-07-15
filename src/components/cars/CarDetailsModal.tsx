@@ -16,6 +16,7 @@ interface Car {
   model: string;
   year: number;
   power: string;
+  torque?: number;
   description?: string;
   images?: string[];
   isPublished: boolean;
@@ -54,7 +55,7 @@ const CarDetailsModal: React.FC<CarDetailsModalProps> = ({ car, isOpen, onClose 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto p-0">
+      <DialogContent className="sm:max-w-3xl md:max-w-4xl lg:max-w-5xl max-h-[90vh] overflow-y-auto p-0">
         <DialogHeader className="p-6 pb-0">
           <DialogTitle className="text-2xl font-bold">
             {car.make} {car.model}
@@ -62,7 +63,7 @@ const CarDetailsModal: React.FC<CarDetailsModalProps> = ({ car, isOpen, onClose 
         </DialogHeader>
 
         {/* Main image */}
-        <div className="relative w-full aspect-video bg-muted rounded-lg overflow-hidden">
+        <div className="relative w-full aspect-video md:aspect-[16/9] lg:aspect-[21/9] bg-muted rounded-lg overflow-hidden">
           {car.images && car.images.length > 0 ? (
             <CarImageWithUrl 
               storageId={car.images[currentImageIndex]} 
@@ -97,12 +98,12 @@ const CarDetailsModal: React.FC<CarDetailsModalProps> = ({ car, isOpen, onClose 
 
         {/* Thumbnails */}
         {car.images && car.images.length > 1 && (
-          <div className="flex gap-2 p-4 overflow-x-auto">
+          <div className="flex gap-2 p-4 overflow-x-auto justify-center md:justify-start">
             {car.images.map((image, index) => (
               <div 
                 key={index}
-                onClick={() => setCurrentImageIndex(index)}
-                className={`relative w-16 h-16 rounded overflow-hidden flex-shrink-0 border-2 cursor-pointer ${index === currentImageIndex ? 'border-primary' : 'border-transparent'}`}
+                onClick={() => handleThumbnailClick(index)}
+                className={`relative w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded overflow-hidden flex-shrink-0 border-2 cursor-pointer transition-all ${index === currentImageIndex ? 'border-primary' : 'border-transparent hover:border-primary/50'}`}
               >
                 <CarImageWithUrl 
                   storageId={image} 
@@ -115,8 +116,8 @@ const CarDetailsModal: React.FC<CarDetailsModalProps> = ({ car, isOpen, onClose 
         )}
 
         {/* Car Details */}
-        <div className="p-6">
-          <div className="grid grid-cols-2 gap-x-4 gap-y-2 mb-4">
+        <div className="p-4 md:p-6 lg:p-8">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-2 mb-4">
             <div>
               <h4 className="text-sm text-muted-foreground">Year</h4>
               <p className="font-semibold">{car.year}</p>

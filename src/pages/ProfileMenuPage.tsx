@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth, useUser, useClerk } from "@clerk/clerk-react";
-import { ChevronLeft, ChevronRight, Shield, CreditCard, Monitor, Flag, LogOut, Car, Key, UserCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, Shield, CreditCard, Monitor, Flag, LogOut, Car, Key, UserCircle, BarChart } from "lucide-react";
 
 const ProfileMenuPage = () => {
   const navigate = useNavigate();
@@ -9,8 +9,11 @@ const ProfileMenuPage = () => {
   const clerk = useClerk();
 
   const menuItems = [
-    // My Cars option removed as requested
-    // Account Management option removed as requested
+    {
+      title: "Analytics",
+      icon: <BarChart className="h-5 w-5" />,
+      onClick: () => navigate("/analytics")
+    },
     {
       title: "Security & Password",
       icon: <Shield className="h-5 w-5" />,

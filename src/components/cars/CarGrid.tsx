@@ -15,6 +15,7 @@ interface Car {
   model: string;
   year: number;
   power: string;
+  torque?: number;
   description?: string;
   images?: string[];
   isPublished: boolean;

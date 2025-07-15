@@ -21,6 +21,8 @@ import CarsPage from "./pages/CarsPage";
 import EditProfilePage from "./pages/EditProfilePage";
 import ProfileMenuPage from "./pages/ProfileMenuPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
+import ProAnalyticsPage from "./pages/ProAnalyticsPage";
+import CarInsightsPage from "./pages/CarInsightsPage";
 import AddCarPage from "./pages/AddCarPage";
 import CarDetailsPage from "./pages/CarDetailsPage";
 import CarGalleryPage from "./pages/CarGalleryPage";
@@ -59,7 +61,9 @@ const AppContent = () => {
             <Route path="/profile/edit" element={<AppLayout><EditProfilePage /></AppLayout>} />
             <Route path="/profile/menu" element={<AppLayout><ProfileMenuPage /></AppLayout>} />
             <Route path="/add-car" element={<AppLayout><AddCarPage /></AppLayout>} />
-            <Route path="/analytics" element={<AppLayout><AnalyticsPage /></AppLayout>} />
+            <Route path="/analytics" element={<AnalyticsPage />} />
+            <Route path="/analytics/pro" element={<ProAnalyticsPage />} />
+            <Route path="/analytics/car/:carId" element={<CarInsightsPage />} />
             <Route path="/cars" element={<AppLayout><CarsPage /></AppLayout>} />
             <Route path="/car/:id" element={<AppLayout><CarDetailsPage /></AppLayout>} />
             <Route path="/car/:id/gallery" element={<AppLayout><CarGalleryPage /></AppLayout>} />

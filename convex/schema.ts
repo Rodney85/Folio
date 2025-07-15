@@ -16,17 +16,21 @@ export default defineSchema({
     profileCompleted: v.optional(v.boolean()), // Flag to track if profile setup is complete
     createdAt: v.optional(v.string()),
     updatedAt: v.optional(v.string()),
+    // Subscription information
+    subscriptionPlan: v.optional(v.string()), // 'free', 'starter', 'pro'
+    subscriptionEndDate: v.optional(v.number()), // Timestamp when subscription expires
+    paymentProvider: v.optional(v.string()), // 'paystack'
+    paymentCustomerId: v.optional(v.string()), // ID from payment provider
   }).index("by_token", ["tokenIdentifier"])
   .index("by_username", ["username"]),
   
-  // You can add more tables for your car portfolio data
-  // For example:
   cars: defineTable({
     userId: v.string(),
     make: v.string(),
     model: v.string(),
     year: v.number(),
     power: v.string(),
+    torque: v.optional(v.number()),
     description: v.optional(v.string()),
     images: v.optional(v.array(v.string())),
     isPublished: v.boolean(),
@@ -46,4 +50,38 @@ export default defineSchema({
     description: v.optional(v.string()),
     image: v.optional(v.string()),
   }).index("by_car", ["carId"]),
+
+  // Analytics events table for user-facing metrics
+  analytics: defineTable({
+    // Who owns this event (profile/car owner)
+    userId: v.string(),
+    
+    // Event type and targets
+    type: v.string(), // 'profile_view', 'car_view', 'product_click'
+    carId: v.optional(v.id("cars")),
+    partId: v.optional(v.id("parts")),
+    
+    // Visitor info (for unique visitor counting)
+    visitorId: v.optional(v.string()),
+    visitorDevice: v.optional(v.string()), // 'mobile', 'desktop', 'tablet'
+    
+    // Traffic source
+    referrer: v.optional(v.string()),
+    utmSource: v.optional(v.string()),
+    utmMedium: v.optional(v.string()),
+    utmCampaign: v.optional(v.string()),
+    
+    // Geolocation (for pro users)
+    country: v.optional(v.string()),
+    city: v.optional(v.string()),
+    
+    // Timestamps
+    createdAt: v.number(), // Date.now()
+  })
+  .index("by_user", ["userId"])
+  .index("by_user_and_type", ["userId", "type"])
+  .index("by_car", ["carId"])
+  .index("by_part", ["partId"])
+  .index("recent_by_user", ["userId", "createdAt"])
+  .index("recent_by_car", ["carId", "createdAt"]),
 });

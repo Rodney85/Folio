@@ -10,6 +10,7 @@ interface Car {
   model: string;
   year: number;
   power: string;
+  torque?: number;
   description?: string;
   images?: string[];
   isPublished: boolean;
@@ -47,7 +48,7 @@ const CarThumbnail: React.FC<CarThumbnailProps> = ({
     <div 
       className={cn(
         "relative overflow-hidden cursor-pointer group",
-        isMobile ? "rounded-md" : "rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300",
+        "rounded-[5px] shadow-sm hover:shadow-md transition-shadow duration-300",
         sizeClasses[size],
         className
       )}

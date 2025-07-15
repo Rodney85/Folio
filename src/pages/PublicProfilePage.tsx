@@ -1,18 +1,37 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Loader, Car } from "lucide-react";
 import CarGrid from "@/components/cars/CarGrid";
 import SocialLinks from "@/components/SocialLinks";
 import NotFound from "@/pages/NotFound";
+import { useEffect } from "react";
+import { getDeviceType } from "@/lib/utils";
 
 const PublicProfilePage = () => {
   const { username } = useParams<{ username: string }>();
   const navigate = useNavigate();
+  const logAnalytics = useMutation(api.analytics.logEvent);
+
   // Use the generated API to fetch the public profile by username
   const profileData = useQuery(api.users.getProfileByUsername, { 
     username: username || "" 
   });
+
+  // Track profile view when data loads
+  useEffect(() => {
+    if (profileData?.user) {
+      logAnalytics({
+        type: "profile_view",
+        visitorDevice: getDeviceType(),
+        referrer: document.referrer || undefined,
+        // Extract UTM parameters from URL
+        utmSource: new URLSearchParams(window.location.search).get("utm_source") || undefined,
+        utmMedium: new URLSearchParams(window.location.search).get("utm_medium") || undefined,
+        utmCampaign: new URLSearchParams(window.location.search).get("utm_campaign") || undefined,
+      });
+    }
+  }, [profileData?.user, logAnalytics]);
 
   // Log for debugging
   console.log("Public profile data:", profileData);

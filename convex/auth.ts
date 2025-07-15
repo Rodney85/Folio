@@ -63,3 +63,38 @@ export const storeUser = mutation({
     });
   },
 });
+
+// Query to get a Convex user by Clerk ID
+export const getConvexUser = query({
+  args: {
+    clerkId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    // Skip query if no clerk ID provided
+    if (args.clerkId === "skip") {
+      return null;
+    }
+
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Not authenticated");
+    }
+
+    // Find the user in the database by tokenIdentifier
+    const user = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("tokenIdentifier"), identity.tokenIdentifier))
+      .first();
+
+    if (!user) {
+      return null;
+    }
+
+    return {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      pictureUrl: user.pictureUrl,
+    };
+  },
+});

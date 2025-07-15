@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { X, Download, Copy, Share2 } from "lucide-react";
 import { 
@@ -86,13 +86,15 @@ export const ShareModal = ({
   };
   
   // Adjust QR size based on screen size
-  useState(() => {
+  useEffect(() => {
     const handleResize = () => {
       const width = window.innerWidth;
       if (width < 640) {
         setQrSize(200);
-      } else {
+      } else if (width < 1024) {
         setQrSize(250);
+      } else {
+        setQrSize(300);
       }
     };
     
@@ -103,7 +105,7 @@ export const ShareModal = ({
   
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md md:max-w-lg lg:max-w-xl">
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
             Share Profile
@@ -116,9 +118,9 @@ export const ShareModal = ({
           </DialogDescription>
         </DialogHeader>
         
-        <div className="flex flex-col items-center justify-center p-4 space-y-6">
+        <div className="flex flex-col items-center justify-center p-4 md:p-6 lg:p-8 space-y-6 md:space-y-8">
           {/* QR Code */}
-          <div className="bg-white p-4 rounded-lg">
+          <div className="bg-white p-4 md:p-6 rounded-lg shadow-md">
             <QRCodeSVG
               ref={qrRef}
               value={profileUrl}
@@ -131,7 +133,7 @@ export const ShareModal = ({
           </div>
           
           {/* Profile URL */}
-          <div className="flex w-full max-w-sm items-center space-x-2">
+          <div className="flex w-full max-w-sm md:max-w-md lg:max-w-lg items-center space-x-2">
             <div className="flex-1 overflow-hidden">
               <p className="truncate text-sm font-medium">{profileUrl}</p>
             </div>
@@ -141,7 +143,7 @@ export const ShareModal = ({
           </div>
           
           {/* Action Buttons */}
-          <div className="flex w-full justify-center space-x-4">
+          <div className="flex w-full justify-center space-x-4 md:space-x-6">
             <Button
               variant="secondary"
               className="flex items-center gap-2"

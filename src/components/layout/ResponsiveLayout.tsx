@@ -116,10 +116,10 @@ export const ResponsiveLayout = ({ children }: ResponsiveLayoutProps) => {
   ];
 
   return (
-    <div className="flex h-[100svh] bg-slate-900 text-white">
+    <div className="flex h-[100svh] bg-slate-900 text-white overflow-hidden">
       {/* Sidebar for tablet and desktop only */}
       {(isTablet || isDesktop) && (
-        <div className="w-64 border-r border-slate-800">
+        <div className="w-64 md:w-72 lg:w-80 border-r border-slate-800 flex-shrink-0">
           <div className="p-4 flex flex-col h-full">
             {/* Logo */}
             <div className="flex items-center p-4 mb-10">
@@ -133,7 +133,7 @@ export const ResponsiveLayout = ({ children }: ResponsiveLayoutProps) => {
             <div className="flex flex-col flex-1">
               {/* Main navigation - adjusted spacing and padding */}
               <div className="space-y-1 mt-2 mb-auto"> {/* Less compact spacing */}
-                {navItems.filter(item => !item.mobileOnly).map((item, index) => (
+                {navItems.map((item, index) => (
                   <Link 
                     key={index}
                     to={item.to} 
@@ -216,7 +216,7 @@ export const ResponsiveLayout = ({ children }: ResponsiveLayoutProps) => {
       )}
       
       <div className={`flex-1 flex flex-col overflow-hidden ${(isTablet || isDesktop) ? 'ml-0' : ''}`}>
-        <main className={`flex-1 overflow-y-auto ${isMobile ? 'pb-16' : 'p-4'}`}>
+        <main className={`flex-1 overflow-y-auto ${isMobile ? 'pb-16' : 'p-4 md:p-6 lg:p-8'}`}>
           {children}
         </main>
         
