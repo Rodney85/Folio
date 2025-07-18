@@ -2,6 +2,18 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Loader, Car } from "lucide-react";
+
+// Define a simplified interface for analytics events to avoid deep type instantiation errors
+interface AnalyticsEvent {
+  type: string;
+  visitorDevice?: string;
+  referrer?: string;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  country?: string;
+  city?: string;
+}
 import CarGrid from "@/components/cars/CarGrid";
 import SocialLinks from "@/components/SocialLinks";
 import NotFound from "@/pages/NotFound";
@@ -11,7 +23,8 @@ import { getDeviceType } from "@/lib/utils";
 const PublicProfilePage = () => {
   const { username } = useParams<{ username: string }>();
   const navigate = useNavigate();
-  const logAnalytics = useMutation(api.analytics.logEvent);
+  // Use any type to bypass deep instantiation errors while maintaining runtime functionality
+  const logAnalytics = useMutation<any, AnalyticsEvent>(api.analytics.logEvent as any);
 
   // Use the generated API to fetch the public profile by username
   const profileData = useQuery(api.users.getProfileByUsername, { 
@@ -21,6 +34,7 @@ const PublicProfilePage = () => {
   // Track profile view when data loads
   useEffect(() => {
     if (profileData?.user) {
+      // Cast the event to our simplified interface
       logAnalytics({
         type: "profile_view",
         visitorDevice: getDeviceType(),
@@ -109,17 +123,17 @@ const PublicProfilePage = () => {
             {cars.map((car) => (
               <div 
                 key={car._id}
-                className="relative pb-[100%] w-full overflow-hidden cursor-pointer"
+                className="relative pb-[100%] w-full overflow-hidden cursor-pointer rounded-[5px]"
                 onClick={() => navigate(`/u/${username}/car/${car._id}`)}
               >
                 {car.images && car.images.length > 0 ? (
                   <img
                     src={car.images[0]}
                     alt={`${car.make} ${car.model}`}
-                    className="absolute inset-0 w-full h-full object-cover"
+                    className="absolute inset-0 w-full h-full object-cover rounded-[5px]"
                   />
                 ) : (
-                  <div className="absolute inset-0 flex items-center justify-center bg-slate-800">
+                  <div className="absolute inset-0 flex items-center justify-center bg-slate-800 rounded-[5px]">
                     <Car className="h-6 w-6 text-muted-foreground" />
                   </div>
                 )}
