@@ -59,18 +59,10 @@ const AnalyticsPageContent = () => {
 
   return (
     <>
-      {/* Top bar */}
-      <div className="flex justify-between items-center p-4 md:p-6 lg:p-8 border-b border-slate-700 bg-slate-800">
-        <button onClick={() => navigate("/profile-menu")} className="flex items-center text-slate-200 hover:text-white">
-          <ChevronLeft className="h-5 w-5 mr-1" />
-          <span>Back</span>
-        </button>
-        
-        <h1 className="text-xl font-semibold text-white">Analytics</h1>
-        
-        <div className="w-10"></div>
-      </div>
 
+      {/* Top space for mobile - white background */}
+      <div className="h-14 bg-white w-full"></div>
+      
       {/* Main content */}
       <div className="flex flex-col p-4 md:p-6 lg:p-8 max-w-3xl md:max-w-4xl lg:max-w-6xl mx-auto w-full">
         {/* Period selector */}

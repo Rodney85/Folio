@@ -32,11 +32,15 @@ const ProfilePage = () => {
   const isMobile = useMediaQuery("(max-width: 767px)");
   
   // Get user's cars from Convex
+  // @ts-ignore - Suppressing TypeScript errors for deep instantiation
   const userCars = useQuery(api.cars.getUserCars) || [];
+  // @ts-ignore - Suppressing TypeScript errors for deep instantiation
   const firstCar = useQuery(api.cars.getUserFirstCar);
   
   // Get user profile data from Convex
+  // @ts-ignore - Suppressing TypeScript errors for deep instantiation
   const profile = useQuery(api.users.getProfile);
+  // @ts-ignore - Suppressing TypeScript errors for deep instantiation
   const isProfileComplete = useQuery(api.users.isProfileComplete);
   
   // Define the profile URL for QR code - using public profile URL format
@@ -51,7 +55,7 @@ const ProfilePage = () => {
 
   // Create profile content for both layouts
   const profileContent = (
-    <div className={`flex flex-col bg-slate-900 text-white min-h-screen ${!isMobile ? 'p-6' : ''}`}>
+    <div className={`flex flex-col bg-slate-900 text-white min-h-screen ${!isMobile ? 'p-6' : 'pb-0'}`}>
       {/* Top bar - Only visible on mobile */}
       {isMobile && (
         <div className="flex justify-between items-center p-4 pb-2">
@@ -153,7 +157,7 @@ const ProfilePage = () => {
       <div className="w-full h-[1px] bg-gray-300/20 dark:bg-gray-700/20 my-5"></div>
 
       {/* Car grid - Instagram-style */}
-      <div className={`w-full mt-1 ${isMobile ? 'px-[10px]' : ''}`}>
+      <div className={`w-full mt-1 ${isMobile ? 'px-[10px] pb-[42px]' : ''}`}>
         <div className="flex items-center justify-between mb-4">
           {/* Publish All button removed - all cars are now auto-published */}
           <div className="flex items-center gap-2">

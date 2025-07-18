@@ -31,6 +31,7 @@ export const storeUser = mutation({
     name: v.optional(v.string()),
     email: v.optional(v.string()),
     pictureUrl: v.optional(v.string()),
+    role: v.optional(v.string()), // Add role parameter to accept from Clerk
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -47,11 +48,15 @@ export const storeUser = mutation({
     
     if (user !== null) {
       // User exists, update their information
-      return await ctx.db.patch(user._id, {
+      await ctx.db.patch(user._id, {
         name: args.name ?? user.name,
         email: args.email ?? user.email,
         pictureUrl: args.pictureUrl ?? user.pictureUrl,
+        // Only update role if provided, otherwise keep existing
+        ...(args.role !== undefined && { role: args.role }),
+        updatedAt: Date.now(),
       });
+      return user._id;
     }
     
     // User doesn't exist, create a new user
@@ -60,6 +65,10 @@ export const storeUser = mutation({
       email: args.email ?? identity.email ?? "",
       pictureUrl: args.pictureUrl ?? identity.pictureUrl,
       tokenIdentifier: identity.tokenIdentifier,
+      // Include role if provided
+      ...(args.role !== undefined && { role: args.role }),
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
     });
   },
 });
@@ -95,6 +104,7 @@ export const getConvexUser = query({
       name: user.name,
       email: user.email,
       pictureUrl: user.pictureUrl,
+      role: user.role, // Include role in the returned user object
     };
   },
 });

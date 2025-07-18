@@ -14,15 +14,18 @@ export default defineSchema({
     tiktok: v.optional(v.string()),
     youtube: v.optional(v.string()),
     profileCompleted: v.optional(v.boolean()), // Flag to track if profile setup is complete
-    createdAt: v.optional(v.string()),
-    updatedAt: v.optional(v.string()),
+    // Making these fields flexible to handle existing records with different formats
+    createdAt: v.optional(v.union(v.string(), v.number())),
+    updatedAt: v.optional(v.union(v.string(), v.number())),
     // Subscription information
     subscriptionPlan: v.optional(v.string()), // 'free', 'starter', 'pro'
     subscriptionEndDate: v.optional(v.number()), // Timestamp when subscription expires
     paymentProvider: v.optional(v.string()), // 'paystack'
     paymentCustomerId: v.optional(v.string()), // ID from payment provider
+    role: v.optional(v.string()), // User role, e.g., 'admin'
   }).index("by_token", ["tokenIdentifier"])
-  .index("by_username", ["username"]),
+  .index("by_username", ["username"])
+  .index("by_created_date", ["createdAt"]),
   
   cars: defineTable({
     userId: v.string(),
@@ -34,6 +37,7 @@ export default defineSchema({
     description: v.optional(v.string()),
     images: v.optional(v.array(v.string())),
     isPublished: v.boolean(),
+    isFeatured: v.optional(v.boolean()), // Whether the car should be featured in UI
     createdAt: v.optional(v.string()),
     updatedAt: v.optional(v.string()),
     order: v.optional(v.number()),
@@ -49,6 +53,8 @@ export default defineSchema({
     affiliateCode: v.optional(v.string()),
     description: v.optional(v.string()),
     image: v.optional(v.string()),
+    isPublished: v.optional(v.boolean()), // Whether the part is published/visible
+    isFeatured: v.optional(v.boolean()), // Whether the part should be featured in UI
   }).index("by_car", ["carId"]),
 
   // Analytics events table for user-facing metrics
@@ -74,6 +80,12 @@ export default defineSchema({
     // Geolocation (for pro users)
     country: v.optional(v.string()),
     city: v.optional(v.string()),
+    
+    // Admin and system fields
+    partsAffected: v.optional(v.number()), // Number of parts affected by an action
+    updatedFields: v.optional(v.array(v.string())), // List of fields that were updated
+    migrationName: v.optional(v.string()), // Name of migration that generated this event
+    updatedCount: v.optional(v.number()), // Count of items updated in a migration
     
     // Timestamps
     createdAt: v.number(), // Date.now()

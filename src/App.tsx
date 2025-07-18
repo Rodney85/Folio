@@ -3,11 +3,13 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { ThemeProvider } from "@/components/theme-provider";
 import AppLayout from "@/components/layout/AppLayout";
 import AuthSyncProvider from "@/components/AuthSyncProvider";
 import { useUser } from "@clerk/clerk-react";
+import { useEffect } from "react";
+import { initGA, trackPageView } from "@/utils/analytics";
 import WelcomeScreen from "@/components/WelcomeScreen";
 import ProfileOnboarding from "@/components/ProfileOnboarding";
 import Index from "./pages/Index";
@@ -29,8 +31,12 @@ import CarGalleryPage from "./pages/CarGalleryPage";
 import EditCarPage from "./pages/EditCarPage";
 import PublicProfilePage from "./pages/PublicProfilePage";
 import PublicCarDetailsPage from "./pages/PublicCarDetailsPage";
-import FindCars from "./debug/FindCars";
-import AllCars from "./debug/AllCars";
+import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
+import AdminRoute from "./components/admin/AdminRoute";
+import AdminOverviewPage from "./pages/admin/AdminOverviewPage";
+import AdminUsersPage from "./pages/admin/AdminUsersPage";
+import AdminContentPage from "./pages/admin/AdminContentPage";
+import AdminOperationsPage from "./pages/admin/AdminOperationsPage";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +46,7 @@ const AppContent = () => {
   
   return (
     <BrowserRouter>
+      <RouteTracker />
       {/* Show the onboarding component for signed-in users */}
       {isSignedIn && <ProfileOnboarding />}
       
@@ -68,16 +75,30 @@ const AppContent = () => {
             <Route path="/car/:id" element={<AppLayout><CarDetailsPage /></AppLayout>} />
             <Route path="/car/:id/gallery" element={<AppLayout><CarGalleryPage /></AppLayout>} />
             <Route path="/edit-car/:id" element={<AppLayout><EditCarPage /></AppLayout>} />
+
+            {/* Admin Route */}
+            <Route 
+              path="/admin" 
+              element={
+                <AdminRoute>
+                  <AppLayout>
+                    <AdminDashboardPage />
+                  </AppLayout>
+                </AdminRoute>
+              }
+            >
+              <Route index element={<Navigate to="overview" replace />} />
+              <Route path="overview" element={<AdminOverviewPage />} />
+              <Route path="users" element={<AdminUsersPage />} />
+              <Route path="content" element={<AdminContentPage />} />
+              <Route path="operations" element={<AdminOperationsPage />} />
+            </Route>
           </>
         )}
         
         {/* Public Profile Pages - accessible to all users */}
         <Route path="/u/:username" element={<PublicProfilePage />} />
         <Route path="/u/:username/car/:id" element={<PublicCarDetailsPage />} />
-        
-        {/* Debug routes for development purposes */}
-        <Route path="/debug/cars" element={<FindCars />} />
-        <Route path="/debug/all-cars" element={<AllCars />} />
         
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
@@ -86,8 +107,26 @@ const AppContent = () => {
   );
 };
 
+// Route tracker component to track page views
+const RouteTracker = () => {
+  const location = useLocation();
+  
+  useEffect(() => {
+    // Track page view whenever the location changes
+    trackPageView(location.pathname + location.search);
+  }, [location]);
+  
+  return null;
+};
+
 // Main App component
-const App = () => (
+const App = () => {
+  // Initialize Google Analytics when the app loads
+  useEffect(() => {
+    initGA();
+  }, []);
+  
+  return (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider defaultTheme="system" storageKey="carfolio-ui-theme">
       <TooltipProvider>
@@ -99,6 +138,7 @@ const App = () => (
       </TooltipProvider>
     </ThemeProvider>
   </QueryClientProvider>
-);
+  );
+};
 
 export default App;

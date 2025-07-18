@@ -24,6 +24,8 @@ export const ShareModal = ({
   username,
   profileUrl,
 }: ShareModalProps) => {
+  // Ensure profileUrl uses /u/ instead of /profile/ on large screens
+  const formattedProfileUrl = profileUrl.replace('/profile/', '/u/');
   const [qrSize, setQrSize] = useState(200);
   const qrRef = useRef<SVGSVGElement>(null);
   
@@ -56,7 +58,7 @@ export const ShareModal = ({
   // Copy profile URL to clipboard
   const copyToClipboard = async () => {
     try {
-      await navigator.clipboard.writeText(profileUrl);
+      await navigator.clipboard.writeText(formattedProfileUrl);
       toast.success("Profile link copied to clipboard!");
     } catch (error) {
       toast.error("Failed to copy link");
@@ -71,7 +73,7 @@ export const ShareModal = ({
         await navigator.share({
           title: `${username}'s Carfolio Profile`,
           text: `Check out ${username}'s car collection on Carfolio!`,
-          url: profileUrl,
+          url: formattedProfileUrl,
         });
         toast.success("Shared successfully!");
       } catch (error) {
@@ -106,12 +108,16 @@ export const ShareModal = ({
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-md md:max-w-lg lg:max-w-xl">
-        <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
+        <DialogHeader className="relative">
+          <button 
+            onClick={onClose} 
+            className="absolute right-0 top-0 rounded-full p-2 opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none hover:bg-gray-100 dark:hover:bg-gray-800"
+          >
+            <X className="h-4 w-4" />
+            <span className="sr-only">Close</span>
+          </button>
+          <DialogTitle className="flex items-center justify-between pr-8">
             Share Profile
-            <Button variant="ghost" size="icon" onClick={onClose}>
-              <X className="h-4 w-4" />
-            </Button>
           </DialogTitle>
           <DialogDescription>
             Share your Carfolio profile with others
@@ -123,7 +129,7 @@ export const ShareModal = ({
           <div className="bg-white p-4 md:p-6 rounded-lg shadow-md">
             <QRCodeSVG
               ref={qrRef}
-              value={profileUrl}
+              value={formattedProfileUrl}
               size={qrSize}
               bgColor="#FFFFFF"
               fgColor="#000000"
@@ -135,7 +141,7 @@ export const ShareModal = ({
           {/* Profile URL */}
           <div className="flex w-full max-w-sm md:max-w-md lg:max-w-lg items-center space-x-2">
             <div className="flex-1 overflow-hidden">
-              <p className="truncate text-sm font-medium">{profileUrl}</p>
+              <p className="truncate text-sm font-medium">{formattedProfileUrl}</p>
             </div>
             <Button variant="outline" size="icon" onClick={copyToClipboard}>
               <Copy className="h-4 w-4" />

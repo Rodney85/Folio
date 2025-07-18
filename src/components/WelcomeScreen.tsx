@@ -2,12 +2,21 @@ import { useUser, SignOutButton } from "@clerk/clerk-react";
 import { Button } from "@/components/ui/button";
 import { Car, LogOut } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useEffect } from "react";
+import { trackSignUp } from "@/utils/analytics";
 
 /**
  * WelcomeScreen displayed after successful authentication
  */
 export const WelcomeScreen = () => {
   const { user } = useUser();
+
+  // Track sign-up when the welcome screen is shown
+  // This is a good proxy for completed sign-ups
+  useEffect(() => {
+    // Only track once when the component mounts
+    trackSignUp('clerk');
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-blue-950 p-4">

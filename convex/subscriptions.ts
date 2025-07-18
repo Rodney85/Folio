@@ -87,6 +87,10 @@ export const mockSetUserPlan = mutation({
       subscriptionEndDate: endDate,
       paymentProvider: "mock", // Will be replaced with 'paystack' when implemented
     });
+    
+    // NOTE: Since this is server-side code, we can't directly call Google Analytics here.
+    // When implementing the real Paystack integration, make sure to track subscription
+    // upgrades on the client side using the trackSubscriptionUpgrade function.
 
     return {
       plan: args.plan,

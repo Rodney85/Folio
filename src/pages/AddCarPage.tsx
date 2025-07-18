@@ -12,6 +12,7 @@ import { useMutation, useConvex } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { uploadToBackblaze } from "@/utils/storageService";
 import { useMediaQuery } from "../hooks/useMediaQuery";
+import { trackCarAdded } from "@/utils/analytics";
 
 const AddCarPage = () => {
   const navigate = useNavigate();
@@ -232,6 +233,15 @@ const AddCarPage = () => {
       setImagePreviewUrls(prevUrls => {
         prevUrls.forEach(url => URL.revokeObjectURL(url));
         return [];
+      });
+      
+      // Track car addition in Google Analytics
+      trackCarAdded({
+        brand: formData.brand,
+        model: formData.model,
+        year: yearValue,
+        hasImages: imageUrls.length > 0,
+        hasProductLinks: productLinks.length > 0
       });
       
       // Navigate to car details page after successful addition

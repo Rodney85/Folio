@@ -1,6 +1,7 @@
 import { SignUp as ClerkSignUp } from "@clerk/clerk-react";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
+import { trackSignUp } from "@/utils/analytics";
 
 /**
  * SignUp page component that displays Clerk's SignUp component
@@ -23,6 +24,7 @@ const SignUp = () => {
           routing="path"
           path="/sign-up"
           signInUrl="/sign-in"
+          afterSignUpUrl="/welcome"
           appearance={{
             elements: {
               rootBox: "w-full mx-auto",

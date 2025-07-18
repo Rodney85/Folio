@@ -17,14 +17,17 @@ export const AuthSyncProvider = ({ children }: { children: React.ReactNode }) =>
     // If the user is signed in and user data is available
     if (isSignedIn && user) {
       console.log("Saving user data to Convex...");
+      console.log("User public metadata:", user.publicMetadata);
       
-      // Store user data in Convex
+      // Store user data in Convex, including role from public metadata
       storeUser({
         name: user.fullName || "", // Provide empty string fallback if fullName is null
         email: user.primaryEmailAddress?.emailAddress,
         pictureUrl: user.imageUrl,
+        // Include role from public metadata if available
+        role: user.publicMetadata?.role as string || undefined,
       }).then(() => {
-        console.log("Successfully saved user data to Convex");
+        console.log("Successfully saved user data to Convex with role:", user.publicMetadata?.role);
       }).catch(error => {
         console.error("Failed to store user data:", error);
       });
