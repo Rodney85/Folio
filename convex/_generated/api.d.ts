@@ -24,11 +24,13 @@ import type * as cars from "../cars.js";
 import type * as debug from "../debug.js";
 import type * as files from "../files.js";
 import type * as migrations_publishPartsForPublishedCars from "../migrations/publishPartsForPublishedCars.js";
+import type * as modHotspots from "../modHotspots.js";
 import type * as mutations_admin from "../mutations/admin.js";
 import type * as mutations_adminContent from "../mutations/adminContent.js";
 import type * as mutations_carPublishing from "../mutations/carPublishing.js";
 import type * as parts from "../parts.js";
 import type * as subscriptions from "../subscriptions.js";
+import type * as types from "../types.js";
 import type * as users from "../users.js";
 
 /**
@@ -51,11 +53,13 @@ declare const fullApi: ApiFromModules<{
   debug: typeof debug;
   files: typeof files;
   "migrations/publishPartsForPublishedCars": typeof migrations_publishPartsForPublishedCars;
+  modHotspots: typeof modHotspots;
   "mutations/admin": typeof mutations_admin;
   "mutations/adminContent": typeof mutations_adminContent;
   "mutations/carPublishing": typeof mutations_carPublishing;
   parts: typeof parts;
   subscriptions: typeof subscriptions;
+  types: typeof types;
   users: typeof users;
 }>;
 export declare const api: FilterApi<

@@ -33,8 +33,8 @@ interface Car {
   make: string;
   model: string;
   year: number;
-  power: string;
-  torque?: number;
+  powerHp?: string;
+  torqueLbFt?: string;
   description?: string;
   images?: string[];
   isPublished: boolean;

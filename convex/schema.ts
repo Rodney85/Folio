@@ -32,12 +32,24 @@ export default defineSchema({
     make: v.string(),
     model: v.string(),
     year: v.number(),
-    power: v.string(),
+    // Detailed specs from the new design
+    package: v.optional(v.string()),
+    engine: v.optional(v.string()),
+    transmission: v.optional(v.string()),
+    drivetrain: v.optional(v.string()),
+    bodyStyle: v.optional(v.string()),
+    exteriorColor: v.optional(v.string()),
+    interiorColor: v.optional(v.string()),
+    generation: v.optional(v.string()),
+    powerHp: v.optional(v.string()),
+    torqueLbFt: v.optional(v.string()),
+    // Legacy fields for backward compatibility
+    power: v.optional(v.string()),
     torque: v.optional(v.number()),
     description: v.optional(v.string()),
     images: v.optional(v.array(v.string())),
     isPublished: v.boolean(),
-    isFeatured: v.optional(v.boolean()), // Whether the car should be featured in UI
+    isFeatured: v.optional(v.boolean()),
     createdAt: v.optional(v.string()),
     updatedAt: v.optional(v.string()),
     order: v.optional(v.number()),
@@ -56,6 +68,16 @@ export default defineSchema({
     isPublished: v.optional(v.boolean()), // Whether the part is published/visible
     isFeatured: v.optional(v.boolean()), // Whether the part should be featured in UI
   }).index("by_car", ["carId"]),
+
+  modHotspots: defineTable({
+    carId: v.id("cars"),
+    partId: v.id("parts"),
+    imageId: v.string(), // The storage ID of the image from the car's `images` array
+    x: v.number(), // X-coordinate as a percentage (0-100)
+    y: v.number(), // Y-coordinate as a percentage (0-100)
+    description: v.optional(v.string()), // Optional custom description for the hotspot
+  }).index("by_car_and_image", ["carId", "imageId"])
+  .index("by_imageId", ["imageId"]),
 
   // Analytics events table for user-facing metrics
   analytics: defineTable({

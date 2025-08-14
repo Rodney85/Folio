@@ -11,7 +11,7 @@ export const createPart = mutation({
     name: v.string(),
     category: v.string(),
     price: v.optional(v.number()),
-    purchaseUrl: v.string(), // URL to purchase the part
+    purchaseUrl: v.optional(v.string()), // URL to purchase the part
     description: v.optional(v.string()),
     image: v.optional(v.string()),
   },
@@ -35,7 +35,7 @@ export const createPart = mutation({
         name: args.name,
         category: args.category,
         price: args.price,
-        purchaseUrl: args.purchaseUrl,
+        purchaseUrl: args.purchaseUrl ?? "",
         description: args.description ?? "",
         image: args.image,
       });

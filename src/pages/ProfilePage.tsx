@@ -22,6 +22,8 @@ import {
 import CarImageWithUrl from "@/components/cars/CarImageWithUrl";
 import ShareModal from "@/components/ShareModal";
 import DraggableCarGrid from "@/components/cars/DraggableCarGrid";
+import { motion } from "framer-motion";
+import { SectionTransition, AnimatedItem } from "@/components/ui/page-transition";
 
 const ProfilePage = () => {
   const { user } = useUser();
@@ -90,67 +92,82 @@ const ProfilePage = () => {
         </p>
 
         {/* Social media links */}
-        <div className="flex space-x-8 mb-6">
+        <SectionTransition className="flex space-x-8 mb-6">
           {/* Instagram Icon */}
-          <a 
-            href={profile?.instagram ? `https://instagram.com/${profile.instagram}` : "#"} 
-            target={profile?.instagram ? "_blank" : "_self"}
-            rel="noopener noreferrer"
-            onClick={(e) => {
-              if (!profile?.instagram) {
-                e.preventDefault();
-                toast("Instagram not configured", {
-                  description: "Configure your Instagram link in your profile settings."
-                });
-              }
-            }}
-          >
-            <FontAwesomeIcon 
-              icon={faInstagram} 
-              className={`h-6 w-6 ${profile?.instagram ? 'text-pink-500 hover:text-pink-600' : 'text-gray-400 hover:text-gray-500'}`} 
-            />
-          </a>
+          <AnimatedItem>
+            <motion.a 
+              href={profile?.instagram ? `https://instagram.com/${profile.instagram}` : "#"} 
+              target={profile?.instagram ? "_blank" : "_self"}
+              rel="noopener noreferrer"
+              onClick={(e) => {
+                if (!profile?.instagram) {
+                  e.preventDefault();
+                  toast("Instagram not configured", {
+                    description: "Configure your Instagram link in your profile settings."
+                  });
+                }
+              }}
+              whileHover={{ scale: 1.2, y: -2 }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+            >
+              <FontAwesomeIcon 
+                icon={faInstagram} 
+                className={`h-6 w-6 transition-colors duration-200 ${profile?.instagram ? 'text-pink-500 hover:text-pink-600' : 'text-gray-400 hover:text-gray-500'}`} 
+              />
+            </motion.a>
+          </AnimatedItem>
           
           {/* TikTok Icon */}
-          <a 
-            href={profile?.tiktok ? `https://tiktok.com/@${profile.tiktok}` : "#"} 
-            target={profile?.tiktok ? "_blank" : "_self"}
-            rel="noopener noreferrer"
-            onClick={(e) => {
-              if (!profile?.tiktok) {
-                e.preventDefault();
-                toast("TikTok not configured", {
-                  description: "Configure your TikTok link in your profile settings."
-                });
-              }
-            }}
-          >
-            <FontAwesomeIcon 
-              icon={faTiktok} 
-              className={`h-6 w-6 ${profile?.tiktok ? 'text-black hover:text-gray-800' : 'text-gray-400 hover:text-gray-500'}`} 
-            />
-          </a>
+          <AnimatedItem>
+            <motion.a 
+              href={profile?.tiktok ? `https://tiktok.com/@${profile.tiktok}` : "#"} 
+              target={profile?.tiktok ? "_blank" : "_self"}
+              rel="noopener noreferrer"
+              onClick={(e) => {
+                if (!profile?.tiktok) {
+                  e.preventDefault();
+                  toast("TikTok not configured", {
+                    description: "Configure your TikTok link in your profile settings."
+                  });
+                }
+              }}
+              whileHover={{ scale: 1.2, y: -2 }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+            >
+              <FontAwesomeIcon 
+                icon={faTiktok} 
+                className={`h-6 w-6 transition-colors duration-200 ${profile?.tiktok ? 'text-black hover:text-gray-800' : 'text-gray-400 hover:text-gray-500'}`} 
+              />
+            </motion.a>
+          </AnimatedItem>
           
           {/* YouTube Icon */}
-          <a 
-            href={profile?.youtube ? `https://youtube.com/${profile.youtube}` : "#"} 
-            target={profile?.youtube ? "_blank" : "_self"}
-            rel="noopener noreferrer"
-            onClick={(e) => {
-              if (!profile?.youtube) {
-                e.preventDefault();
-                toast("YouTube not configured", {
-                  description: "Configure your YouTube link in your profile settings."
-                });
-              }
-            }}
-          >
-            <FontAwesomeIcon 
-              icon={faYoutube} 
-              className={`h-6 w-6 ${profile?.youtube ? 'text-red-600 hover:text-red-700' : 'text-gray-400 hover:text-red-600'}`} 
-            />
-          </a>
-        </div>
+          <AnimatedItem>
+            <motion.a 
+              href={profile?.youtube ? `https://youtube.com/${profile.youtube}` : "#"} 
+              target={profile?.youtube ? "_blank" : "_self"}
+              rel="noopener noreferrer"
+              onClick={(e) => {
+                if (!profile?.youtube) {
+                  e.preventDefault();
+                  toast("YouTube not configured", {
+                    description: "Configure your YouTube link in your profile settings."
+                  });
+                }
+              }}
+              whileHover={{ scale: 1.2, y: -2 }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+            >
+              <FontAwesomeIcon 
+                icon={faYoutube} 
+                className={`h-6 w-6 transition-colors duration-200 ${profile?.youtube ? 'text-red-600 hover:text-red-700' : 'text-gray-400 hover:text-red-600'}`} 
+              />
+            </motion.a>
+          </AnimatedItem>
+        </SectionTransition>
       </div>
       
       {/* Divider line */}

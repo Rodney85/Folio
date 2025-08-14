@@ -275,11 +275,11 @@ const CarDetailsPage = () => {
                   <div className="grid grid-cols-2 gap-8">
                     <div>
                       <p className="text-slate-400 mb-2">Horsepower</p>
-                      <p className="text-3xl font-semibold text-white">{car.power || '742'}</p>
+                      <p className="text-3xl font-semibold text-white">{car.powerHp || 'N/A'}</p>
                     </div>
                     <div>
                       <p className="text-slate-400 mb-2">Torque</p>
-                      <p className="text-3xl font-semibold text-white">{car.torque || '750'}</p>
+                      <p className="text-3xl font-semibold text-white">{car.torqueLbFt || 'N/A'}</p>
                     </div>
                     {/* Engine and Drive sections removed as requested */}
                   </div>
@@ -400,11 +400,11 @@ const CarDetailsPage = () => {
                 <div className="grid grid-cols-2 gap-6">
                   <div className="border-b border-slate-700 py-4">
                     <p className="text-slate-400 mb-1">Horsepower</p>
-                    <p className="text-2xl font-semibold text-white">{car.power || '742'}</p>
+                    <p className="text-2xl font-semibold text-white">{car.powerHp || 'N/A'}</p>
                   </div>
                   <div className="border-b border-slate-700 py-4">
                     <p className="text-slate-400 mb-1">Torque</p>
-                    <p className="text-2xl font-semibold text-white">{car.torque || '750'}</p>
+                    <p className="text-2xl font-semibold text-white">{car.torqueLbFt || 'N/A'}</p>
                   </div>
                 </div>
               </div>
@@ -462,17 +462,13 @@ const CarDetailsPage = () => {
                   visitorDevice: isMobile ? "mobile" : "desktop",
                 });
                 
-                // If first part has purchaseUrl, open it, otherwise open shop dialog
-                if (parts[0]?.purchaseUrl) {
-                  window.open(parts[0].purchaseUrl, '_blank');
-                } else {
-                  setShopDialogOpen(true);
-                }
+                // Navigate to the dedicated shop build page
+                navigate(`/car/${id}/shop-build`);
               }}
               className="w-full bg-blue-600 hover:bg-blue-700 py-4 px-6 rounded-md text-white font-semibold text-lg flex items-center justify-center gap-2 shadow-md transition-all duration-200 hover:shadow-lg hover:scale-[1.01]"
             >
               <ShoppingBag className="w-5 h-5" />
-              Shop the build
+              Shop the build ({parts.length})
             </button>
           </div>
         )}

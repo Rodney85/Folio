@@ -135,135 +135,137 @@ const PublicCarDetailsPage = () => {
         {/* Removed car name from header as requested */}
       </header>
 
-      {/* Main content */}
-      <div className="flex-1 overflow-auto flex flex-col">
-        {/* Main image with swipe gestures */}
-        <div className="relative w-full aspect-[4/3] bg-slate-800 mb-3">
-          {car.images && car.images.length > 0 ? (
-            <>
-              {/* Swipeable container */}
-              <div
-                {...swipeHandlers}
-                className="w-full h-full"
-              >
-                {car.images[currentImageIndex].startsWith('http') ? (
-                  <img 
-                    src={car.images[currentImageIndex]} 
-                    alt={`${car.make} ${car.model}`}
-                    className="w-full h-full object-contain"
-                  />
-                ) : (
-                  <CarImageWithUrl 
-                    key={`main-image-${currentImageIndex}`} 
-                    storageId={car.images[currentImageIndex]} 
-                    alt={`${car.make} ${car.model}`}
-                    className="w-full h-full object-contain"
-                    priority={true}
-                    withFallback={true}
-                  />
-                )}
-              </div>
-              
-              {car.images.length > 1 && (
-                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/60 px-3 py-1 rounded-full text-sm text-white">
-                  {currentImageIndex + 1} / {car.images.length}
+      {/* Main content area with responsive two-column layout */}
+      <div className="flex-1 md:grid md:grid-cols-2 md:gap-8 lg:gap-12 md:overflow-hidden">
+        
+        {/* Left Column: Image Gallery (scrolls on mobile) */}
+        <div className="md:overflow-y-auto md:h-full">
+          {/* Main image with swipe gestures */}
+          <div className="relative w-full aspect-[4/3] bg-slate-800 mb-3 md:rounded-lg md:overflow-hidden">
+            {car.images && car.images.length > 0 ? (
+              <>
+                {/* Swipeable container */}
+                <div {...swipeHandlers} className="w-full h-full">
+                  {car.images[currentImageIndex].startsWith('http') ? (
+                    <img 
+                      src={car.images[currentImageIndex]} 
+                      alt={`${car.make} ${car.model}`}
+                      className="w-full h-full object-contain"
+                    />
+                  ) : (
+                    <CarImageWithUrl 
+                      key={`main-image-${currentImageIndex}`} 
+                      storageId={car.images[currentImageIndex]} 
+                      alt={`${car.make} ${car.model}`}
+                      className="w-full h-full object-contain"
+                      priority={true}
+                      withFallback={true}
+                    />
+                  )}
                 </div>
-              )}
-            </>
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-slate-800">
-              <p className="text-slate-400">No image available</p>
+                
+                {car.images.length > 1 && (
+                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/60 px-3 py-1 rounded-full text-sm text-white">
+                    {currentImageIndex + 1} / {car.images.length}
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-slate-800">
+                <p className="text-slate-400">No image available</p>
+              </div>
+            )}
+          </div>
+
+          {/* Image thumbnails */}
+          {car.images && car.images.length > 1 && (
+            <div className="grid grid-cols-6 gap-2 px-4 md:px-0 mb-6">
+              {car.images.map((imageId, index) => (
+                <div 
+                  key={imageId} 
+                  onClick={() => handleImageNavigation.thumbnail(index)}
+                  className={`aspect-square rounded overflow-hidden cursor-pointer border-2 ${index === currentImageIndex ? 'border-blue-600' : 'border-transparent'}`}
+                >
+                  <CarImageWithUrl 
+                    storageId={imageId} 
+                    alt={`${car.make} ${car.model} thumbnail ${index + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ))}
             </div>
           )}
         </div>
 
-        {/* Image thumbnails */}
-        {car.images && car.images.length > 1 && (
-          <div className="grid grid-cols-6 gap-2 px-4 mb-6">
-            {car.images.map((imageId, index) => (
-              <div 
-                key={imageId} 
-                onClick={() => handleImageNavigation.thumbnail(index)}
-                className={`aspect-square rounded overflow-hidden cursor-pointer border-2 ${index === currentImageIndex ? 'border-blue-600' : 'border-transparent'}`}
-              >
-                <CarImageWithUrl 
-                  storageId={imageId} 
-                  alt={`${car.make} ${car.model} thumbnail ${index + 1}`}
-                  className="w-full h-full object-cover"
-                />
+        {/* Right Column: Car Details (scrolls on mobile and when content overflows on desktop) */}
+        <div className="flex flex-col md:overflow-y-auto md:h-full">
+          <div className="px-4 md:px-0 flex-grow">
+            {/* Car make, model, year */}
+            <div className="mb-8">
+              <h1 className="text-2xl lg:text-3xl font-bold text-white">{car.year} {car.make} {car.model}</h1>
+            </div>
+            
+            {/* Specifications section */}
+            <div className="mb-8">
+              <h3 className="text-slate-300 mb-4 text-lg font-medium">Specifications</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-4 lg:p-6 bg-slate-800 rounded-lg">
+                  <h3 className="text-sm text-slate-400 mb-1">Horsepower</h3>
+                  <p className="text-xl lg:text-2xl font-bold text-white">{car.power || '–'} Hp</p>
+                </div>
+                <div className="p-4 lg:p-6 bg-slate-800 rounded-lg">
+                  <h3 className="text-sm text-slate-400 mb-1">Torque</h3>
+                  <p className="text-xl lg:text-2xl font-bold text-white">{car.torque !== undefined && car.torque !== null ? `${car.torque} Nm` : '– Nm'}</p>
+                </div>
               </div>
-            ))}
-          </div>
-        )}
-        
-        {/* Car make, model, year - Matching authenticated layout */}
-        <div className="px-4 mb-8">
-          <h1 className="text-2xl font-bold text-white">{car.year} {car.make} {car.model}</h1>
-          
-          {/* Specifications section - moved above description */}
-          <h3 className="text-slate-300 mt-6 mb-4 text-lg font-medium">Specifications</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="p-6 bg-slate-800 rounded-lg">
-              <h3 className="text-sm text-slate-400 mb-1">Horsepower</h3>
-              <p className="text-2xl font-bold text-white">{car.power || '–'} Hp</p>
             </div>
-            <div className="p-6 bg-slate-800 rounded-lg">
-              <h3 className="text-sm text-slate-400 mb-1">Torque</h3>
-              <p className="text-2xl font-bold text-white">{car.torque !== undefined && car.torque !== null ? `${car.torque} Nm` : '– Nm'}</p>
-            </div>
+            
+            {/* Description section */}
+            {car.description && (
+              <div className="mb-8">
+                <h3 className="text-slate-300 mb-4 text-lg font-medium">Description</h3>
+                <div className={`text-slate-400 leading-relaxed max-w-none`}>
+                  {car.description.split('\n').map((line, index) => {
+                    const isListItem = /^\s*[-*•]\s+/.test(line);
+                    const isNumberedItem = /^\s*\d+\.\s+/.test(line);
+                    
+                    if (isListItem) {
+                      return (
+                        <div key={index} className="flex items-start mb-2">
+                          <span className="mr-2">•</span>
+                          <span>{line.replace(/^\s*[-*•]\s+/, '')}</span>
+                        </div>
+                      );
+                    } else if (isNumberedItem) {
+                      const number = line.match(/^\s*(\d+)\.\s+/)[1];
+                      return (
+                        <div key={index} className="flex items-start mb-2">
+                          <span className="mr-2">{number}.</span>
+                          <span>{line.replace(/^\s*\d+\.\s+/, '')}</span>
+                        </div>
+                      );
+                    } else {
+                      return <p key={index} className="mb-2">{line}</p>;
+                    }
+                  })}
+                </div>
+              </div>
+            )}
           </div>
+
+          {/* Shop the Build Button (Sticks to the bottom) */}
+          {parts && parts.length > 0 && (
+            <div className="px-4 md:px-0 mt-auto pt-6">
+              <Button 
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-5 rounded-md font-semibold text-center uppercase tracking-wide"
+                onClick={() => navigate(`/u/${username}/car/${id}/shop-build`)}
+              >
+                <ShoppingBag className="mr-2 h-5 w-5" />
+                SHOP THE BUILD ({parts.length})
+              </Button>
+            </div>
+          )}
         </div>
-        
-        {/* Description section - matching authenticated component */}
-        {car.description && (
-          <div className="px-4 mb-8">
-            <h3 className="text-slate-300 mb-4 text-lg font-medium">Description</h3>
-            <div className={`${isMobile ? 'text-base' : 'text-lg'} text-slate-400 leading-relaxed ${!isMobile ? 'max-w-3xl' : ''}`}>
-              {car.description.split('\n').map((line, index) => {
-                // Check if line starts with list markers
-                const isListItem = /^\s*[-*•]\s+/.test(line);
-                const isNumberedItem = /^\s*\d+\.\s+/.test(line);
-                
-                if (isListItem) {
-                  // Handle bullet list items
-                  return (
-                    <div key={index} className="flex items-start mb-2">
-                      <span className="mr-2">•</span>
-                      <span>{line.replace(/^\s*[-*•]\s+/, '')}</span>
-                    </div>
-                  );
-                } else if (isNumberedItem) {
-                  // Handle numbered list items
-                  const number = line.match(/^\s*(\d+)\.\s+/)[1];
-                  return (
-                    <div key={index} className="flex items-start mb-2">
-                      <span className="mr-2">{number}.</span>
-                      <span>{line.replace(/^\s*\d+\.\s+/, '')}</span>
-                    </div>
-                  );
-                } else {
-                  // Regular paragraph
-                  return <p key={index} className="mb-2">{line}</p>;
-                }
-              })}
-            </div>
-          </div>
-        )}
-        
-        {/* Shop the Build Button - matching authenticated component but readonly */}
-        {parts && parts.length > 0 && (
-          <div className="px-4 mt-auto"> {/* Using mt-auto instead of pb-24 to push to bottom */}
-            <Button 
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-5 rounded-md font-semibold text-center uppercase tracking-wide mb-6"
-              onClick={() => {
-                setShopDialogOpen(true);
-              }}
-            >
-              <ShoppingBag className="mr-2 h-5 w-5" />
-              SHOP THE BUILD ({parts.length})
-            </Button>
-          </div>
-        )}
       </div>
 
       {/* Shop the Build Dialog - matching authenticated component but readonly */}

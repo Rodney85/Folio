@@ -1,15 +1,23 @@
-
-import { HeroSection } from "@/components/HeroSection";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { CheckCircle, Star, DollarSign, BarChart3, Share2, Settings, Car, Trophy, ArrowRight, Menu, X } from "lucide-react";
+import { HeroSection } from '@/components/ui/hero-section-1'
+import { Features } from '@/components/ui/features-6'
+import DatabaseWithRestApi from '@/components/ui/database-with-rest-api'
+import { Meteors } from '@/components/ui/meteors'
+import Testimonials from '@/components/ui/testimonials'
+import FAQs from '@/components/ui/faq'
+import { Pricing6 } from '@/components/ui/pricing-6'
+import { Tab } from '@/components/ui/pricing-tab'
+import { Footer } from '@/components/ui/footer-section'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Separator } from '@/components/ui/separator'
+import { CheckCircle, Star, DollarSign, BarChart3, Share2, Settings, Car, Trophy, ArrowRight, Menu, X, Squirrel } from "lucide-react";
 import { useState, useEffect } from "react";
 
 const Index = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [selectedPricing, setSelectedPricing] = useState("monthly");
   
   useEffect(() => {
     // Check if we're on a mobile device based on viewport width
@@ -162,286 +170,234 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <HeroSection />
       
-      {/* Problem Section */}
+      {/* Combined Section: Pain Point, How it Works, and Solution */}
       <section className="py-12 sm:py-16 lg:py-20 bg-slate-900 dark:bg-slate-950 text-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-8 text-white">We've All Been There...</h2>
-          
-          <p className="text-xl mb-8 text-slate-300 dark:text-slate-400">
-            You post your latest build on Instagram or TikTok. The comments explode:
-          </p>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-8 sm:mb-10">
-            {[
-              "What wheels are those?",
-              "Turbo kit specs?",
-              "Where'd you get that front bumper?",
-              "Drop the parts list!"
-            ].map((comment, index) => (
-              <div key={index} className="bg-slate-800 dark:bg-slate-900 p-4 rounded-lg text-left border border-slate-700 dark:border-slate-800">
-                <p className="text-slate-300 dark:text-slate-400 italic">"{comment}"</p>
-              </div>
-            ))}
-          </div>
-          
-          <p className="text-lg text-slate-300 dark:text-slate-400 mb-6">
-            So you spend 30 minutes typing out part numbers, links, and specs in the comments. 
-            <span className="text-orange-400 font-semibold"> And earn absolutely nothing for sharing your hard-earned knowledge.</span>
-          </p>
-          
-          <p className="text-lg text-slate-300 dark:text-slate-400 mb-8">
-            Meanwhile, your post gets buried in the algorithm, and next week someone asks the exact same questions.
-          </p>
-          
-          <p className="text-2xl font-bold text-orange-400">
-            Your expertise is valuable. It's time to get paid for it.
-          </p>
-        </div>
-      </section>
-
-      {/* Solution Section */}
-      <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-r from-blue-50 to-slate-50 dark:from-slate-900 dark:to-blue-950">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Pain Point */}
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
-              Introducing CarFolio: Professional Car Portfolios That Actually Make Money
-            </h2>
-            <p className="text-xl text-muted-foreground">The Simple 4-Step Process</p>
+            <h2 className="text-4xl font-semibold mb-8 text-white">Your build's story is scattered.</h2>
+            <p className="text-xl mb-12 text-slate-300 max-w-4xl mx-auto">
+              Across forums. In social feeds. In endless DMs. The details that matter get lost, and the value you create goes unrewarded. Your work deserves more than a temporary post.
+            </p>
           </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
-            {[
-              {
-                step: "1",
-                title: "Create Your Digital Car Card",
-                description: "Upload photos, add specifications, and document your modification history. Our professional templates make every build look incredible."
-              },
-              {
-                step: "2", 
-                title: "Build Your Parts List",
-                description: "Add every component with direct purchase links. From turbo kits to wheel spacers - organize everything in one place."
-              },
-              {
-                step: "3",
-                title: "Share Your Professional Link", 
-                description: "Get a clean, branded URL: carfolio.com/yourname/project-car Perfect for Instagram bio, forum signatures, YouTube descriptions."
-              },
-              {
-                step: "4",
-                title: "Earn Affiliate Commissions",
-                description: "When someone buys parts through your recommendations, you earn. Turn your build knowledge into passive income."
-              }
-            ].map((item, index) => (
-              <Card key={index} className="relative overflow-hidden hover:shadow-lg transition-shadow bg-card border-border">
-                <CardContent className="p-6">
-                  <div className="absolute top-0 right-0 w-16 h-16 bg-blue-600 dark:bg-blue-500 text-white flex items-center justify-center font-bold text-xl rounded-bl-2xl">
-                    {item.step}
-                  </div>
-                  <h3 className="text-lg font-semibold text-card-foreground mb-3 pr-8">{item.title}</h3>
-                  <p className="text-muted-foreground">{item.description}</p>
-                </CardContent>
-              </Card>
-            ))}
+
+          {/* Database Component */}
+          <div className="flex justify-center mb-6 md:mb-24">
+            <DatabaseWithRestApi
+              title="CarFolio - One Link"
+              circleText="API"
+              badgeTexts={{
+                first: "Cars",
+                second: "Parts",
+                third: "Share",
+                fourth: "Earn"
+              }}
+              buttonTexts={{
+                first: "CarFolio",
+                second: "v3_builds"
+              }}
+              lightColor="#3b82f6"
+              className="scale-100 md:scale-125 lg:scale-150"
+            />
+          </div>
+
+          {/* Solution - Two Column Layout */}
+          <div className="mb-24">
+            <div className="relative z-10 grid items-center gap-4 md:grid-cols-2 md:gap-12">
+              <h2 className="text-4xl font-semibold text-white">One build. One link. Endless possibilities.</h2>
+              <p className="max-w-sm sm:ml-auto text-xl text-slate-300">CarFolio brings everything together into a single, shareable link. The definitive home for your automotive identity. When your showcase is this seamless, it doesn't just get seen—it gets recognized.</p>
+            </div>
+          </div>
+
+          {/* CarFolio Meteor Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
+            {/* Build Your Folio Card */}
+            <div className="w-full relative max-w-xs mx-auto">
+              <div className="absolute inset-0 h-full w-full bg-gradient-to-r from-blue-500 to-teal-500 transform scale-[0.80] rounded-full blur-3xl" />
+              <div className="relative shadow-xl bg-gray-900 border border-gray-800 px-4 py-8 h-full overflow-hidden rounded-2xl flex flex-col justify-end items-start">
+                <div className="h-5 w-5 rounded-full border flex items-center justify-center mb-4 border-gray-500">
+                  <Car className="h-2 w-2 text-gray-300" />
+                </div>
+                <h1 className="font-bold text-xl text-white mb-4 relative z-50">
+                  Build Your Folio
+                </h1>
+                <p className="font-normal text-base text-slate-500 mb-4 relative z-50">
+                  Add your vehicles and document every modification with stunning detail. Create a professional showcase for your automotive passion.
+                </p>
+                <button className="border px-4 py-1 rounded-lg border-gray-500 text-gray-300">
+                  Start Building
+                </button>
+                <Meteors number={20} />
+              </div>
+            </div>
+
+            {/* Share Your Link Card */}
+            <div className="w-full relative max-w-xs mx-auto">
+              <div className="absolute inset-0 h-full w-full bg-gradient-to-r from-purple-500 to-pink-500 transform scale-[0.80] rounded-full blur-3xl" />
+              <div className="relative shadow-xl bg-gray-900 border border-gray-800 px-4 py-8 h-full overflow-hidden rounded-2xl flex flex-col justify-end items-start">
+                <div className="h-5 w-5 rounded-full border flex items-center justify-center mb-4 border-gray-500">
+                  <Share2 className="h-2 w-2 text-gray-300" />
+                </div>
+                <h1 className="font-bold text-xl text-white mb-4 relative z-50">
+                  Share Your Link
+                </h1>
+                <p className="font-normal text-base text-slate-500 mb-4 relative z-50">
+                  Your personalized carfolio.io URL becomes the single source for your entire build. One link, endless possibilities.
+                </p>
+                <button className="border px-4 py-1 rounded-lg border-gray-500 text-gray-300">
+                  Get Your Link
+                </button>
+                <Meteors number={20} />
+              </div>
+            </div>
+
+            {/* Monetize Your Influence Card */}
+            <div className="w-full relative max-w-xs mx-auto">
+              <div className="absolute inset-0 h-full w-full bg-gradient-to-r from-orange-500 to-red-500 transform scale-[0.80] rounded-full blur-3xl" />
+              <div className="relative shadow-xl bg-gray-900 border border-gray-800 px-4 py-8 h-full overflow-hidden rounded-2xl flex flex-col justify-end items-start">
+                <div className="h-5 w-5 rounded-full border flex items-center justify-center mb-4 border-gray-500">
+                  <DollarSign className="h-2 w-2 text-gray-300" />
+                </div>
+                <h1 className="font-bold text-xl text-white mb-4 relative z-50">
+                  Monetize Your Influence
+                </h1>
+                <p className="font-normal text-base text-slate-500 mb-4 relative z-50">
+                  Connect affiliate links to the parts you trust and turn your passion into a paycheck. Earn from every recommendation.
+                </p>
+                <button className="border px-4 py-1 rounded-lg border-gray-500 text-gray-300">
+                  Start Earning
+                </button>
+                <Meteors number={20} />
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-12 sm:py-16 lg:py-20 bg-background">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
-              Everything You Need to Showcase and Monetize Your Builds
-            </h2>
-          </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-            {features.map((feature, index) => (
-              <Card key={index} className="hover:shadow-lg transition-shadow border-border bg-card">
-                <CardContent className="p-6">
-                  <div className="flex items-center mb-4">
-                    <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg text-blue-600 dark:text-blue-400 mr-4">
-                      {feature.icon}
-                    </div>
-                    <h3 className="text-lg font-semibold text-card-foreground">{feature.title}</h3>
-                  </div>
-                  <p className="text-muted-foreground">{feature.description}</p>
-                </CardContent>
-              </Card>
-            ))}
+      <Features />
+
+      {/* Gallery Section */}
+      <section className="py-16 md:py-32 relative overflow-hidden">
+        {/* Background Image with Overlay */}
+        <div className="absolute inset-0 z-0">
+          <img 
+            src="/4s/Group 13.png" 
+            alt="Background" 
+            className="w-full h-full object-cover opacity-40"
+          />
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-50/60 to-blue-50/60 dark:from-slate-900/60 dark:to-blue-950/60"></div>
+        </div>
+        
+        <div className="mx-auto max-w-5xl space-y-12 px-6 relative z-10">
+          <div className="relative z-10 grid items-center gap-4 md:grid-cols-2 md:gap-12">
+            <h2 className="text-4xl font-semibold text-slate-900 dark:text-white">A Gallery for Your Garage</h2>
+            <p className="max-w-sm sm:ml-auto text-slate-700 dark:text-slate-300">Every build is a journey. CarFolio gives you the canvas to tell its story with cinematic galleries, detailed modification lists, and complete build histories.</p>
           </div>
         </div>
       </section>
 
       {/* Testimonials Section */}
-      <section id="testimonials" className="py-12 sm:py-16 lg:py-20 bg-muted/50">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
-              Real Results from Real Automotive Enthusiasts
-            </h2>
-          </div>
-          
-          <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <Card key={index} className="hover:shadow-lg transition-shadow bg-card border-border">
-                <CardContent className="p-6">
-                  <div className="flex items-center mb-4">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="h-4 w-4 fill-orange-400 text-orange-400" />
-                    ))}
-                  </div>
-                  <blockquote className="text-muted-foreground mb-6 italic">
-                    "{testimonial.quote}"
-                  </blockquote>
-                  <div className="border-t border-border pt-4">
-                    <p className="font-semibold text-card-foreground">{testimonial.name}</p>
-                    <p className="text-sm text-muted-foreground">{testimonial.car}, {testimonial.location}</p>
-                    <div className="mt-2">
-                      {testimonial.earnings && (
-                        <Badge variant="secondary" className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300">
-                          {testimonial.earnings}
-                        </Badge>
-                      )}
-                      {testimonial.followers && (
-                        <Badge variant="secondary" className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300">
-                          {testimonial.followers}
-                        </Badge>
-                      )}
-                      {testimonial.partnerships && (
-                        <Badge variant="secondary" className="bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-300">
-                          {testimonial.partnerships}
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-          
-          {/* Results Dashboard Preview */}
-          <div className="mt-12 sm:mt-16 bg-slate-900 dark:bg-slate-950 rounded-2xl p-5 sm:p-8 text-white border border-slate-800 dark:border-slate-700 overflow-x-hidden">
-            <h3 className="text-xl font-bold mb-6 text-center text-white">This Month's Top Performers</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
-              <div className="text-center">
-                <div className="text-2xl mb-2">🥇</div>
-                <p className="font-semibold text-white">Mike's S2000 Build</p>
-                <p className="text-green-400">$127 in commissions</p>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl mb-2">🥈</div>
-                <p className="font-semibold text-white">Sarah's F-150 Setup</p>
-                <p className="text-green-400">$89 in commissions</p>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl mb-2">🥉</div>
-                <p className="font-semibold text-white">Alex's Drift Build</p>
-                <p className="text-green-400">$76 in commissions</p>
-              </div>
-            </div>
-            
-            <Separator className="bg-slate-700 dark:bg-slate-600 mb-6" />
-            
-            <h4 className="font-semibold mb-4 text-white">Most Clicked Parts:</h4>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-slate-300 dark:text-slate-400">• Coilovers (BC Racing)</span>
-                <span className="text-orange-400">47 clicks</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-300 dark:text-slate-400">• Wheels (BBS)</span>
-                <span className="text-orange-400">33 clicks</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-300 dark:text-slate-400">• Turbo Kits (Garrett)</span>
-                <span className="text-orange-400">28 clicks</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <Testimonials />
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-12 sm:py-16 lg:py-20 bg-background">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
-              Choose Your Plan
+      <section className="py-32">
+        <div className="container max-w-5xl mx-auto px-4 md:px-6">
+          <div className="mx-auto flex flex-col items-center gap-6 text-center">
+            <h2 className="text-4xl font-semibold text-pretty lg:text-6xl">
+              Simple, powerful pricing
             </h2>
-          </div>
-          
-          <div className="grid md:grid-cols-3 gap-8">
-            {pricingPlans.map((plan, index) => (
-              <Card key={index} className={`relative hover:shadow-lg transition-shadow bg-card border-border ${plan.popular ? 'border-blue-500 border-2' : ''}`}>
-                {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <Badge className="bg-blue-600 dark:bg-blue-500 text-white px-4 py-1">Most Popular</Badge>
-                  </div>
-                )}
-                <CardContent className="p-8">
-                  <div className="text-center mb-8">
-                    <h3 className="text-2xl font-bold text-card-foreground mb-2">{plan.name}</h3>
-                    <div className="mb-2">
-                      <span className="text-4xl font-bold text-card-foreground">{plan.price}</span>
-                      <span className="text-muted-foreground">/{plan.period}</span>
-                    </div>
-                    <p className="text-muted-foreground">{plan.description}</p>
-                    {plan.yearlyPrice && (
-                      <p className="text-sm text-green-600 dark:text-green-400 mt-2">{plan.yearlyPrice}</p>
-                    )}
-                  </div>
-                  
-                  <div className="space-y-3 mb-8">
-                    {plan.features.map((feature, featureIndex) => (
-                      <div key={featureIndex} className="flex items-start">
-                        <CheckCircle className="h-5 w-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
-                        <span className="text-muted-foreground">{feature}</span>
-                      </div>
-                    ))}
-                  </div>
-                  
-                  <Button 
-                    className={`w-full ${plan.popular ? 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600' : ''}`}
-                    variant={plan.popular ? 'default' : 'outline'}
-                  >
-                    {plan.cta}
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-          
-          <div className="text-center mt-12">
-            <h3 className="text-2xl font-bold text-foreground mb-4">30-Day Risk-Free Trial</h3>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Try CarFolio completely risk-free. If you're not earning more from your automotive knowledge within 30 days, we'll refund every penny. No questions asked.
+            <p className="max-w-md text-muted-foreground lg:text-xl">
+              No confusing tiers or feature gates. Get everything you need to showcase and monetize your builds.
             </p>
+            
+            {/* Pricing Tabs */}
+            <div className="flex w-fit rounded-full bg-muted p-1 mb-6">
+              <Tab
+                text="monthly"
+                selected={selectedPricing === "monthly"}
+                setSelected={setSelectedPricing}
+                discount={false}
+              />
+              <Tab
+                text="yearly"
+                selected={selectedPricing === "yearly"}
+                setSelected={setSelectedPricing}
+                discount={true}
+              />
+            </div>
+            
+            <div className="mx-auto flex w-full flex-col rounded-lg border p-6 sm:w-fit sm:min-w-80">
+              <div className="flex justify-center">
+                <span className="text-lg font-semibold">$</span>
+                <span className="text-6xl font-semibold">
+                  {selectedPricing === "monthly" ? "29.99" : "299.99"}
+                </span>
+                <span className="self-end text-muted-foreground">
+                  {selectedPricing === "monthly" ? "/month" : "/year"}
+                </span>
+              </div>
+              {selectedPricing === "monthly" && (
+                <p className="text-center text-sm text-muted-foreground mt-2">
+                  <span className="line-through">$35.00</span> Regular price
+                </p>
+              )}
+              {selectedPricing === "yearly" && (
+                <p className="text-center text-sm text-muted-foreground mt-2">
+                  <span className="line-through">$359.88</span> Regular price
+                </p>
+              )}
+              <div className="my-6">
+                <div>
+                  <ul className="flex flex-col gap-3">
+                    <li className="flex items-center justify-between gap-2 text-sm font-medium">
+                      Unlimited vehicle showcases <CheckCircle className="inline size-4 shrink-0" />
+                    </li>
+                    <li className="flex items-center justify-between gap-2 text-sm font-medium">
+                      Unlimited affiliate links <CheckCircle className="inline size-4 shrink-0" />
+                    </li>
+                    <li className="flex items-center justify-between gap-2 text-sm font-medium">
+                      Downloadable QR codes <CheckCircle className="inline size-4 shrink-0" />
+                    </li>
+                  </ul>
+                  <Separator className="my-6" />
+                </div>
+                <div>
+                  <ul className="flex flex-col gap-3">
+                    <li className="flex items-center justify-between gap-2 text-sm font-medium">
+                      Advanced analytics dashboard <CheckCircle className="inline size-4 shrink-0" />
+                    </li>
+                    <li className="flex items-center justify-between gap-2 text-sm font-medium">
+                      Custom domain support <CheckCircle className="inline size-4 shrink-0" />
+                    </li>
+                    <li className="flex items-center justify-between gap-2 text-sm font-medium">
+                      Mobile-optimized sharing <CheckCircle className="inline size-4 shrink-0" />
+                    </li>
+                  </ul>
+                  <Separator className="my-6" />
+                </div>
+                <div>
+                  <ul className="flex flex-col gap-3">
+                    <li className="flex items-center justify-between gap-2 text-sm font-medium">
+                      Keep all your affiliate income <CheckCircle className="inline size-4 shrink-0" />
+                    </li>
+                    <li className="flex items-center justify-between gap-2 text-sm font-medium">
+                      Priority support <CheckCircle className="inline size-4 shrink-0" />
+                    </li>
+                    <li className="flex items-center justify-between gap-2 text-sm font-medium">
+                      14-day free trial <CheckCircle className="inline size-4 shrink-0" />
+                    </li>
+                  </ul>
+                </div>
+              </div>
+              <Button>Start Your 14-Day Free Trial</Button>
+            </div>
           </div>
         </div>
       </section>
 
       {/* FAQ Section */}
-      <section className="py-12 sm:py-16 lg:py-20 bg-muted/50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
-              Frequently Asked Questions
-            </h2>
-          </div>
-          
-          <div className="space-y-6">
-            {faqs.map((faq, index) => (
-              <Card key={index} className="hover:shadow-md transition-shadow bg-card border-border">
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold text-card-foreground mb-3">{faq.question}</h3>
-                  <p className="text-muted-foreground leading-relaxed">{faq.answer}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
+      <FAQs />
 
       {/* Final CTA Section */}
       <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-800 dark:to-blue-900 text-white">
@@ -449,10 +405,6 @@ const Index = () => {
           <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">
             Ready to Turn Your Car Knowledge Into Income?
           </h2>
-          
-          <p className="text-xl mb-8 opacity-90 text-white">
-            Join 2,500+ automotive enthusiasts who've already built their professional car portfolios.
-          </p>
           
           <div className="bg-white/10 dark:bg-white/5 rounded-lg p-6 mb-8 text-left max-w-md mx-auto border border-white/20">
             <h3 className="font-semibold mb-4 text-white">What happens next:</h3>
@@ -483,59 +435,8 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Trust Signals Footer */}
-      <footer className="py-12 sm:py-16 bg-slate-900 dark:bg-slate-950 text-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h3 className="text-2xl font-bold mb-8 text-white">Trusted by the Automotive Community</h3>
-            
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 sm:gap-6 mb-8 sm:mb-12">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-orange-400">2,500+</div>
-                <div className="text-sm text-slate-400">Active Users</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-orange-400">4.9/5</div>
-                <div className="text-sm text-slate-400">Average Rating</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-orange-400">$50,000+</div>
-                <div className="text-sm text-slate-400">Earned by Users</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-orange-400">🔒</div>
-                <div className="text-sm text-slate-400">Bank-Level Security</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-orange-400">📱</div>
-                <div className="text-sm text-slate-400">Mobile Optimized</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-orange-400">🌍</div>
-                <div className="text-sm text-slate-400">Global Shipping</div>
-              </div>
-            </div>
-          </div>
-          
-          <Separator className="bg-slate-700 dark:bg-slate-600 mb-8" />
-          
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="flex items-center mb-4 md:mb-0">
-              <Car className="h-6 sm:h-8 w-6 sm:w-8 text-orange-600 dark:text-orange-500" />
-              <span className="ml-2 text-xl font-bold text-white">CarFolio</span>
-            </div>
-            
-            <div className="text-center md:text-right">
-              <p className="text-xs sm:text-sm text-slate-400 mb-2">
-                <strong className="text-white">Partnered with:</strong> Amazon Associates, Summit Racing, FCP Euro, Tire Rack, AutoZone, RockAuto, 1A Auto, CARiD, and 40+ more retailers.
-              </p>
-              <p className="text-xs text-slate-500">
-                © 2024 CarFolio. All rights reserved.
-              </p>
-            </div>
-          </div>
-        </div>
-      </footer>
+      {/* CarFolio Footer */}
+      <Footer />
     </div>
   );
 };

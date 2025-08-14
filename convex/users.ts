@@ -198,3 +198,36 @@ export const getProfileByUsername = query({
     };
   },
 });
+
+/**
+ * Get a user by Clerk user ID.
+ * This query is accessible to authenticated users.
+ */
+export const getUserById = query({
+  args: {
+    userId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    // Find user by tokenIdentifier (Clerk user ID)
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) => q.eq("tokenIdentifier", args.userId))
+      .first();
+    
+    if (!user) {
+      return null; // User not found
+    }
+    
+    // Return only necessary public user data
+    return {
+      _id: user._id,
+      name: user.name,
+      username: user.username,
+      bio: user.bio,
+      pictureUrl: user.pictureUrl,
+      instagram: user.instagram,
+      tiktok: user.tiktok,
+      youtube: user.youtube,
+    };
+  },
+});

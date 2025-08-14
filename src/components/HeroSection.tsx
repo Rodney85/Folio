@@ -37,10 +37,10 @@ export function HeroSection() {
                     <div className="h-[80rem] -translate-y-[350px] absolute left-0 top-0 w-56 -rotate-45 bg-[radial-gradient(50%_50%_at_50%_50%,hsla(220,100%,85%,.04)_0,hsla(220,100%,45%,.02)_80%,transparent_100%)] dark:bg-[radial-gradient(50%_50%_at_50%_50%,hsla(220,100%,25%,.06)_0,hsla(220,100%,15%,.02)_80%,transparent_100%)]" />
                 </div>
                 <section>
-                    <div className="relative pt-24 md:pt-36">
+                    <div className="relative min-h-[100svh] overflow-hidden pt-24 md:pt-36 flex flex-col">
                         <div aria-hidden className="absolute inset-0 -z-10 size-full [background:radial-gradient(125%_125%_at_50%_100%,transparent_0%,var(--background)_75%)]" />
-                        <div className="mx-auto max-w-7xl px-6">
-                            <div className="text-center sm:mx-auto lg:mr-auto lg:mt-0">
+                        <div className="mx-auto max-w-7xl px-6 flex-1 flex flex-col justify-center">
+                            <div className="text-center space-y-8">
                                 <AnimatedGroup variants={transitionVariants}>
                                     <div className="hover:bg-background dark:hover:border-t-border bg-muted group mx-auto flex w-fit items-center gap-4 rounded-full border p-1 pl-4 shadow-md shadow-black/5 transition-all duration-300 dark:border-t-white/5 dark:shadow-zinc-950">
                                         <span className="text-foreground text-sm">Turn Your Car Knowledge Into Income</span>
@@ -58,16 +58,19 @@ export function HeroSection() {
                                         </div>
                                     </div>
                         
-                                    <h1 className="mt-8 max-w-4xl mx-auto text-balance text-6xl md:text-7xl lg:mt-16 xl:text-[5.25rem] font-bold text-slate-900 dark:text-white leading-tight">
+                                    <h1 className="max-w-5xl mx-auto text-balance text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold text-slate-900 dark:text-white leading-tight">
                                         Stop Giving Away Your
                                         <span className="block text-blue-600 dark:text-blue-400">Car Expertise for Free</span>
                                     </h1>
-                                    <p className="mx-auto mt-8 max-w-2xl text-balance text-lg text-slate-600 dark:text-slate-300">
-                                        The professional platform where automotive enthusiasts create stunning digital showcases for their builds, organize parts lists, and earn affiliate commissions with every recommendation.
-                                    </p>
-                                    <p className="mx-auto mt-6 max-w-xl text-base text-slate-500 dark:text-slate-400">
-                                        Like Linktree, but built specifically for car enthusiasts. One clean link showcases your entire build with organized, shoppable parts lists.
-                                    </p>
+                                    
+                                    <div className="space-y-4 mt-6">
+                                        <p className="mx-auto max-w-2xl text-balance text-xl md:text-2xl text-slate-600 dark:text-slate-300 leading-relaxed">
+                                            The professional platform where automotive enthusiasts create stunning digital showcases for their builds, organize parts lists, and earn affiliate commissions with every recommendation.
+                                        </p>
+                                        <p className="mx-auto max-w-xl text-lg text-slate-500 dark:text-slate-400">
+                                            Like Linktree, but built specifically for car enthusiasts. One clean link showcases your entire build with organized, shoppable parts lists.
+                                        </p>
+                                    </div>
                                 </AnimatedGroup>
 
                                 <AnimatedGroup variants={{
@@ -80,7 +83,7 @@ export function HeroSection() {
                     }
                   }
                 }
-              }} className="mt-12 flex flex-col items-center justify-center gap-2 md:flex-row">
+              }} className="flex flex-col items-center justify-center gap-2 md:flex-row">
                                     <div className="bg-foreground/10 rounded-[14px] border p-0.5">
                                         <Link to="/sign-up">
                                           <Button size="lg" className="rounded-xl px-5 text-base bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600">
@@ -94,7 +97,7 @@ export function HeroSection() {
                                     </Button>
                                 </AnimatedGroup>
 
-                                <div className="mt-8 flex flex-wrap justify-center items-center gap-8 text-sm text-slate-500 dark:text-slate-400">
+                                <div className="flex flex-wrap justify-center items-center gap-8 text-sm text-slate-500 dark:text-slate-400">
                                     <div className="flex items-center">
                                         <div className="h-2 w-2 bg-green-500 rounded-full mr-2" />
                                         14-day free trial
@@ -108,10 +111,8 @@ export function HeroSection() {
                                         Cancel anytime
                                     </div>
                                 </div>
-                            </div>
-                        </div>
 
-                        <AnimatedGroup variants={{
+                                <AnimatedGroup variants={{
             item: transitionVariants.item,
             container: {
               visible: {
@@ -122,19 +123,20 @@ export function HeroSection() {
               }
             }
           }}>
-                            <div className="relative -mr-56 mt-8 overflow-hidden px-2 sm:mr-0 sm:mt-12 md:mt-20">
-                                
-                                <div className="inset-shadow-2xs ring-background dark:inset-shadow-white/20 bg-background relative mx-auto max-w-6xl overflow-hidden rounded-2xl border shadow-lg shadow-zinc-950/15 ring-1 p-4">
-                                    <div className="aspect-15/8 relative bg-gradient-to-br from-blue-900 to-slate-900 dark:from-blue-950 dark:to-slate-950 rounded-2xl flex items-center justify-center">
-                                        <div className="text-white text-center">
-                                            <Car className="mx-auto mb-4 h-16 w-16" />
-                                            <h3 className="text-2xl font-bold mb-2">CarFolio Dashboard Preview</h3>
-                                            <p className="text-blue-200 dark:text-blue-300">Professional car portfolio management</p>
+                                    <div className="mt-12 px-4 md:px-0">
+                                        <div className="relative max-w-sm mx-auto md:max-w-6xl md:h-[500px] lg:h-[600px] xl:h-[700px] md:overflow-hidden">
+                                            <img
+                                                src="/mac.png"
+                                                alt="MacBook showcasing CarFolio"
+                                                className="w-full h-auto object-contain md:object-cover md:object-top md:scale-125 select-none pointer-events-none"
+                                                loading="eager"
+                                                draggable={false}
+                                            />
                                         </div>
                                     </div>
-                                </div>
+                                </AnimatedGroup>
                             </div>
-                        </AnimatedGroup>
+                        </div>
                     </div>
                 </section>
             </main>

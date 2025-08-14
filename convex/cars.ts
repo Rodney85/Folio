@@ -1,36 +1,51 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { ConvexError } from "convex/values";
-import { Id } from "./_generated/dataModel";
+import { Id, Doc } from "./_generated/dataModel";
 import { getUser } from "./auth";
 
 // Create a new car with image URLs
 export const createCar = mutation({
   args: {
-    brand: v.string(),
+    make: v.string(),
     model: v.string(),
     year: v.number(),
-    power: v.string(),
-    torque: v.optional(v.number()),
+    package: v.optional(v.string()),
+    engine: v.optional(v.string()),
+    transmission: v.optional(v.string()),
+    drivetrain: v.optional(v.string()),
+    bodyStyle: v.optional(v.string()),
+    exteriorColor: v.optional(v.string()),
+    interiorColor: v.optional(v.string()),
+    generation: v.optional(v.string()),
+    powerHp: v.optional(v.string()),
+    torqueLbFt: v.optional(v.string()),
     description: v.optional(v.string()),
     images: v.optional(v.array(v.string())),
     isPublished: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    // Get current user ID
     try {
       const user = await getUser(ctx);
       
-      // Create car record
       const carId = await ctx.db.insert("cars", {
         userId: user.id,
-        make: args.brand,
+        make: args.make,
         model: args.model,
         year: args.year,
-        description: args.description ?? "",
+        package: args.package,
+        engine: args.engine,
+        transmission: args.transmission,
+        drivetrain: args.drivetrain,
+        bodyStyle: args.bodyStyle,
+        exteriorColor: args.exteriorColor,
+        interiorColor: args.interiorColor,
+        generation: args.generation,
+        powerHp: args.powerHp,
+        torqueLbFt: args.torqueLbFt,
+        description: args.description,
         images: args.images ?? [],
         isPublished: args.isPublished ?? true,
-        power: args.power,
         createdAt: new Date().toISOString(),
       });
 
@@ -97,11 +112,19 @@ export const getCarById = query({
 export const updateCar = mutation({
   args: {
     carId: v.id("cars"),
-    brand: v.optional(v.string()),
+    make: v.optional(v.string()),
     model: v.optional(v.string()),
     year: v.optional(v.number()),
-    power: v.optional(v.string()),
-    torque: v.optional(v.number()),
+    package: v.optional(v.string()),
+    engine: v.optional(v.string()),
+    transmission: v.optional(v.string()),
+    drivetrain: v.optional(v.string()),
+    bodyStyle: v.optional(v.string()),
+    exteriorColor: v.optional(v.string()),
+    interiorColor: v.optional(v.string()),
+    generation: v.optional(v.string()),
+    powerHp: v.optional(v.string()),
+    torqueLbFt: v.optional(v.string()),
     description: v.optional(v.string()),
     images: v.optional(v.array(v.string())),
     isPublished: v.optional(v.boolean()),
@@ -120,16 +143,8 @@ export const updateCar = mutation({
         throw new ConvexError("Not authorized to update this car");
       }
 
-      // Update only the fields that are provided
-      const updates: any = {};
-      if (args.brand !== undefined) updates.make = args.brand;
-      if (args.model !== undefined) updates.model = args.model;
-      if (args.year !== undefined) updates.year = args.year;
-      if (args.power !== undefined) updates.power = args.power;
-      if (args.torque !== undefined) updates.torque = args.torque;
-      if (args.description !== undefined) updates.description = args.description;
-      if (args.images !== undefined) updates.images = args.images;
-      if (args.isPublished !== undefined) updates.isPublished = args.isPublished;
+      const { carId, ...rest } = args;
+      const updates: Partial<Omit<Doc<"cars">, "_id" | "_creationTime">> = { ...rest };
       updates.updatedAt = new Date().toISOString();
 
       await ctx.db.patch(args.carId, updates);
