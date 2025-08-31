@@ -1,5 +1,5 @@
 [build]
-  command = "npm ci && npm run build"
+  command = "npm install && npm run build"
   publish = "dist"
 
 # Redirects for client-side routing with React Router
@@ -11,7 +11,7 @@
 # Environment variable definitions can be referenced here, but the actual values
 # should be set in the Netlify dashboard for security reasons
 [context.production]
-  environment = { NODE_VERSION = "18" }
+  environment = { NODE_VERSION = "20" }
 
 [context.deploy-preview]
-  environment = { NODE_VERSION = "18" }
+  environment = { NODE_VERSION = "20" }
