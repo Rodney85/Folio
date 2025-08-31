@@ -35,6 +35,8 @@ const CarGalleryPage = lazy(() => import("./pages/CarGalleryPage"));
 const EditCarPage = lazy(() => import("./pages/EditCarPage"));
 const AddModPage = lazy(() => import("./pages/AddModPage"));
 const ShopBuildPage = lazy(() => import("./pages/ShopBuildPage"));
+const SubscriptionPage = lazy(() => import("./pages/SubscriptionPage"));
+const SubscriptionSuccessPage = lazy(() => import("./pages/SubscriptionSuccessPage"));
 const PublicProfilePage = lazy(() => import("./pages/PublicProfilePage"));
 const PublicCarDetailsPage = lazy(() => import("./pages/PublicCarDetailsPage"));
 
@@ -146,6 +148,20 @@ const AppContent = () => {
               <Suspense fallback={<PageLoader />}>
                 <CarInsightsPage />
               </Suspense>
+            } />
+            <Route path="/subscription" element={
+              <AppLayout>
+                <Suspense fallback={<PageLoader />}>
+                  <SubscriptionPage />
+                </Suspense>
+              </AppLayout>
+            } />
+            <Route path="/subscription/success" element={
+              <AppLayout>
+                <Suspense fallback={<PageLoader />}>
+                  <SubscriptionSuccessPage />
+                </Suspense>
+              </AppLayout>
             } />
             <Route path="/cars" element={
               <AppLayout>

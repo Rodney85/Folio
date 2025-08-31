@@ -2,9 +2,11 @@ import ReactGA from 'react-ga4';
 
 // Initialize Google Analytics with your Measurement ID
 export const initGA = () => {
+  const GA_MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID;
+  
   // Only initialize in production to avoid tracking development activity
-  if (import.meta.env.PROD) {
-    ReactGA.initialize('G-F8FR35FNLS');
+  if (import.meta.env.PROD && GA_MEASUREMENT_ID) {
+    ReactGA.initialize(GA_MEASUREMENT_ID);
     console.log('Google Analytics initialized');
   } else {
     console.log('Google Analytics not initialized in development mode');

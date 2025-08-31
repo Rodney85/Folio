@@ -1,8 +1,8 @@
-  export default {
-    providers: [
-  {
-    "domain": "https://united-piglet-38.clerk.accounts.dev",
-    "applicationID": "convex"
-  }
-],
-  };
+export default {
+  providers: [
+    {
+      "domain": "https://carfolio.cc",
+      "applicationID": "convex"
+    }
+  ],
+};

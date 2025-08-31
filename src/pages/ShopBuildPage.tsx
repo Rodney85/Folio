@@ -5,27 +5,31 @@ import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
 import ResponsiveLayout from "@/components/layout/ResponsiveLayout";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 import { 
   ArrowLeft, 
   ShoppingBag, 
   ExternalLink, 
   Package, 
+  ShoppingBasket,
   DollarSign,
-  Calendar,
-  User,
+  ImageIcon,
   Car,
   Loader2
 } from "lucide-react";
 import CarImageWithUrl from "@/components/cars/CarImageWithUrl";
-import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { motion } from "framer-motion";
 
 const ShopBuildPage = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const isMobile = useMediaQuery("(max-width: 767px)");
+  const isMobile = useIsMobile();
+  const [activeFilter, setActiveFilter] = useState<string | null>(null);
+  const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   
   // Analytics tracking
   const logAnalytics = useMutation(api.analytics.logEvent);
@@ -33,7 +37,14 @@ const ShopBuildPage = () => {
   // Fetch car details and parts
   const car = useQuery(api.cars.getCarById, { carId: id as Id<"cars"> });
   const parts = useQuery(api.parts.getCarParts, id ? { carId: id as Id<"cars"> } : "skip");
-  const user = useQuery(api.users.getUserById, car?.userId ? { userId: car.userId } : "skip");
+
+  // Get unique categories for filtering
+  const categories = parts ? [...new Set(parts.map(part => part.category))].filter(Boolean) as string[] : [];
+
+  // Filter parts by category if a filter is active
+  const filteredParts = activeFilter
+    ? parts?.filter(part => part.category === activeFilter)
+    : parts;
 
   // Track page view
   useEffect(() => {
@@ -50,48 +61,86 @@ const ShopBuildPage = () => {
   const handleProductClick = (partId: Id<"parts">, partName: string) => {
     logAnalytics({
       type: "product_click",
-      partId: partId,
+      partId,
       carId: id as Id<"cars">,
       visitorDevice: isMobile ? "mobile" : "desktop",
     });
   };
 
+  // Loading state
   if (!car) {
     return (
       <ResponsiveLayout>
-        <div className="p-4 flex items-center justify-center h-full">
-          <div className="text-center">
-            <Loader2 className="h-8 w-8 text-blue-500 animate-spin mx-auto mb-4" />
-            <p className="text-muted-foreground">Loading shop build...</p>
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="min-h-[300px] flex items-center justify-center"
+        >
+          <div className="text-center p-8 max-w-md">
+            <div className="bg-slate-800/30 p-8 rounded-xl backdrop-blur-sm">
+              <Loader2 className="h-12 w-12 text-blue-500 animate-spin mx-auto mb-4" />
+              <p className="text-lg text-slate-200">Loading shop build...</p>
+            </div>
           </div>
-        </div>
+        </motion.div>
       </ResponsiveLayout>
     );
   }
 
+  // Not found state
   if (car === null) {
     return (
       <ResponsiveLayout>
-        <div className="p-4 flex items-center justify-center h-full">
-          <div className="text-center">
-            <h2 className="text-xl font-semibold mb-2">Car Not Found</h2>
-            <p className="text-muted-foreground mb-4">The car you're looking for doesn't exist or has been removed.</p>
-            <Button onClick={() => navigate('/cars')} variant="outline">
-              Back to Cars
-            </Button>
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="min-h-[300px] flex items-center justify-center"
+        >
+          <div className="text-center p-8 max-w-md">
+            <div className="bg-slate-800/30 p-8 rounded-xl backdrop-blur-sm">
+              <Car className="h-16 w-16 text-slate-400 mx-auto mb-4" />
+              <h2 className="text-2xl font-semibold mb-2 text-white">Car Not Found</h2>
+              <p className="text-slate-300 mb-6">
+                The car you're looking for doesn't exist or has been removed.
+              </p>
+              <Button 
+                onClick={() => navigate('/cars')} 
+                size="lg"
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Cars
+              </Button>
+            </div>
           </div>
-        </div>
+        </motion.div>
       </ResponsiveLayout>
     );
   }
 
   const totalValue = parts?.reduce((sum, part) => sum + (part.price || 0), 0) || 0;
 
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0 }
+  };
+
   return (
     <ResponsiveLayout>
-      <div className="bg-background text-foreground min-h-screen">
-        {/* Header */}
-        <header className="sticky top-0 z-10 bg-background border-b border-border shadow-sm">
+      <div className="bg-slate-900 text-slate-100">
+        {/* Header with car details */}
+        <header className="sticky top-0 z-10 bg-slate-900/80 backdrop-blur-lg border-b border-slate-800">
           <div className="container mx-auto px-4 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
@@ -99,173 +148,146 @@ const ShopBuildPage = () => {
                   variant="ghost"
                   size="icon"
                   onClick={() => navigate(-1)}
-                  className="rounded-full"
+                  className="rounded-full text-slate-300 hover:text-white hover:bg-slate-800"
                 >
                   <ArrowLeft className="h-5 w-5" />
                 </Button>
                 <div>
-                  <h1 className="text-xl font-semibold">Shop the Build</h1>
-                  <p className="text-sm text-muted-foreground">
+                  <h1 className="text-xl font-semibold text-white">Shop the Build</h1>
+                  <p className="text-sm text-slate-400">
                     {car.make} {car.model} ({car.year})
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <ShoppingBag className="h-5 w-5 text-blue-500" />
-                <span className="text-sm font-medium">
-                  {parts?.length || 0} Parts
-                </span>
+              <div className="flex items-center gap-3">
+                <div className="bg-slate-800 py-1.5 px-3 rounded-full flex items-center gap-2">
+                  <ShoppingBag className="h-4 w-4 text-blue-400" />
+                  <span className="text-sm font-medium text-slate-200">
+                    {parts?.length || 0} Parts
+                  </span>
+                </div>
+                {totalValue > 0 && (
+                  <div className="bg-slate-800 py-1.5 px-3 rounded-full flex items-center gap-2">
+                    <DollarSign className="h-4 w-4 text-green-400" />
+                    <span className="text-sm font-medium text-slate-200">
+                      ${totalValue.toFixed(2)}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </header>
 
-        <div className="container mx-auto px-4 py-6 max-w-6xl">
-          {/* Car Overview */}
-          <Card className="mb-8">
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle className="text-2xl font-bold">
-                    {car.make} {car.model} ({car.year})
-                  </CardTitle>
-                  <p className="text-muted-foreground mt-1">
-                    Built by {user?.username || 'Unknown User'}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <div className="text-2xl font-bold text-green-600">
-                    ${totalValue.toFixed(2)}
-                  </div>
-                  <p className="text-sm text-muted-foreground">Total Build Value</p>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Car Image */}
-                <div className="aspect-video rounded-lg overflow-hidden bg-muted">
-                  {car.images && car.images.length > 0 ? (
-                    <CarImageWithUrl
-                      storageId={car.images[0]}
-                      alt={`${car.make} ${car.model}`}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <Car className="h-12 w-12 text-muted-foreground" />
-                    </div>
+        <div className="container mx-auto px-4 py-8 max-w-6xl">
+          {/* Category filters */}
+          {categories.length > 1 && (
+            <div className="mb-8">
+              <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                <Button
+                  variant={activeFilter === null ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setActiveFilter(null)}
+                  className={cn(
+                    "rounded-full",
+                    activeFilter === null ? "bg-blue-600" : "border-slate-700 text-slate-300"
                   )}
-                </div>
-
-                {/* Car Specs */}
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="font-semibold mb-2">Specifications</h3>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      {car.powerHp && (
-                        <div>
-                          <span className="text-muted-foreground">Horsepower:</span>
-                          <span className="ml-2 font-medium">{car.powerHp}</span>
-                        </div>
-                      )}
-                      {car.torqueLbFt && (
-                        <div>
-                          <span className="text-muted-foreground">Torque:</span>
-                          <span className="ml-2 font-medium">{car.torqueLbFt}</span>
-                        </div>
-                      )}
-                      {car.engine && (
-                        <div>
-                          <span className="text-muted-foreground">Engine:</span>
-                          <span className="ml-2 font-medium">{car.engine}</span>
-                        </div>
-                      )}
-                      {car.transmission && (
-                        <div>
-                          <span className="text-muted-foreground">Transmission:</span>
-                          <span className="ml-2 font-medium">{car.transmission}</span>
-                        </div>
-                      )}
-                      {car.drivetrain && (
-                        <div>
-                          <span className="text-muted-foreground">Drivetrain:</span>
-                          <span className="ml-2 font-medium">{car.drivetrain}</span>
-                        </div>
-                      )}
-                      {car.bodyStyle && (
-                        <div>
-                          <span className="text-muted-foreground">Body Style:</span>
-                          <span className="ml-2 font-medium">{car.bodyStyle}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {car.description && (
-                    <div>
-                      <h3 className="font-semibold mb-2">Description</h3>
-                      <p className="text-sm text-muted-foreground leading-relaxed">
-                        {car.description}
-                      </p>
-                    </div>
-                  )}
-                </div>
+                >
+                  All Parts
+                </Button>
+                {categories.map((category) => (
+                  <Button
+                    key={category}
+                    variant={activeFilter === category ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setActiveFilter(category)}
+                    className={cn(
+                      "rounded-full",
+                      activeFilter === category ? "bg-blue-600" : "border-slate-700 text-slate-300"
+                    )}
+                  >
+                    {category}
+                  </Button>
+                ))}
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Parts Section */}
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Build Parts</h2>
-              <Badge variant="secondary">
-                {parts?.length || 0} Parts
-              </Badge>
             </div>
+          )}
 
-            {parts && parts.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {parts.map((part) => (
-                  <Card key={part._id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                    <div className="aspect-video bg-muted">
+          {/* Parts display - Grid layout */}
+          {filteredParts && filteredParts.length > 0 ? (
+            <motion.div 
+              variants={containerVariants}
+              initial="hidden"
+              animate="show"
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            >
+              {filteredParts.map((part) => (
+                <motion.div 
+                  key={part._id} 
+                  variants={itemVariants}
+                  onMouseEnter={() => setHoveredCard(part._id)}
+                  onMouseLeave={() => setHoveredCard(null)}
+                >
+                  <Card className={cn(
+                    "overflow-hidden transition-all duration-300 border-slate-800 bg-slate-800/50 backdrop-blur-sm",
+                    hoveredCard === part._id ? "shadow-lg shadow-blue-500/10 scale-[1.02] border-slate-700" : ""
+                  )}>
+                    {/* Image section */}
+                    <div className="relative aspect-video overflow-hidden">
                       {part.image ? (
-                        <CarImageWithUrl
-                          storageId={part.image}
-                          alt={part.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <Package className="h-12 w-12 text-muted-foreground" />
+                        <div className="relative h-full w-full group">
+                          <CarImageWithUrl
+                            storageId={part.image}
+                            alt={part.name}
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-60" />
                         </div>
-                      )}
-                    </div>
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between">
-                        <CardTitle className="text-lg">{part.name}</CardTitle>
-                        {part.price && (
-                          <div className="text-right">
-                            <div className="text-lg font-bold text-green-600">
-                              ${part.price.toFixed(2)}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                      <Badge variant="outline" className="w-fit">
-                        {part.category}
-                      </Badge>
-                    </CardHeader>
-                    <CardContent className="pt-0">
-                      {part.description && (
-                        <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-                          {part.description}
-                        </p>
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-slate-700/30">
+                          <ImageIcon className="h-12 w-12 text-slate-500" />
+                        </div>
                       )}
                       
+                      {/* Price tag */}
+                      {part.price && (
+                        <div className="absolute top-3 right-3">
+                          <Badge className="bg-green-600 text-white hover:bg-green-700">
+                            ${part.price.toFixed(2)}
+                          </Badge>
+                        </div>
+                      )}
+                      
+                      {/* Category tag */}
+                      <div className="absolute top-3 left-3">
+                        <Badge 
+                          variant="outline" 
+                          className="bg-slate-900/70 border-slate-700 text-slate-300 backdrop-blur-sm"
+                        >
+                          {part.category}
+                        </Badge>
+                      </div>
+                    </div>
+                    
+                    {/* Content section */}
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-xl text-slate-100">
+                        {part.name}
+                      </CardTitle>
+                    </CardHeader>
+                    
+                    <CardContent className="pb-0">
+                      {part.description && (
+                        <CardDescription className="text-slate-400 mb-4 line-clamp-2 leading-relaxed">
+                          {part.description}
+                        </CardDescription>
+                      )}
+                    </CardContent>
+                    
+                    <CardFooter className="pt-2 pb-4">
                       {part.purchaseUrl ? (
                         <Button
-                          className="w-full"
+                          className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                           onClick={() => {
                             handleProductClick(part._id, part.name);
                             window.open(part.purchaseUrl, '_blank');
@@ -275,29 +297,46 @@ const ShopBuildPage = () => {
                           View Product
                         </Button>
                       ) : (
-                        <Button variant="outline" className="w-full" disabled>
-                          <Package className="h-4 w-4 mr-2" />
+                        <Button variant="outline" className="w-full border-slate-700 text-slate-300" disabled>
+                          <ShoppingBasket className="h-4 w-4 mr-2" />
                           Contact for Purchase
                         </Button>
                       )}
-                    </CardContent>
+                    </CardFooter>
                   </Card>
-                ))}
-              </div>
-            ) : (
-              <Card>
-                <CardContent className="py-12 text-center">
-                  <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No Parts Available</h3>
-                  <p className="text-muted-foreground">
-                    This build doesn't have any parts listed yet.
+                </motion.div>
+              ))}
+            </motion.div>
+          ) : (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="h-auto"
+            >
+              <Card className="border-slate-800 bg-slate-800/30 overflow-hidden">
+                <div className="py-16 text-center">
+                  <div className="bg-slate-800/70 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <ShoppingBag className="h-10 w-10 text-slate-500" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-slate-100 mb-3">No Parts Available</h3>
+                  <p className="text-slate-400 max-w-md mx-auto">
+                    {activeFilter 
+                      ? `No parts found in the "${activeFilter}" category.` 
+                      : "This build doesn't have any parts listed yet."}
                   </p>
-                </CardContent>
+                  {activeFilter && (
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setActiveFilter(null)}
+                      className="mt-6 border-slate-700 text-slate-300 hover:bg-slate-800"
+                    >
+                      Show All Parts
+                    </Button>
+                  )}
+                </div>
               </Card>
-            )}
-          </div>
-
-          
+            </motion.div>
+          )}
         </div>
       </div>
     </ResponsiveLayout>

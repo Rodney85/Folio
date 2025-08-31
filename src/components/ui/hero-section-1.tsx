@@ -2,7 +2,7 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight, ChevronRight, Menu, X, Car, Squirrel } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { AnimatedGroup } from '@/components/ui/animated-group'
+import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
 const transitionVariants = {
@@ -39,30 +39,21 @@ export function HeroSection() {
                 </div>
                 <section>
                     <div className="relative pt-24 md:pt-36">
-                        <AnimatedGroup
+                        <motion.div
+                            initial="hidden"
+                            animate="visible"
                             variants={{
-                                container: {
-                                    visible: {
-                                        transition: {
-                                            delayChildren: 1,
-                                        },
-                                    },
-                                },
-                                item: {
-                                    hidden: {
-                                        opacity: 0,
-                                        y: 20,
-                                    },
-                                    visible: {
-                                        opacity: 1,
-                                        y: 0,
-                                        transition: {
-                                            type: 'spring' as const,
-                                            bounce: 0.3,
-                                            duration: 2,
-                                        },
-                                    },
-                                },
+                                hidden: { opacity: 0, y: 20 },
+                                visible: {
+                                    opacity: 1,
+                                    y: 0,
+                                    transition: {
+                                        type: 'spring',
+                                        bounce: 0.3,
+                                        duration: 2,
+                                        delay: 1
+                                    }
+                                }
                             }}
                             className="absolute inset-0 -z-20">
                             <img
@@ -72,11 +63,14 @@ export function HeroSection() {
                                 width="3276"
                                 height="4095"
                             />
-                        </AnimatedGroup>
+                        </motion.div>
                         <div aria-hidden className="absolute inset-0 -z-10 size-full [background:radial-gradient(125%_125%_at_50%_100%,transparent_0%,var(--background)_75%)]" />
                         <div className="mx-auto max-w-7xl px-6">
                             <div className="text-center sm:mx-auto lg:mr-auto lg:mt-0">
-                                <AnimatedGroup variants={transitionVariants}>
+                                <motion.div
+                                    initial="hidden"
+                                    animate="visible"
+                                    variants={transitionVariants}>
                                     <Link
                                         to="/sign-up"
                                         className="hover:bg-background dark:hover:border-t-border bg-muted group mx-auto flex w-fit items-center gap-4 rounded-full border p-1 pl-4 shadow-md shadow-black/5 transition-all duration-300 dark:border-t-white/5 dark:shadow-zinc-950">
@@ -104,23 +98,24 @@ export function HeroSection() {
                                         className="mx-auto mt-8 max-w-2xl text-balance text-lg text-slate-600 dark:text-slate-300">
                                         CarFolio is the definitive platform for the automotive creator. A stunning digital garage designed to showcase your vehicles, share your story, and monetize your passion. All with a single link.
                                     </p>
-                                </AnimatedGroup>
+                                </motion.div>
 
-                                <AnimatedGroup
+                                <motion.div
+                                    initial="hidden"
+                                    animate="visible"
                                     variants={{
-                                        container: {
-                                            visible: {
-                                                transition: {
-                                                    staggerChildren: 0.05,
-                                                    delayChildren: 0.75,
-                                                },
+                                        hidden: {},
+                                        visible: {
+                                            transition: {
+                                                staggerChildren: 0.05,
+                                                delayChildren: 0.75,
                                             },
                                         },
-                                        ...transitionVariants,
                                     }}
                                     className="mt-12 flex flex-col items-center justify-center gap-2 md:flex-row">
-                                    <div
+                                    <motion.div
                                         key={1}
+                                        variants={transitionVariants.item}
                                         className="bg-foreground/10 rounded-[14px] border p-0.5">
                                         <Button
                                             asChild
@@ -131,9 +126,10 @@ export function HeroSection() {
                                                 <ArrowRight className="ml-2 h-5 w-5" />
                                             </Link>
                                         </Button>
-                                    </div>
-                                    <div
+                                    </motion.div>
+                                    <motion.div
                                         key={2}
+                                        variants={transitionVariants.item}
                                         className="bg-foreground/5 rounded-[14px] border border-border/50 p-0.5 hover:border-border transition-colors">
                                         <Button
                                             asChild
@@ -147,24 +143,26 @@ export function HeroSection() {
                                                 <span className="text-nowrap">View Demo</span>
                                             </Link>
                                         </Button>
-                                    </div>
-                                </AnimatedGroup>
+                                    </motion.div>
+                                </motion.div>
                             </div>
                         </div>
 
-                        <AnimatedGroup
+                        <motion.div
+                            initial="hidden"
+                            animate="visible"
                             variants={{
-                                container: {
-                                    visible: {
-                                        transition: {
-                                            staggerChildren: 0.05,
-                                            delayChildren: 0.75,
-                                        },
+                                hidden: {},
+                                visible: {
+                                    transition: {
+                                        staggerChildren: 0.05,
+                                        delayChildren: 0.75,
                                     },
                                 },
-                                ...transitionVariants,
                             }}>
-                            <div className="relative mt-8 sm:mt-12 md:mt-20 overflow-visible">
+                            <motion.div 
+                                variants={transitionVariants.item}
+                                className="relative mt-8 sm:mt-12 md:mt-20 overflow-visible">
                                 <div className="relative">
                                     <img
                                         className="w-full h-auto object-contain select-none pointer-events-none"
@@ -174,8 +172,8 @@ export function HeroSection() {
                                         height="1440"
                                     />
                                 </div>
-                            </div>
-                        </AnimatedGroup>
+                            </motion.div>
+                        </motion.div>
                     </div>
                 </section>
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { ArrowRight, Menu, X, Car } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { AnimatedGroup } from '@/components/ui/animated-group';
+import { motion } from 'framer-motion';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { cn } from '@/lib/utils';
 import { useUser } from '@clerk/clerk-react';
@@ -41,7 +41,10 @@ export function HeroSection() {
                         <div aria-hidden className="absolute inset-0 -z-10 size-full [background:radial-gradient(125%_125%_at_50%_100%,transparent_0%,var(--background)_75%)]" />
                         <div className="mx-auto max-w-7xl px-6 flex-1 flex flex-col justify-center">
                             <div className="text-center space-y-8">
-                                <AnimatedGroup variants={transitionVariants}>
+                                <motion.div
+                                    initial="hidden"
+                                    animate="visible"
+                                    variants={transitionVariants}>
                                     <div className="hover:bg-background dark:hover:border-t-border bg-muted group mx-auto flex w-fit items-center gap-4 rounded-full border p-1 pl-4 shadow-md shadow-black/5 transition-all duration-300 dark:border-t-white/5 dark:shadow-zinc-950">
                                         <span className="text-foreground text-sm">Turn Your Car Knowledge Into Income</span>
                                         <span className="dark:border-background block h-4 w-0.5 border-l bg-white dark:bg-zinc-700"></span>
@@ -71,31 +74,37 @@ export function HeroSection() {
                                             Like Linktree, but built specifically for car enthusiasts. One clean link showcases your entire build with organized, shoppable parts lists.
                                         </p>
                                     </div>
-                                </AnimatedGroup>
+                                </motion.div>
 
-                                <AnimatedGroup variants={{
-                item: transitionVariants.item,
-                container: {
-                  visible: {
-                    transition: {
-                      staggerChildren: 0.05,
-                      delayChildren: 0.75
-                    }
-                  }
-                }
-              }} className="flex flex-col items-center justify-center gap-2 md:flex-row">
-                                    <div className="bg-foreground/10 rounded-[14px] border p-0.5">
+                                <motion.div
+                                    initial="hidden"
+                                    animate="visible"
+                                    variants={{
+                                        hidden: {},
+                                        visible: {
+                                            transition: {
+                                                staggerChildren: 0.05,
+                                                delayChildren: 0.75
+                                            }
+                                        }
+                                    }}
+                                    className="flex flex-col items-center justify-center gap-2 md:flex-row">
+                                    <motion.div
+                                        variants={transitionVariants.item}
+                                        className="bg-foreground/10 rounded-[14px] border p-0.5">
                                         <Link to="/sign-up">
                                           <Button size="lg" className="rounded-xl px-5 text-base bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600">
                                               <span className="text-nowrap">Start Building Your Portfolio - Free</span>
                                               <ArrowRight className="ml-2 h-5 w-5" />
                                           </Button>
                                         </Link>
-                                    </div>
-                                    <Button size="lg" variant="ghost" className="h-10.5 rounded-xl px-5 hover:bg-slate-100 dark:hover:bg-slate-800">
-                                        <span className="text-nowrap">See Example Portfolio</span>
-                                    </Button>
-                                </AnimatedGroup>
+                                    </motion.div>
+                                    <motion.div variants={transitionVariants.item}>
+                                        <Button size="lg" variant="ghost" className="h-10.5 rounded-xl px-5 hover:bg-slate-100 dark:hover:bg-slate-800">
+                                            <span className="text-nowrap">See Example Portfolio</span>
+                                        </Button>
+                                    </motion.div>
+                                </motion.div>
 
                                 <div className="flex flex-wrap justify-center items-center gap-8 text-sm text-slate-500 dark:text-slate-400">
                                     <div className="flex items-center">
@@ -112,18 +121,21 @@ export function HeroSection() {
                                     </div>
                                 </div>
 
-                                <AnimatedGroup variants={{
-            item: transitionVariants.item,
-            container: {
-              visible: {
-                transition: {
-                  staggerChildren: 0.05,
-                  delayChildren: 0.75
-                }
-              }
-            }
-          }}>
-                                    <div className="mt-12 px-4 md:px-0">
+                                <motion.div
+                                    initial="hidden"
+                                    animate="visible"
+                                    variants={{
+                                        hidden: {},
+                                        visible: {
+                                            transition: {
+                                                staggerChildren: 0.05,
+                                                delayChildren: 0.75
+                                            }
+                                        }
+                                    }}>
+                                    <motion.div
+                                        variants={transitionVariants.item}
+                                        className="mt-12 px-4 md:px-0">
                                         <div className="relative max-w-sm mx-auto md:max-w-6xl md:h-[500px] lg:h-[600px] xl:h-[700px] md:overflow-hidden">
                                             <img
                                                 src="/mac.png"
@@ -133,8 +145,8 @@ export function HeroSection() {
                                                 draggable={false}
                                             />
                                         </div>
-                                    </div>
-                                </AnimatedGroup>
+                                    </motion.div>
+                                </motion.div>
                             </div>
                         </div>
                     </div>
@@ -169,7 +181,7 @@ const HeroHeader = () => {
   }, []);
   return <header>
             <nav data-state={menuState && 'active'} className="fixed z-20 w-full px-2 group">
-                <div className={cn('mx-auto mt-2 max-w-6xl px-6 transition-all duration-300 lg:px-12', isScrolled && 'bg-background/50 max-w-4xl rounded-2xl border backdrop-blur-lg lg:px-5')}>
+                <div className={cn('mx-auto mt-6 sm:mt-4 md:mt-2 mobile-navbar-spacing max-w-6xl px-6 transition-all duration-300 lg:px-12', isScrolled && 'bg-background/50 max-w-4xl rounded-2xl border backdrop-blur-lg lg:px-5')} style={{ marginTop: 'max(1.5rem, env(safe-area-inset-top))' }}>
                     <div className="relative flex flex-wrap items-center justify-between gap-6 py-3 lg:gap-0 lg:py-4">
                         <div className="flex w-full justify-between lg:w-auto">
                             <div className="flex items-center space-x-2">

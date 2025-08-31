@@ -2,6 +2,37 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 export default defineSchema({
+  // Orders table for subscription payments
+  orders: defineTable({
+    userId: v.string(),                     // Clerk user ID
+    orderId: v.string(),                    // External order ID from payment provider
+    orderNumber: v.string(),                // Human-readable order number
+    total: v.number(),                      // Order amount
+    currency: v.string(),                   // Currency code (e.g., 'USD')
+    createdAt: v.number(),                 // Timestamp when order was created
+    recordedAt: v.number(),                // Timestamp when order was recorded in our system
+  }).index("by_user", ["userId"])
+    .index("by_orderId", ["orderId"]),
+    
+  // Subscription management table
+  subscriptions: defineTable({
+    userId: v.string(),                           // Clerk user ID
+    status: v.string(),                          // 'trial', 'active', 'expired', 'canceled'
+    plan: v.string(),                           // 'monthly', 'yearly'
+    trialStartDate: v.number(),                 // Timestamp when trial started
+    trialEndDate: v.number(),                   // Timestamp when trial ends
+    subscriptionId: v.optional(v.string()),     // Lemon Squeezy subscription ID
+    customerId: v.optional(v.string()),         // Lemon Squeezy customer ID
+    currentPeriodEnd: v.optional(v.number()),   // Timestamp when current billing period ends
+    cancelAtPeriodEnd: v.optional(v.boolean()), // Whether subscription cancels at period end
+    canceledAt: v.optional(v.number()),         // Timestamp when subscription was canceled
+    createdAt: v.number(),                      // Timestamp when record was created
+    updatedAt: v.number(),                      // Timestamp when record was last updated
+  }).index("by_userId", ["userId"])
+    .index("by_status", ["status"])
+    .index("by_trial_end", ["trialEndDate"])
+    .index("by_subscriptionId", ["subscriptionId"]),
+
   users: defineTable({
     name: v.string(),
     email: v.string(),
@@ -109,6 +140,9 @@ export default defineSchema({
     migrationName: v.optional(v.string()), // Name of migration that generated this event
     updatedCount: v.optional(v.number()), // Count of items updated in a migration
     
+    // Additional metadata for any event-specific data
+    metadata: v.optional(v.any()),         // Flexible field for event-specific data
+    
     // Timestamps
     createdAt: v.number(), // Date.now()
   })
@@ -119,3 +153,4 @@ export default defineSchema({
   .index("recent_by_user", ["userId", "createdAt"])
   .index("recent_by_car", ["carId", "createdAt"]),
 });
+

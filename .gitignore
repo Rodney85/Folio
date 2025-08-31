@@ -15,7 +15,7 @@ dist-ssr
 
 # Environment Variables - CRITICAL
 .env
-.env.*
+.env.local
 !.env.example
 
 # Documentation with sensitive information

@@ -4,6 +4,7 @@ import { useUser, useAuth, useClerk } from '@clerk/clerk-react';
 import { BarChart3, Plus, UserCircle2, Menu, X, Home, Shield, CreditCard, Monitor, Flag, LogOut, ChevronRight, Share, Eye } from 'lucide-react';
 import SquirrelIcon from '@/components/icons/SquirrelIcon';
 import ShareModal from '@/components/ShareModal';
+import SubscriptionStatusBadge from '@/components/subscription/SubscriptionStatusBadge';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { useQuery } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
@@ -105,7 +106,7 @@ export const ResponsiveLayout = ({ children }: ResponsiveLayoutProps) => {
       title: "Subscription",
       icon: <CreditCard className="h-5 w-5" />,
       onClick: () => {
-        // Navigate to subscription page
+        navigate('/subscription');
       }
     },
     {
@@ -192,12 +193,15 @@ export const ResponsiveLayout = ({ children }: ResponsiveLayoutProps) => {
                       className="w-10 h-10 rounded-full" 
                     />
                     <div className="flex flex-col text-left min-w-0 flex-shrink">
-                      <span className="font-medium text-sm truncate max-w-[120px]">
-                        @{profile?.username || user?.firstName?.toLowerCase() || "carfolio.cc"}
+                      <span className="font-medium text-sm truncate max-w-[140px]">
+                        {profile?.username || user?.firstName || "carfolio.cc"}
                       </span>
-                      <span className="text-xs text-slate-400 truncate max-w-[120px]">
-                        {(user?.primaryEmailAddress?.emailAddress || "").split('@')[0]}
+                      <span className="text-xs text-slate-400 truncate max-w-[140px]">
+                        {user?.primaryEmailAddress?.emailAddress || "email@example.com"}
                       </span>
+                      <div className="mt-1">
+                        <SubscriptionStatusBadge />
+                      </div>
                     </div>
                   </button>
                   <button 

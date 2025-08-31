@@ -41,8 +41,8 @@ export default defineConfig(({ mode }) => ({
             './src/pages/admin/AdminContentPage.tsx',
             './src/pages/admin/AdminOperationsPage.tsx',
           ],
-          // Analytics chunks
-          analytics: [
+          // Analytics page chunks
+          analyticsPages: [
             './src/pages/AnalyticsPage.tsx',
             './src/pages/ProAnalyticsPage.tsx',
             './src/pages/CarInsightsPage.tsx',

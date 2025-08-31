@@ -4,7 +4,7 @@ import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import { Id } from '../../convex/_generated/dataModel';
 import { cn } from '@/lib/utils';
-import { ArrowLeft, Pencil, ExternalLink, ShoppingBag, Trash2, Loader } from 'lucide-react';
+import { ArrowLeft, Pencil, ExternalLink, ShoppingBag, ShoppingCart, Trash2, Loader } from 'lucide-react';
 import CarImageWithUrl from '@/components/cars/CarImageWithUrl';
 import { Button } from '@/components/ui/button';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
@@ -29,21 +29,24 @@ const CarDetailsPage = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   // Fetch car details using the ID from params
-  const car = useQuery(api.cars.getCarById, { carId: id as Id<"cars"> });
+  const carId = id ? id : "";
+  // Safely cast the ID once and use the typed variable throughout
+  const typedCarId = carId ? (carId as Id<"cars">) : null;
+  const car = useQuery(api.cars.getCarById, typedCarId ? { carId: typedCarId } : "skip");
   
   // Fetch parts/products for this car
-  const parts = useQuery(api.parts.getCarParts, id ? { carId: id as Id<"cars"> } : "skip");
+  const parts = useQuery(api.parts.getCarParts, typedCarId ? { carId: typedCarId } : "skip");
   
   // Delete car mutation
-  const deleteCarMutation = useMutation(api.cars.deleteCar);
+  const deleteCarMutation = useMutation(api.cars.deleteCar) as any;
   
   // Track car view when data loads
-  const logAnalytics = useMutation(api.analytics.logEvent);
+  const logAnalytics = useMutation(api.analytics.logEvent) as any;
   useEffect(() => {
-    if (car) {
+    if (car && typedCarId) {
       logAnalytics({
         type: "car_view",
-        carId: id as Id<"cars">,
+        carId: typedCarId,
         visitorDevice: isMobile ? "mobile" : "desktop",
         referrer: document.referrer || undefined,
         utmSource: new URLSearchParams(window.location.search).get("utm_source") || undefined,
@@ -51,7 +54,7 @@ const CarDetailsPage = () => {
         utmCampaign: new URLSearchParams(window.location.search).get("utm_campaign") || undefined,
       });
     }
-  }, [car, id, logAnalytics]);
+  }, [car, typedCarId, logAnalytics, isMobile]);
   
   // Define handlers for image navigation
   const handleImageNavigation = {
@@ -143,8 +146,8 @@ const CarDetailsPage = () => {
           <Button 
             variant="destructive"
             onClick={async () => {
-              if (id) {
-                await deleteCarMutation({ carId: id as Id<"cars"> });
+              if (typedCarId) {
+                await deleteCarMutation({ carId: typedCarId });
                 setDeleteDialogOpen(false);
                 navigate(-1); // Go back after deletion
               }
@@ -193,8 +196,8 @@ const CarDetailsPage = () => {
 
       {/* Main content */}
       <div className="flex-1 overflow-auto pb-24">
-        {/* Desktop layout */}
         {!isMobile ? (
+          // Desktop layout
           <div className="flex flex-row gap-10 p-6">
             {/* Left column: Image gallery */}
             <div className="w-[55%]">
@@ -264,30 +267,10 @@ const CarDetailsPage = () => {
                   {car.make} {car.model}
                 </h1>
                 
-                {/* Year Badge */}
-                <div className="mb-5">
-                  <span className="bg-slate-800 px-6 py-2 rounded-full text-white font-medium">{car.year || '2022'}</span>
-                </div>
-                
-                {/* Car Specs Grid - Moved before description */}
+                {/* Description */}
                 <div className="mb-8 mt-4">
-                  <h3 className="text-2xl font-semibold text-white mb-4">Specifications</h3>
-                  <div className="grid grid-cols-2 gap-8">
-                    <div>
-                      <p className="text-slate-400 mb-2">Horsepower</p>
-                      <p className="text-3xl font-semibold text-white">{car.powerHp || 'N/A'}</p>
-                    </div>
-                    <div>
-                      <p className="text-slate-400 mb-2">Torque</p>
-                      <p className="text-3xl font-semibold text-white">{car.torqueLbFt || 'N/A'}</p>
-                    </div>
-                    {/* Engine and Drive sections removed as requested */}
-                  </div>
-                </div>
-                
-                {/* Description with flexible height */}
-                <div className="min-h-[60px] mb-6">
-                  <div className="text-slate-400">
+                  <h3 className="text-2xl font-semibold text-white mb-4">Description</h3>
+                  <div className="text-slate-400 min-h-[60px]">
                     {car.description ? (
                       car.description.split('\n').map((line, index) => {
                         // Check if line starts with list markers
@@ -304,7 +287,7 @@ const CarDetailsPage = () => {
                           );
                         } else if (isNumberedItem) {
                           // Handle numbered list items
-                          const number = line.match(/^\s*(\d+)\.\s+/)[1];
+                          const number = line.match(/^\s*(\d+)\.\s+/)?.[1] || '';
                           return (
                             <div key={index} className="flex items-start mb-2">
                               <span className="mr-2">{number}.</span>
@@ -321,15 +304,103 @@ const CarDetailsPage = () => {
                     )}
                   </div>
                 </div>
+                
+                {/* Detailed Specifications */}
+                <div className="mb-4">
+                  <h3 className="text-2xl font-semibold text-white mb-2">Specifications</h3>
+                  <div className="border-b border-slate-700 mb-4"></div>
+                  <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+                    {/* Key Performance Specs */}
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Year:</span>
+                      <span className="text-white">{car.year || 'N/A'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Horsepower:</span>
+                      <span className="text-white">{car.powerHp || 'N/A'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Torque:</span>
+                      <span className="text-white">{car.torqueLbFt || 'N/A'}</span>
+                    </div>
+                    {car.engine && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Engine:</span>
+                        <span className="text-white">{car.engine}</span>
+                      </div>
+                    )}
+                    {car.transmission && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Transmission:</span>
+                        <span className="text-white">{car.transmission}</span>
+                      </div>
+                    )}
+                    {car.drivetrain && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Drivetrain:</span>
+                        <span className="text-white">{car.drivetrain}</span>
+                      </div>
+                    )}
+                    {car.bodyStyle && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Body Style:</span>
+                        <span className="text-white">{car.bodyStyle}</span>
+                      </div>
+                    )}
+                    {car.exteriorColor && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Exterior Color:</span>
+                        <span className="text-white">{car.exteriorColor}</span>
+                      </div>
+                    )}
+                    {car.interiorColor && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Interior Color:</span>
+                        <span className="text-white">{car.interiorColor}</span>
+                      </div>
+                    )}
+                    {car.package && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Package:</span>
+                        <span className="text-white">{car.package}</span>
+                      </div>
+                    )}
+                    {car.generation && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-400">Generation:</span>
+                        <span className="text-white">{car.generation}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Shop Build Button below specifications - always visible for consistency */}
+                <div className="mb-8">
+                  <button 
+                    onClick={() => {
+                      if (typedCarId) {
+                        logAnalytics({
+                          type: "shop_build_click",
+                          carId: typedCarId,
+                          visitorDevice: isMobile ? "mobile" : "desktop",
+                        });
+                        
+                        navigate(`/car/${id}/shop-build`);
+                      }
+                    }}
+                    className="w-full bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 py-3 px-6 rounded-md text-white font-semibold text-base flex items-center justify-center gap-3 shadow-lg transition-all duration-200 border border-blue-500/30 uppercase tracking-wider"
+                  >
+                    <ShoppingBag className="w-5 h-5" />
+                    Shop The Build
+                  </button>
+                </div>
+                
+                {/* Shop Build Button moved below specifications */}
               </div>
-              
-              {/* Price and contact sections removed as requested */}
-              
-              {/* Parts section will be shown elsewhere */}
             </div>
           </div>
         ) : (
-          /* Mobile layout */
+          // Mobile layout
           <>
             {/* Mobile Image Gallery - Styled to match public view */}
             <div className="relative w-full aspect-[4/3] bg-slate-800 mb-3">
@@ -387,32 +458,10 @@ const CarDetailsPage = () => {
                 {car.make} {car.model}
               </h1>
               
-              {/* Year Badge - Moved before description */}
+              {/* Description moved to top */}
               <div className="mb-5">
-                <span className="bg-slate-800 px-6 py-2 rounded-full text-white font-medium">{car.year || '2022'}</span>
-              </div>
-              
-              {/* Mobile Specifications - Moved before description */}
-              <h3 className="text-xl font-semibold text-white mb-4">Specifications</h3>
-            
-              {/* Mobile Car Specs */}
-              <div className="mb-6">
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="border-b border-slate-700 py-4">
-                    <p className="text-slate-400 mb-1">Horsepower</p>
-                    <p className="text-2xl font-semibold text-white">{car.powerHp || 'N/A'}</p>
-                  </div>
-                  <div className="border-b border-slate-700 py-4">
-                    <p className="text-slate-400 mb-1">Torque</p>
-                    <p className="text-2xl font-semibold text-white">{car.torqueLbFt || 'N/A'}</p>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Description with flexible height */}
-              <div className="min-h-[60px] mb-6">
                 <h3 className="text-xl font-semibold text-white mb-4">Description</h3>
-                <div className="text-slate-400">
+                <div className="text-slate-400 mb-6">
                   {car.description ? (
                     car.description.split('\n').map((line, index) => {
                       // Check if line starts with list markers
@@ -429,7 +478,7 @@ const CarDetailsPage = () => {
                         );
                       } else if (isNumberedItem) {
                         // Handle numbered list items
-                        const number = line.match(/^\s*(\d+)\.\s+/)[1];
+                        const number = line.match(/^\s*(\d+)\.\s+/)?.[1] || '';
                         return (
                           <div key={index} className="flex items-start mb-2">
                             <span className="mr-2">{number}.</span>
@@ -446,32 +495,98 @@ const CarDetailsPage = () => {
                   )}
                 </div>
               </div>
+
+              {/* Mobile Specifications - Unified section with all specs */}
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-xl font-semibold text-white">Specifications</h3>
+                <button
+                  onClick={() => {
+                    if (typedCarId) {
+                      logAnalytics({
+                        type: "shop_build_click",
+                        carId: typedCarId,
+                        visitorDevice: "mobile",
+                      });
+                      
+                      navigate(`/car/${id}/shop-build`);
+                    }
+                  }}
+                  className="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 py-2 px-4 rounded-md text-white font-semibold text-sm shadow-lg transition-all duration-200 border border-blue-500/30 uppercase tracking-wider"
+                >
+                  <ShoppingCart className="w-4 h-4" />
+                  SHOP BUILD
+                </button>
+              </div>
+              
+              {/* All Mobile Car Specs */}
+              <div className="space-y-3 mb-6">
+                <div className="py-3 flex justify-between">
+                  <span className="text-slate-400">Year</span>
+                  <span className="text-white text-right">{car.year || 'N/A'}</span>
+                </div>
+                <div className="py-3 flex justify-between">
+                  <span className="text-slate-400">Horsepower</span>
+                  <span className="text-white text-right">{car.powerHp || 'N/A'}</span>
+                </div>
+                <div className="py-3 flex justify-between">
+                  <span className="text-slate-400">Torque</span>
+                  <span className="text-white text-right">{car.torqueLbFt || 'N/A'}</span>
+                </div>
+                {car.engine && (
+                  <div className="py-3 flex justify-between">
+                    <span className="text-slate-400">Engine</span>
+                    <span className="text-white text-right">{car.engine}</span>
+                  </div>
+                )}
+                {car.transmission && (
+                  <div className="py-3 flex justify-between">
+                    <span className="text-slate-400">Transmission</span>
+                    <span className="text-white text-right">{car.transmission}</span>
+                  </div>
+                )}
+                {car.drivetrain && (
+                  <div className="py-3 flex justify-between">
+                    <span className="text-slate-400">Drivetrain</span>
+                    <span className="text-white text-right">{car.drivetrain}</span>
+                  </div>
+                )}
+                {car.bodyStyle && (
+                  <div className="py-3 flex justify-between">
+                    <span className="text-slate-400">Body Style</span>
+                    <span className="text-white text-right">{car.bodyStyle}</span>
+                  </div>
+                )}
+                {car.exteriorColor && (
+                  <div className="py-3 flex justify-between">
+                    <span className="text-slate-400">Exterior Color</span>
+                    <span className="text-white text-right">{car.exteriorColor}</span>
+                  </div>
+                )}
+                {car.interiorColor && (
+                  <div className="py-3 flex justify-between">
+                    <span className="text-slate-400">Interior Color</span>
+                    <span className="text-white text-right">{car.interiorColor}</span>
+                  </div>
+                )}
+                {car.package && (
+                  <div className="py-3 flex justify-between">
+                    <span className="text-slate-400">Package</span>
+                    <span className="text-white text-right">{car.package}</span>
+                  </div>
+                )}
+                {car.generation && (
+                  <div className="py-3 flex justify-between">
+                    <span className="text-slate-400">Generation</span>
+                    <span className="text-white text-right">{car.generation}</span>
+                  </div>
+                )}
+              </div>
             </div>
           </>
         )}
         
-        {/* Shop the Build Button */}
-        {parts && parts.length > 0 && (
-          <div className={`${isMobile ? 'px-4' : 'px-6'} ${isMobile ? 'mt-8 mb-8' : 'mt-6 mb-10'}`}>
-            <button 
-              onClick={() => {
-                // Log analytics event for all parts
-                logAnalytics({
-                  type: "shop_build_click",
-                  carId: id as Id<"cars">,
-                  visitorDevice: isMobile ? "mobile" : "desktop",
-                });
-                
-                // Navigate to the dedicated shop build page
-                navigate(`/car/${id}/shop-build`);
-              }}
-              className="w-full bg-blue-600 hover:bg-blue-700 py-4 px-6 rounded-md text-white font-semibold text-lg flex items-center justify-center gap-2 shadow-md transition-all duration-200 hover:shadow-lg hover:scale-[1.01]"
-            >
-              <ShoppingBag className="w-5 h-5" />
-              Shop the build ({parts.length})
-            </button>
-          </div>
-        )}
+        {/* Main shop build button removed for mobile since we have the icon, 
+        and desktop has its own button in the specifications section */}
       </div>
     </div>
   );
