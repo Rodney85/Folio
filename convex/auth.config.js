@@ -1,7 +1,7 @@
 export default {
   providers: [
     {
-      "domain": "https://carfolio.cc",
+      "domain": "https://cheerful-nightingale-342.clerk.accounts.dev",
       "applicationID": "convex"
     }
   ],
