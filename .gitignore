@@ -21,6 +21,15 @@ dist-ssr
 # Documentation with sensitive information
 /src/Md/
 
+# Documentation files - exclude from version control
+*.md
+!README.md
+/docs/
+*.analysis
+*.summary
+*.report
+*.tasks
+
 # Convex local dev files
 .convex/
 

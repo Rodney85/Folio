@@ -62,21 +62,68 @@ npm run dev
 
 ## 🌐 Environment Variables
 
-Create a `.env` file in the root directory with the following variables:
+We use separate environment files for different environments:
+
+- `.env.development` - Local development settings
+- `.env.local` - Production deployment settings (used by Netlify)
+
+### Development Environment
+
+Create a `.env.development` file in the root directory with the following variables:
 
 ```
-# Convex
-CONVEX_DEPLOYMENT=your_convex_deployment_id
+# Convex (local development)
+VITE_CONVEX_URL=http://localhost:3000
+CONVEX_DEPLOYMENT=
 
-# Clerk
-CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
+# Clerk (development keys)
+VITE_CLERK_PUBLISHABLE_KEY=pk_test_your_development_key
+CLERK_SECRET_KEY=sk_test_your_development_key
 
 # Backblaze
-BACKBLAZE_BUCKET_ID=your_backblaze_bucket_id
-BACKBLAZE_APP_KEY=your_backblaze_app_key
+VITE_BACKBLAZE_KEY_ID=your_backblaze_key_id
+VITE_BACKBLAZE_APP_KEY=your_backblaze_app_key
+VITE_BACKBLAZE_BUCKET_ID=your_backblaze_bucket_id
+VITE_BACKBLAZE_BUCKET_NAME=your_backblaze_bucket_name
 
-# Paystack (if implemented)
-PAYSTACK_PUBLIC_KEY=your_paystack_public_key
+# Admin
+ADMIN_SECRET_TOKEN=your_admin_token
+
+# Development Environment
+NODE_ENV=development
+VITE_APP_URL=http://localhost:5173
+
+# Analytics (optional)
+VITE_GA_MEASUREMENT_ID=your_ga_measurement_id
+```
+
+### Production Environment
+
+The `.env.local` file contains production settings and is used by Netlify for deployment:
+
+```
+# Convex (production)
+VITE_CONVEX_URL=https://your-production.convex.cloud
+CONVEX_DEPLOYMENT=your_production_deployment_id
+
+# Clerk (production keys)
+VITE_CLERK_PUBLISHABLE_KEY=pk_live_your_production_key
+CLERK_SECRET_KEY=sk_live_your_production_key
+
+# Backblaze (production bucket)
+VITE_BACKBLAZE_KEY_ID=your_backblaze_key_id
+VITE_BACKBLAZE_APP_KEY=your_backblaze_app_key
+VITE_BACKBLAZE_BUCKET_ID=your_backblaze_bucket_id
+VITE_BACKBLAZE_BUCKET_NAME=your_backblaze_bucket_name
+
+# Admin
+ADMIN_SECRET_TOKEN=your_admin_token
+
+# Production Environment
+VITE_APP_URL=https://yourdomain.com
+
+# Analytics
+VITE_GA_MEASUREMENT_ID=your_ga_measurement_id
 ```
 
 ## 📱 Mobile App
