@@ -24,11 +24,10 @@ export const ShareModal = ({
   username,
   profileUrl,
 }: ShareModalProps) => {
-  // Ensure profileUrl uses /u/ instead of /profile/ on large screens
-  const formattedProfileUrl = profileUrl.replace('/profile/', '/u/');
   const [qrSize, setQrSize] = useState(200);
   const qrRef = useRef<SVGSVGElement>(null);
-  
+  const formattedProfileUrl = profileUrl;
+
   // Handle QR code download
   const handleDownload = () => {
     if (!qrRef.current) return;
@@ -103,7 +102,7 @@ export const ShareModal = ({
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  });
+  }, []);
   
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>

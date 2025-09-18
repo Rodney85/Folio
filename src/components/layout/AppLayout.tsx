@@ -1,48 +1,34 @@
-import React, { useState } from "react";
+import { useState, ReactNode } from "react";
 import { useUser } from "@clerk/clerk-react";
-import { useLocation } from "react-router-dom";
 import ShareModal from "../ShareModal";
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
-import { useMediaQuery } from "../../hooks/useMediaQuery";
+import { PageTransition } from "@/components/ui/page-transition";
 
 interface AppLayoutProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
-const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
+const AppLayout = ({ children }: AppLayoutProps) => {
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const { user } = useUser();
-  const location = useLocation();
-  const isMobile = useMediaQuery("(max-width: 767px)");
-  const isTablet = useMediaQuery("(min-width: 768px) and (max-width: 1023px)");
 
   // Get user profile data from Convex for share modal
-  const profile = useQuery(api.users.getProfile);
+  // Use 'any' to avoid type instantiation error with Convex queries
+  const profile: any = useQuery(api.users.getProfile);
 
-  // Define the profile URL for QR code (same as in ProfilePage)
+  // Define the profile URL for QR code
   const baseUrl = window.location.origin;
-  const profileUrl = `${baseUrl}/profile/${profile?.username || user?.firstName?.toLowerCase() || "itsrod"}`;
-
-  // Pages that should use mobile layout only (no sidebar)
-  const specialLayoutPages = [
-    "/welcome", 
-    "/sign-in", 
-    "/sign-up",
-    "/"
-  ];
-
-  const shouldShowSidebar = !specialLayoutPages.some(path => location.pathname === path);
+  const profileUrl = `${baseUrl}/u/${profile?.username || user?.firstName?.toLowerCase() || "itsrod"}`;
   
-  // Ensure layout is consistent across devices
   return (
     <div className="flex h-[100svh] w-full overflow-hidden bg-slate-900 text-white">
-      {/* Main content area */}
-      <div className="flex-1 overflow-y-auto relative">
-
-        {/* This ensures content appears the same across all devices */}
-        {children}
-      </div>
+      {/* Main content area with page transitions */}
+      <main className="flex-1 overflow-y-auto relative">
+        <PageTransition>
+          {children}
+        </PageTransition>
+      </main>
 
       {/* Share Modal - used consistently across all device sizes */}
       <ShareModal

@@ -45,7 +45,7 @@ const AdminDashboardPage = lazy(() => import("./pages/admin/AdminDashboardPage")
 const AdminRoute = lazy(() => import("./components/admin/AdminRoute"));
 const AdminOverviewPage = lazy(() => import("./pages/admin/AdminOverviewPage"));
 const AdminUsersPage = lazy(() => import("./pages/admin/AdminUsersPage"));
-const AdminContentPage = lazy(() => import("./pages/admin/AdminContentPage"));
+const AdminContentPage = lazy(() => import("./lib/AdminContentPage"));
 const AdminOperationsPage = lazy(() => import("./pages/admin/AdminOperationsPage"));
 
 const queryClient = new QueryClient();
@@ -263,6 +263,15 @@ const AppContent = () => {
           <PageTransition>
             <Suspense fallback={<PageLoader />}>
               <ShopBuildPage />
+            </Suspense>
+          </PageTransition>
+        } />
+        
+        {/* Public Car Access - direct car links without username */}
+        <Route path="/car/:id" element={
+          <PageTransition>
+            <Suspense fallback={<PageLoader />}>
+              <PublicCarDetailsPage />
             </Suspense>
           </PageTransition>
         } />

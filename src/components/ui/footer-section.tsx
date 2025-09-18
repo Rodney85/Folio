@@ -3,6 +3,7 @@ import React from 'react';
 import type { ComponentProps, ReactNode } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { FacebookIcon, InstagramIcon, LinkedinIcon, YoutubeIcon, TwitterIcon } from 'lucide-react';
+import { Logo } from '@/components/ui/logo';
 
 interface FooterLink {
 	title: string;
@@ -61,13 +62,7 @@ export function Footer() {
 
 			<div className="grid w-full gap-8 xl:grid-cols-3 xl:gap-8">
 				<AnimatedContainer className="space-y-4">
-					<div className="flex items-center space-x-2">
-						<img 
-							src="/4s/logo.png" 
-							alt="CarFolio Logo" 
-							className="h-8 w-auto"
-						/>
-					</div>
+					<Logo size="md" />
 					<p className="text-muted-foreground text-sm max-w-sm">
 						Transform your automotive passion into a professional showcase that drives engagement and generates revenue.
 					</p>

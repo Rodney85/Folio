@@ -18,22 +18,16 @@ interface NavItemProps {
   icon: JSX.Element;
   label: string;
   active: boolean;
-  comingSoon?: boolean;
 }
 
-const NavItem = ({ to, icon, label, active, comingSoon }: NavItemProps) => {
+const NavItem = ({ to, icon, label, active }: NavItemProps) => {
   return (
     <Link 
       to={to} 
-      className={`flex flex-col items-center justify-center px-2 py-1 relative ${active ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+      className={`flex flex-col items-center justify-center px-2 py-1 ${active ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
     >
       <div className="mb-0.5">{icon}</div>
       <span className="text-xs">{label}</span>
-      {comingSoon && (
-        <span className="absolute -top-1 -right-1 text-xs bg-blue-500 text-white px-1.5 py-0.5 rounded-full text-[10px]">
-          Soon
-        </span>
-      )}
     </Link>
   );
 };
@@ -70,22 +64,19 @@ export const ResponsiveLayout = ({ children }: ResponsiveLayoutProps) => {
       to: "/profile",
       icon: <UserCircle2 size={24} />,
       label: "Profile",
-      active: location.pathname.startsWith('/profile'),
-      comingSoon: false
+      active: location.pathname.startsWith('/profile')
     },
     {
       to: "/add-car",
       icon: <Plus size={24} />,
       label: "Add Car",
-      active: location.pathname.startsWith('/add-car'),
-      comingSoon: false
+      active: location.pathname.startsWith('/add-car')
     },
     {
       to: "/analytics",
       icon: <BarChart3 size={24} />,
       label: "Analytics",
-      active: location.pathname.startsWith('/analytics'),
-      comingSoon: true
+      active: location.pathname.startsWith('/analytics')
     }
   ];
 
@@ -144,17 +135,10 @@ export const ResponsiveLayout = ({ children }: ResponsiveLayoutProps) => {
                     <Link 
                       key={index}
                       to={item.to} 
-                      className="flex items-center justify-between px-4 py-4 text-white hover:bg-slate-800/50 rounded-md relative"
+                      className="flex items-center px-4 py-4 text-white hover:bg-slate-800/50 rounded-md"
                     >
-                      <div className="flex items-center">
-                        <span className="mr-3">{item.icon}</span>
-                        <span>{item.label}</span>
-                      </div>
-                      {item.comingSoon && (
-                        <span className="text-xs bg-blue-500 text-white px-2 py-1 rounded-full">
-                          Soon
-                        </span>
-                      )}
+                      <span className="mr-3">{item.icon}</span>
+                      <span>{item.label}</span>
                     </Link>
                   ))}
                 </div>
@@ -238,7 +222,7 @@ export const ResponsiveLayout = ({ children }: ResponsiveLayoutProps) => {
         </div>
       </div>
       
-      {/* Mobile bottom navigation - only show on mobile, positioned outside flow */}
+      {/* Mobile bottom navigation - fixed position with enhanced positioning properties */}
       {isMobile && (
         <div 
           style={{ 
@@ -249,11 +233,14 @@ export const ResponsiveLayout = ({ children }: ResponsiveLayoutProps) => {
             zIndex: 9999,
             transform: 'translate3d(0,0,0)', 
             backfaceVisibility: 'hidden',
+            WebkitBackfaceVisibility: 'hidden',
             transition: 'none',
             willChange: 'transform',
             width: '100%',
             height: '50px',
-            pointerEvents: 'auto'
+            pointerEvents: 'auto',
+            WebkitOverflowScrolling: 'touch',
+            WebkitTransform: 'translate3d(0,0,0)'
           }} 
           className="border-t bg-background shadow-md flex items-center"
         >
@@ -293,7 +280,6 @@ export const ResponsiveLayout = ({ children }: ResponsiveLayoutProps) => {
               icon={<BarChart3 size={24} />}
               label="Analytics"
               active={location.pathname.startsWith('/analytics')}
-              comingSoon={true}
             />
           </div>
         </div>

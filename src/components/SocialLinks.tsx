@@ -1,7 +1,7 @@
 import React from 'react';
 import { toast } from "sonner";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTiktok, faInstagram, faYoutube } from "@fortawesome/free-brands-svg-icons";
+import { Instagram, Youtube } from 'lucide-react';
+import { TikTokIcon } from '@/components/icons/TikTokIcon';
 
 interface SocialLinksProps {
   instagram?: string;
@@ -32,8 +32,7 @@ const SocialLinks: React.FC<SocialLinksProps> = ({
           }
         }}
       >
-        <FontAwesomeIcon 
-          icon={faInstagram} 
+        <Instagram 
           className={`h-6 w-6 ${instagram ? 'text-pink-600 hover:text-pink-700' : 'text-gray-400 hover:text-gray-500'}`} 
         />
       </a>
@@ -52,9 +51,8 @@ const SocialLinks: React.FC<SocialLinksProps> = ({
           }
         }}
       >
-        <FontAwesomeIcon 
-          icon={faTiktok} 
-          className={`h-6 w-6 ${tiktok ? 'text-black hover:text-gray-800' : 'text-gray-400 hover:text-gray-500'}`} 
+        <TikTokIcon 
+          className={`h-6 w-6 ${tiktok ? 'text-black dark:text-white hover:text-gray-800 dark:hover:text-gray-200' : 'text-gray-400 hover:text-gray-500'}`} 
         />
       </a>
       
@@ -72,9 +70,8 @@ const SocialLinks: React.FC<SocialLinksProps> = ({
           }
         }}
       >
-        <FontAwesomeIcon 
-          icon={faYoutube} 
-          className={`h-6 w-6 ${youtube ? 'text-red-600 hover:text-red-700' : 'text-gray-400 hover:text-red-600'}`} 
+        <Youtube 
+          className={`h-6 w-6 ${youtube ? 'text-red-600 hover:text-red-700' : 'text-gray-400 hover:text-gray-500'}`} 
         />
       </a>
     </div>

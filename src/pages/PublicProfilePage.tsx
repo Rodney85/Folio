@@ -47,8 +47,6 @@ const PublicProfilePage = () => {
     }
   }, [profileData?.user, logAnalytics]);
 
-  // Log for debugging
-  console.log("Public profile data:", profileData);
 
   // Loading state
   if (profileData === undefined) {
@@ -76,8 +74,6 @@ const PublicProfilePage = () => {
 
   const { user, cars } = profileData;
   
-  // Debug log for cars
-  console.log("Cars data:", cars);
 
   return (
     <div className="flex flex-col bg-slate-900 text-white min-h-screen p-4">

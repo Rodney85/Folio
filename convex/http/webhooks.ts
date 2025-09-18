@@ -1,5 +1,25 @@
-import { httpAction } from "../_generated/server";
+import { httpAction, ActionCtx } from "../_generated/server";
 import { internal } from "../_generated/api";
+import { Id } from "../_generated/dataModel";
+
+// Define webhook data types
+interface WebhookData {
+  id: string | number;
+  attributes: WebhookAttributes;
+}
+
+interface WebhookAttributes {
+  customer_id?: string | number;
+  custom_data?: { userId?: string };
+  variant_name?: string;
+  renews_at?: string;
+  ends_at?: string | null;
+  status?: string;
+  order_number?: string;
+  total?: number;
+  currency?: string;
+  created_at?: string;
+}
 
 // Lemon Squeezy configuration
 const LEMON_SQUEEZY_WEBHOOK_SECRET = process.env.LEMON_SQUEEZY_WEBHOOK_SECRET!;
@@ -65,7 +85,7 @@ export const handleWebhook = httpAction(async (ctx, request) => {
 /**
  * Handle subscription created event
  */
-async function handleSubscriptionCreated(ctx: any, data: any) {
+async function handleSubscriptionCreated(ctx: ActionCtx, data: WebhookData) {
   const attributes = data.attributes;
   const customData = attributes.custom_data || {};
   
@@ -86,7 +106,7 @@ async function handleSubscriptionCreated(ctx: any, data: any) {
     customerId: String(customerId),
     subscriptionId: String(data.id),
     status: "active",
-    plan: attributes.variant_name?.toLowerCase().includes("monthly") ? "monthly" : "yearly",
+    plan: attributes.variant_name?.toLowerCase()?.includes("monthly") ? "monthly" : "yearly",
     currentPeriodEnd: attributes.renews_at,
     cancelAtPeriodEnd: false,
     createdAt: new Date().toISOString(),
@@ -96,7 +116,7 @@ async function handleSubscriptionCreated(ctx: any, data: any) {
 /**
  * Handle subscription updated event
  */
-async function handleSubscriptionUpdated(ctx: any, data: any) {
+async function handleSubscriptionUpdated(ctx: ActionCtx, data: WebhookData) {
   const attributes = data.attributes;
   
   // Update subscription in our database
@@ -111,7 +131,7 @@ async function handleSubscriptionUpdated(ctx: any, data: any) {
 /**
  * Handle subscription cancelled event
  */
-async function handleSubscriptionCancelled(ctx: any, data: any) {
+async function handleSubscriptionCancelled(ctx: ActionCtx, data: WebhookData) {
   const attributes = data.attributes;
   
   // Update subscription in our database
@@ -124,7 +144,7 @@ async function handleSubscriptionCancelled(ctx: any, data: any) {
 /**
  * Handle order created event
  */
-async function handleOrderCreated(ctx: any, data: any) {
+async function handleOrderCreated(ctx: ActionCtx, data: WebhookData) {
   const attributes = data.attributes;
   const customData = attributes.custom_data || {};
   

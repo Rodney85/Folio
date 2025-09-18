@@ -1,16 +1,176 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Check, ChevronsUpDown } from "lucide-react";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import ResponsiveLayout from "@/components/layout/ResponsiveLayout";
 import { Camera, X, PlusCircle, ShoppingBag, Loader2, Link } from "lucide-react";
 import { useMutation, useConvex } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { uploadToBackblaze } from "@/utils/storageService";
 import { trackCarAdded } from "@/utils/analytics";
+
+// Form constants for select options
+const CURRENT_YEAR = new Date().getFullYear();
+const YEARS = Array.from({ length: CURRENT_YEAR - 1950 + 1 }, (_, i) => (CURRENT_YEAR - i).toString());
+
+const TRANSMISSIONS = [
+  "Manual",
+  "Automatic",
+  "Semi-Automatic",
+  "CVT",
+  "DCT (Dual Clutch)",
+  "DSG",
+  "Tiptronic",
+  "Sequential"
+];
+
+const DRIVETRAINS = [
+  "FWD",
+  "RWD",
+  "AWD",
+  "4WD",
+  "Part-time 4WD",
+  "Full-time 4WD"
+];
+
+const BODY_STYLES = [
+  "Sedan",
+  "Coupe",
+  "Hatchback",
+  "Wagon",
+  "SUV",
+  "Crossover",
+  "Convertible",
+  "Truck",
+  "Van",
+  "Minivan",
+  "Roadster",
+  "Shooting Brake"
+];
+
+const COLORS = [
+  "Black", 
+  "White", 
+  "Silver", 
+  "Gray", 
+  "Blue", 
+  "Red", 
+  "Green", 
+  "Yellow", 
+  "Orange", 
+  "Brown", 
+  "Purple", 
+  "Gold", 
+  "Bronze", 
+  "Beige",
+  "Champagne",
+  "Burgundy"
+];
+
+const CAR_MAKES = [
+  "Acura",
+  "Alfa Romeo",
+  "Aston Martin",
+  "Audi",
+  "Bentley",
+  "BMW",
+  "Bugatti",
+  "Buick",
+  "Cadillac",
+  "Chevrolet",
+  "Chrysler",
+  "Citroën",
+  "Dodge",
+  "Ferrari",
+  "Fiat",
+  "Ford",
+  "Genesis",
+  "GMC",
+  "Honda",
+  "Hyundai",
+  "Infiniti",
+  "Jaguar",
+  "Jeep",
+  "Kia",
+  "Koenigsegg",
+  "Lamborghini",
+  "Land Rover",
+  "Lexus",
+  "Lincoln",
+  "Lotus",
+  "Maserati",
+  "Mazda",
+  "McLaren",
+  "Mercedes-Benz",
+  "Mini",
+  "Mitsubishi",
+  "Nissan",
+  "Pagani",
+  "Peugeot",
+  "Porsche",
+  "Ram",
+  "Renault",
+  "Rolls-Royce",
+  "Subaru",
+  "Suzuki",
+  "Tesla",
+  "Toyota",
+  "Volkswagen",
+  "Volvo"
+];
+
+// Common models by make (simplified list)
+const MODELS_BY_MAKE: Record<string, string[]> = {
+  "BMW": ["1 Series", "2 Series", "3 Series", "4 Series", "5 Series", "6 Series", "7 Series", "8 Series", "X1", "X3", "X5", "X6", "X7", "Z4", "i3", "i4", "i8", "M2", "M3", "M4", "M5", "M8"],
+  "Toyota": ["Avalon", "Camry", "Corolla", "GR86", "Highlander", "Land Cruiser", "Prius", "RAV4", "Sequoia", "Supra", "Tacoma", "Tundra", "Venza", "4Runner"],
+  "Honda": ["Accord", "Civic", "CR-V", "Element", "Fit", "HR-V", "Insight", "Odyssey", "Passport", "Pilot", "Ridgeline", "S2000"],
+  "Ford": ["Bronco", "Edge", "Escape", "Expedition", "Explorer", "F-150", "Fiesta", "Focus", "Fusion", "Mustang", "Ranger", "Transit"],
+  "Chevrolet": ["Blazer", "Camaro", "Colorado", "Corvette", "Equinox", "Impala", "Malibu", "Silverado", "Suburban", "Tahoe", "Traverse"],
+  "Audi": ["A1", "A3", "A4", "A5", "A6", "A7", "A8", "Q3", "Q5", "Q7", "Q8", "R8", "TT", "e-tron"],
+  "Mercedes-Benz": ["A-Class", "C-Class", "E-Class", "S-Class", "CLA", "CLS", "GLA", "GLB", "GLC", "GLE", "GLS", "G-Class", "AMG GT"]
+};
+
+// Fallback common models for makes not in MODELS_BY_MAKE
+const COMMON_MODELS = [
+  "Coupe", 
+  "Sedan", 
+  "Hatchback", 
+  "SUV", 
+  "Convertible", 
+  "Wagon", 
+  "Crossover", 
+  "Sport", 
+  "GT", 
+  "RS", 
+  "Type-R", 
+  "STI"
+];
 
 const initialCarData = {
   make: "",
@@ -31,6 +191,70 @@ const initialCarData = {
 
 const initialModData = { name: "", category: "", purchaseUrl: "", image: null as File | null };
 
+// Reusable Combobox component
+interface ComboboxProps {
+  options: string[];
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+  emptyMessage: string;
+}
+
+const Combobox = ({ options, value, onChange, placeholder, emptyMessage }: ComboboxProps) => {
+  const [open, setOpen] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
+  
+  const filteredOptions = options.filter((option) => 
+    option.toLowerCase().includes(searchValue.toLowerCase())
+  );
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-full justify-between bg-transparent text-white hover:bg-slate-800 hover:text-white"
+        >
+          {value || placeholder}
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-full p-0">
+        <Command>
+          <CommandInput 
+            placeholder={`Search ${placeholder.toLowerCase()}...`} 
+            value={searchValue}
+            onValueChange={setSearchValue}
+          />
+          <CommandEmpty>{emptyMessage}</CommandEmpty>
+          <CommandList>
+            <CommandGroup>
+              {filteredOptions.map((option) => (
+                <CommandItem
+                  key={option}
+                  value={option}
+                  onSelect={(currentValue) => {
+                    onChange(currentValue);
+                    setOpen(false);
+                    setSearchValue("");
+                  }}
+                >
+                  <Check
+                    className={`mr-2 h-4 w-4 ${value === option ? "opacity-100" : "opacity-0"}`}
+                  />
+                  {option}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+};
+
 export default function AddCarPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -49,10 +273,30 @@ export default function AddCarPage() {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [modelOptions, setModelOptions] = useState<string[]>(COMMON_MODELS);
+
+  // Update model options when make changes
+  useEffect(() => {
+    if (carData.make) {
+      const makeSpecificModels = MODELS_BY_MAKE[carData.make];
+      if (makeSpecificModels) {
+        setModelOptions(makeSpecificModels);
+      } else {
+        setModelOptions(COMMON_MODELS);
+      }
+    } else {
+      setModelOptions(COMMON_MODELS);
+    }
+  }, [carData.make]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setCarData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Handle select changes
+  const handleSelectChange = (name: string, value: string) => {
+    setCarData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleModImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -219,15 +463,100 @@ export default function AddCarPage() {
               <div className={formGridClass}>
                 <div>
                   <Label htmlFor="make">Make</Label>
-                  <Input id="make" name="make" value={carData.make} onChange={handleChange} placeholder="e.g., Toyota" />
+                  <Combobox
+                    options={CAR_MAKES}
+                    value={carData.make}
+                    onChange={(value) => handleSelectChange("make", value)}
+                    placeholder="Select make"
+                    emptyMessage="No makes found"
+                  />
                 </div>
                 <div>
                   <Label htmlFor="model">Model</Label>
-                  <Input id="model" name="model" value={carData.model} onChange={handleChange} placeholder="e.g., Supra" />
+                  <Combobox
+                    options={modelOptions}
+                    value={carData.model}
+                    onChange={(value) => handleSelectChange("model", value)}
+                    placeholder="Select model"
+                    emptyMessage="No models found. Type to add custom."
+                  />
                 </div>
                 <div>
                   <Label htmlFor="year">Year</Label>
-                  <Input id="year" name="year" type="number" value={carData.year} onChange={handleChange} placeholder="e.g., 1998" />
+                  <Select
+                    value={carData.year}
+                    onValueChange={(value) => handleSelectChange("year", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select year" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>Recent</SelectLabel>
+                        {YEARS.slice(0, 10).map((year) => (
+                          <SelectItem key={year} value={year}>
+                            {year}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                      <SelectGroup>
+                        <SelectLabel>2010s</SelectLabel>
+                        {YEARS.filter(year => year >= "2010" && year <= "2019").map((year) => (
+                          <SelectItem key={year} value={year}>
+                            {year}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                      <SelectGroup>
+                        <SelectLabel>2000s</SelectLabel>
+                        {YEARS.filter(year => year >= "2000" && year <= "2009").map((year) => (
+                          <SelectItem key={year} value={year}>
+                            {year}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                      <SelectGroup>
+                        <SelectLabel>1990s</SelectLabel>
+                        {YEARS.filter(year => year >= "1990" && year <= "1999").map((year) => (
+                          <SelectItem key={year} value={year}>
+                            {year}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                      <SelectGroup>
+                        <SelectLabel>1980s</SelectLabel>
+                        {YEARS.filter(year => year >= "1980" && year <= "1989").map((year) => (
+                          <SelectItem key={year} value={year}>
+                            {year}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                      <SelectGroup>
+                        <SelectLabel>1970s</SelectLabel>
+                        {YEARS.filter(year => year >= "1970" && year <= "1979").map((year) => (
+                          <SelectItem key={year} value={year}>
+                            {year}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                      <SelectGroup>
+                        <SelectLabel>1960s</SelectLabel>
+                        {YEARS.filter(year => year >= "1960" && year <= "1969").map((year) => (
+                          <SelectItem key={year} value={year}>
+                            {year}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                      <SelectGroup>
+                        <SelectLabel>1950s</SelectLabel>
+                        {YEARS.filter(year => year >= "1950" && year <= "1959").map((year) => (
+                          <SelectItem key={year} value={year}>
+                            {year}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <Label htmlFor="package">Package</Label>
@@ -239,23 +568,105 @@ export default function AddCarPage() {
                 </div>
                 <div>
                   <Label htmlFor="transmission">Transmission</Label>
-                  <Input id="transmission" name="transmission" value={carData.transmission} onChange={handleChange} placeholder="e.g., 6-Speed Manual" />
+                  <Select
+                    value={carData.transmission}
+                    onValueChange={(value) => handleSelectChange("transmission", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select transmission" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TRANSMISSIONS.map((transmission) => (
+                        <SelectItem key={transmission} value={transmission}>
+                          {transmission}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <Label htmlFor="drivetrain">Drivetrain</Label>
-                  <Input id="drivetrain" name="drivetrain" value={carData.drivetrain} onChange={handleChange} placeholder="e.g., RWD" />
+                  <Select
+                    value={carData.drivetrain}
+                    onValueChange={(value) => handleSelectChange("drivetrain", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select drivetrain" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {DRIVETRAINS.map((drivetrain) => (
+                        <SelectItem key={drivetrain} value={drivetrain}>
+                          {drivetrain}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <Label htmlFor="bodyStyle">Body Style</Label>
-                  <Input id="bodyStyle" name="bodyStyle" value={carData.bodyStyle} onChange={handleChange} placeholder="e.g., Coupe" />
+                  <Select
+                    value={carData.bodyStyle}
+                    onValueChange={(value) => handleSelectChange("bodyStyle", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select body style" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {BODY_STYLES.map((style) => (
+                        <SelectItem key={style} value={style}>
+                          {style}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <Label htmlFor="exteriorColor">Exterior Color</Label>
-                  <Input id="exteriorColor" name="exteriorColor" value={carData.exteriorColor} onChange={handleChange} placeholder="e.g., Alpine Silver" />
+                  <Select
+                    value={carData.exteriorColor}
+                    onValueChange={(value) => handleSelectChange("exteriorColor", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select exterior color" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {COLORS.map((color) => (
+                        <SelectItem key={color} value={color}>
+                          <div className="flex items-center gap-2">
+                            <div
+                              className="w-4 h-4 rounded-full border border-slate-600"
+                              style={{ backgroundColor: color.toLowerCase() }}
+                            />
+                            {color}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <Label htmlFor="interiorColor">Interior Color</Label>
-                  <Input id="interiorColor" name="interiorColor" value={carData.interiorColor} onChange={handleChange} placeholder="e.g., Black Leather" />
+                  <Select
+                    value={carData.interiorColor}
+                    onValueChange={(value) => handleSelectChange("interiorColor", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select interior color" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {COLORS.map((color) => (
+                        <SelectItem key={color} value={color}>
+                          <div className="flex items-center gap-2">
+                            <div
+                              className="w-4 h-4 rounded-full border border-slate-600"
+                              style={{ backgroundColor: color.toLowerCase() }}
+                            />
+                            {color}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <Label htmlFor="generation">Generation</Label>

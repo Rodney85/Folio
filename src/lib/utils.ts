@@ -15,3 +15,26 @@ export function getDeviceType(): 'mobile' | 'tablet' | 'desktop' {
   }
   return 'desktop';
 }
+
+/**
+ * Detects whether the application is running in development or production environment
+ */
+export function isProduction(): boolean {
+  // Check if running in a browser environment
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname;
+    return hostname === 'carfolio.cc' || 
+           hostname === 'www.carfolio.cc' || 
+           !hostname.includes('localhost');
+  }
+  // Default to development if not in browser
+  return false;
+}
+
+/**
+ * Gets the correct demo profile URL that works in both development and production
+ */
+export function getDemoProfileUrl(): string {
+  // For the carfolio_cc demo account
+  return '/u/carfolio_cc';
+}

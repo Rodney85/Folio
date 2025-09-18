@@ -163,8 +163,9 @@ const ProfileSetupForm = ({ isOnboarding = false, onComplete }: ProfileSetupForm
           
           {/* Instagram */}
           <div className="flex items-center space-x-2">
-            <span className="text-pink-500 min-w-[80px]">Instagram</span>
+            <label htmlFor="instagram" className="text-pink-500 min-w-[80px]">Instagram</label>
             <Input
+              id="instagram"
               value={instagram}
               onChange={(e) => setInstagram(e.target.value)}
               placeholder="Your Instagram username or URL"
@@ -173,8 +174,9 @@ const ProfileSetupForm = ({ isOnboarding = false, onComplete }: ProfileSetupForm
           
           {/* TikTok */}
           <div className="flex items-center space-x-2">
-            <span className="text-black min-w-[80px]">TikTok</span>
+            <label htmlFor="tiktok" className="text-black min-w-[80px]">TikTok</label>
             <Input
+              id="tiktok"
               value={tiktok}
               onChange={(e) => setTiktok(e.target.value)}
               placeholder="Your TikTok username or URL"
@@ -183,8 +185,9 @@ const ProfileSetupForm = ({ isOnboarding = false, onComplete }: ProfileSetupForm
           
           {/* YouTube */}
           <div className="flex items-center space-x-2">
-            <span className="text-red-600 min-w-[80px]">YouTube</span>
+            <label htmlFor="youtube" className="text-red-600 min-w-[80px]">YouTube</label>
             <Input
+              id="youtube"
               value={youtube}
               onChange={(e) => setYoutube(e.target.value)}
               placeholder="Your YouTube username or URL"

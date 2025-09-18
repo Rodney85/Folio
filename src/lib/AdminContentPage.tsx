@@ -1,10 +1,10 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Search, ChevronLeft, ChevronRight, Trash2, AlertCircle, Edit, Eye, Star, StarOff, Globe, Lock } from 'lucide-react';
 import { useQuery, useMutation } from 'convex/react';
-import { api } from '../../../convex/_generated/api';
-import { Id } from '../../../convex/_generated/dataModel';
+import { api } from '../../convex/_generated/api';
+import { Id } from '../../convex/_generated/dataModel';
 import toast from 'react-hot-toast';
-import AdminContentDetails from '../../components/admin/AdminContentDetails';
+import AdminContentDetails from '../components/admin/AdminContentDetails';
 
 const AdminContentPage = () => {
   // State for content filter, search, pagination, and modals

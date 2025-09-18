@@ -94,17 +94,45 @@ export const getUserFirstCar = query({
   },
 });
 
-// Get a specific car by ID
+import { hasSubscriptionAccess } from "./subscriptions";
+
+// Get a specific car by ID with access control
 export const getCarById = query({
   args: { carId: v.id("cars") },
   handler: async (ctx, args) => {
     const car = await ctx.db.get(args.carId);
-    
+
     if (!car) {
-      throw new ConvexError("Car not found");
+      return null; // Return null instead of throwing error
     }
+
+    // If the car is published, anyone can see it
+    if (car.isPublished) {
+      return car;
+    }
+
+    // For unpublished cars, check for ownership or subscription
+    const identity = await ctx.auth.getUserIdentity();
     
-    return car;
+    // If there's no authenticated user, they can't see an unpublished car
+    if (!identity) {
+      return null;
+    }
+
+    // The owner can always see their own car
+    if (car.userId === identity.subject) {
+      return car;
+    }
+
+    // Check if the viewer has an active subscription to see the unpublished car
+    const hasAccess = await hasSubscriptionAccess(ctx, car.userId);
+    
+    if (hasAccess) {
+      return car;
+    }
+
+    // If none of the above, deny access
+    return null;
   },
 });
 

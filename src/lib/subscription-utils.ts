@@ -23,17 +23,25 @@ export function useCurrentSubscription() {
 /**
  * Check if a specific user ID has subscription access (for public profiles)
  * Used for determining if a public car page should be viewable
+ * 
+ * DEVELOPMENT MODE: Currently bypassing subscription checks
+ * TODO: Remove this bypass before production deployment
  */
 export async function checkPublicProfileAccess(userId: string) {
-  try {
-    // Use a direct HTTP fetch to the API endpoint
-    const response = await fetch(`/api/checkPublicUserAccess?userId=${userId}`);
-    const data = await response.json();
-    return data.hasAccess === true;
-  } catch (error) {
-    console.error("Error checking profile access:", error);
-    return false;
-  }
+  // DEVELOPMENT MODE: Always return true to bypass subscription checks
+  // REMOVE THIS WHEN IMPLEMENTING REAL SUBSCRIPTIONS
+  return true;
+  
+  // Production implementation (uncomment when ready):
+  // try {
+  //   // Use a direct HTTP fetch to the API endpoint
+  //   const response = await fetch(`/api/checkPublicUserAccess?userId=${userId}`);
+  //   const data = await response.json();
+  //   return data.hasAccess === true;
+  // } catch (error) {
+  //   console.error("Error checking profile access:", error);
+  //   return false;
+  // }
 }
 
 /**

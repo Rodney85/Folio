@@ -7,9 +7,6 @@ export const initGA = () => {
   // Only initialize in production to avoid tracking development activity
   if (import.meta.env.PROD && GA_MEASUREMENT_ID) {
     ReactGA.initialize(GA_MEASUREMENT_ID);
-    console.log('Google Analytics initialized');
-  } else {
-    console.log('Google Analytics not initialized in development mode');
   }
 };
 
@@ -17,7 +14,6 @@ export const initGA = () => {
 export const trackPageView = (path: string) => {
   if (import.meta.env.PROD) {
     ReactGA.send({ hitType: 'pageview', page: path });
-    console.log(`Page view tracked: ${path}`);
   }
 };
 
@@ -30,7 +26,6 @@ export const trackEvent = (category: string, action: string, label?: string, val
       label,
       value,
     });
-    console.log(`Event tracked: ${category} - ${action} ${label ? `- ${label}` : ''}`);
   }
 };
 

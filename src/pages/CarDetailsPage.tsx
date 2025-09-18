@@ -10,6 +10,8 @@ import { Button } from '@/components/ui/button';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import MobileLayout from '@/components/layout/MobileLayout';
 import { useSwipeable } from 'react-swipeable';
+import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -22,6 +24,7 @@ const CarDetailsPage = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [descExpanded, setDescExpanded] = useState(false);
   const isMobile = useMediaQuery("(max-width: 767px)");
 
   // Dialog states
@@ -41,7 +44,7 @@ const CarDetailsPage = () => {
   const deleteCarMutation = useMutation(api.cars.deleteCar) as any;
   
   // Track car view when data loads
-  const logAnalytics = useMutation(api.analytics.logEvent) as any;
+  const logAnalytics: any = useMutation(api.analytics.logEvent);
   useEffect(() => {
     if (car && typedCarId) {
       logAnalytics({
@@ -161,75 +164,278 @@ const CarDetailsPage = () => {
     </Dialog>
   );
 
-  // Define the car details content
-  const carDetailsContent = (
-    <div className="flex flex-col h-full">
-      {/* Header with conditional back button (only on mobile), edit button and delete button */}
-      <header className="p-4 flex items-center justify-between sticky top-0 bg-slate-900 z-10 border-b border-slate-800 shadow-sm">
-        {isMobile ? (
-          <button 
+  // Prepare spec items for clean label/value rows (matching PublicCarDetailsPage)
+  const renderCarDetails = () => {
+    const hp = car?.powerHp || car?.power;
+    const tq = car?.torqueLbFt || car?.torque;
+    const specItems = [
+      { label: "Year", value: car?.year },
+      { label: "Horsepower", value: hp },
+      { label: "Torque", value: tq },
+      car?.transmission ? { label: "Transmission", value: car.transmission } : null,
+      car?.drivetrain ? { label: "Drivetrain", value: car.drivetrain } : null,
+      car?.bodyStyle ? { label: "Body Style", value: car.bodyStyle } : null,
+      car?.engine ? { label: "Engine", value: car.engine } : null,
+      car?.exteriorColor ? { label: "Exterior Color", value: car.exteriorColor } : null,
+      car?.interiorColor ? { label: "Interior Color", value: car.interiorColor } : null,
+    ].filter(Boolean) as { label: string; value: string | number }[];
+
+    return (
+      <div className="flex flex-col bg-slate-900 text-white">
+        {/* Header with edit/delete buttons */}
+        <header className="p-4 flex items-center justify-between sticky top-0 bg-slate-900 z-50 border-b border-slate-800 shadow-sm">
+          <button
             onClick={() => navigate(-1)}
-            className="rounded-full p-2 bg-slate-800 border border-slate-700 shadow-sm flex items-center justify-center"
+            className="flex items-center justify-center rounded-full bg-slate-700 p-2 hover:bg-slate-600 transition-colors"
           >
             <ArrowLeft className="h-5 w-5 text-white" />
           </button>
-        ) : (
-          <div>{/* Empty div to maintain flex spacing on tablet/desktop */}</div>
-        )}
-        <div className="flex space-x-2">
-          <button 
-            onClick={() => navigate(`/edit-car/${id}`)} 
-            className="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-md text-white text-sm flex items-center gap-1 transition-colors border border-slate-700"
-          >
-            <Pencil className="h-4 w-4 mr-1" />
-            {!isMobile && 'Edit'}
-          </button>
-          <button 
-            onClick={() => setDeleteDialogOpen(true)} 
-            className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-md text-white text-sm flex items-center gap-1 transition-colors"
-          >
-            <Trash2 className="h-4 w-4 mr-1" />
-            {!isMobile && 'Delete'}
-          </button>
-        </div>
-      </header>
+          <div className="flex space-x-2">
+            <button 
+              onClick={() => navigate(`/edit-car/${id}`)} 
+              className="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-md text-white text-sm flex items-center gap-1 transition-colors border border-slate-700"
+            >
+              <Pencil className="h-4 w-4 mr-1" />
+              {!isMobile && 'Edit'}
+            </button>
+            <button 
+              onClick={() => setDeleteDialogOpen(true)} 
+              className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-md text-white text-sm flex items-center gap-1 transition-colors"
+            >
+              <Trash2 className="h-4 w-4 mr-1" />
+              {!isMobile && 'Delete'}
+            </button>
+          </div>
+        </header>
 
-      {/* Main content */}
-      <div className="flex-1 overflow-auto pb-24">
-        {!isMobile ? (
-          // Desktop layout
-          <div className="flex flex-row gap-10 p-6">
-            {/* Left column: Image gallery */}
-            <div className="w-[55%]">
-              <div {...swipeHandlers} className="w-full aspect-[4/3] bg-slate-800 rounded-lg shadow-md relative overflow-hidden">
-                {car.images && car.images.length > 0 ? (
-                  <>
-                    <CarImageWithUrl
-                      storageId={car.images[currentImageIndex]}
-                      alt={`${car.make} ${car.model} main image`}
-                      className="w-full h-full object-cover"
-                    />
-                    {car.images.length > 1 && (
-                      <>
-                        {/* Image Navigation Controls */}
-                        <button
-                          onClick={handleImageNavigation.prev}
-                          className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full p-2 bg-black/60 hover:bg-black/80 transition-all"
-                        >
-                          <ArrowLeft className="h-5 w-5 text-white" />
-                        </button>
-                        <button
-                          onClick={handleImageNavigation.next}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-2 bg-black/60 hover:bg-black/80 transition-all"
-                        >
-                          <ArrowLeft className="h-5 w-5 text-white rotate-180" />
-                        </button>
-                        
-                        {/* Image Counter */}
-                        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/60 px-3 py-1 rounded-full text-sm text-white">
-                          {currentImageIndex + 1} / {car.images.length}
+        {/* Main content */}
+        <div className="flex-1 px-4 md:px-8 pb-6 pt-4">
+          {!isMobile ? (
+            // Desktop layout - side by side: images left, content right
+            <div className="w-full max-w-7xl mx-auto">
+              <div className="grid grid-cols-2 gap-8">
+                {/* Left Column - Images */}
+                <div className="space-y-4">
+                  {/* Main Image Gallery */}
+                  <div className="w-full">
+                    <div {...swipeHandlers} className="w-full aspect-[4/3] bg-slate-800 rounded-xl shadow-lg relative overflow-hidden">
+                      {car?.images && car.images.length > 0 ? (
+                        <>
+                          {car.images[currentImageIndex].startsWith('http') ? (
+                            <img 
+                              src={car.images[currentImageIndex]} 
+                              alt={`${car.make} ${car.model} main image`}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <CarImageWithUrl
+                              storageId={car.images[currentImageIndex]}
+                              alt={`${car.make} ${car.model} main image`}
+                              className="w-full h-full object-cover"
+                            />
+                          )}
+                          {car.images.length > 1 && (
+                            <>
+                              {/* Image Navigation Controls */}
+                              <button
+                                onClick={handleImageNavigation.prev}
+                                className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full p-2.5 bg-black/50 hover:bg-black/70 ring-1 ring-white/20 shadow-lg transition"
+                              >
+                                <ArrowLeft className="h-5 w-5 text-white" />
+                              </button>
+                              <button
+                                onClick={handleImageNavigation.next}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-2.5 bg-black/50 hover:bg-black/70 ring-1 ring-white/20 shadow-lg transition"
+                              >
+                                <ArrowLeft className="h-5 w-5 text-white rotate-180" />
+                              </button>
+                              
+                              {/* Image Counter */}
+                              <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur px-2.5 py-1.5 rounded-md text-xs text-white/90 ring-1 ring-white/10">
+                                {currentImageIndex + 1} / {car.images.length}
+                              </div>
+                            </>
+                          )}
+                        </>
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-slate-800">
+                          <p className="text-slate-400">No image available</p>
                         </div>
-                      </>
+                      )}
+                    </div>
+                    
+                    {/* Desktop Thumbnails */}
+                    {car?.images && car.images.length > 1 && (
+                      <div className="mt-3 flex gap-3 overflow-x-auto pb-1 scrollbar-hide">
+                        {car.images.map((image, index) => (
+                          <button
+                            key={index}
+                            onClick={() => handleImageNavigation.thumbnail(index)}
+                            className={`h-16 w-16 flex-shrink-0 rounded-lg overflow-hidden border transition ${currentImageIndex === index ? 'border-blue-500 ring-2 ring-blue-500' : 'border-slate-700 hover:border-slate-500'}`}
+                            aria-label={`View image ${index + 1}`}
+                          >
+                            <CarImageWithUrl
+                              storageId={image}
+                              alt={`${car.make} ${car.model} thumbnail ${index + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Right Column - Content */}
+                <div className="space-y-6">
+
+                  {/* Car Title and Details */}
+                {/* Title and Year */}
+                <div>
+                  <h1 className="text-4xl md:text-5xl font-semibold tracking-tight text-white mb-2">
+                    {car?.make} {car?.model}
+                  </h1>
+                  <Separator className="my-2 bg-slate-800" />
+
+                  {/* Specifications / Shop Tabs */}
+                  <div className="mb-2">
+                    <Tabs defaultValue="specs" className="w-full">
+                      <TabsList className="bg-transparent p-0 border-b border-slate-800 text-slate-400">
+                        <TabsTrigger value="specs" className="px-0 mr-6 py-2 border-b-2 border-transparent data-[state=active]:border-blue-500 data-[state=active]:text-white data-[state=active]:bg-transparent data-[state=active]:shadow-none">Specifications</TabsTrigger>
+                        <TabsTrigger value="shop" className="px-0 py-2 border-b-2 border-transparent data-[state=active]:border-blue-500 data-[state=active]:text-white data-[state=active]:bg-transparent data-[state=active]:shadow-none">Shop the Build</TabsTrigger>
+                      </TabsList>
+                      <TabsContent value="specs" className="mt-4">
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-2 text-sm">
+                          {specItems.map((item, i) => (
+                            <div key={i} className="flex justify-between">
+                              <span className="text-slate-400">{item.label}:</span>
+                              <span className="text-white ml-2">{String(item.value) || 'N/A'}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </TabsContent>
+                      <TabsContent value="shop" className="mt-4">
+                        {parts && parts.length > 0 ? (
+                          <div className="divide-y divide-slate-800">
+                            {parts.map((part: any) => (
+                              <div key={part._id} className="py-4">
+                                <div className="flex items-center justify-between">
+                                  <h3 className="font-medium text-white">{part.name}</h3>
+                                  <a 
+                                    href={part.purchaseUrl} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="text-blue-400 flex items-center gap-1 hover:text-blue-300 transition-colors"
+                                    onClick={() => {
+                                      if (typedCarId) {
+                                        logAnalytics({
+                                          type: "product_click",
+                                          partId: part._id,
+                                          carId: typedCarId,
+                                          visitorId: crypto.randomUUID(),
+                                          visitorDevice: isMobile ? "mobile" : "desktop",
+                                        });
+                                      }
+                                    }}
+                                  >
+                                    <span>View</span>
+                                    <ExternalLink size={14} />
+                                  </a>
+                                </div>
+                                {part.description && (
+                                  <p className="text-sm text-slate-400 mt-1">{part.description}</p>
+                                )}
+                                {part.price && (
+                                  <p className="text-sm font-bold text-green-500 mt-1">${part.price.toFixed(2)}</p>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-center text-slate-400 py-8">
+                            <p>No products available for this build.</p>
+                          </div>
+                        )}
+                      </TabsContent>
+                    </Tabs>
+                  </div>
+                  
+                  {/* Description - moved to last position with visual separation */}
+                  <div className="mt-8 pt-6 border-t border-slate-800">
+                    <h3 className="text-xl font-bold text-white mb-3 bg-slate-800/50 px-4 py-2 rounded-lg">Description</h3>
+                    <div className={`${descExpanded ? 'max-h-none' : 'max-h-36'} overflow-y-auto pr-2 text-slate-300 text-sm leading-relaxed bg-slate-900/30 p-4 rounded-lg border border-slate-800/50`}>
+                      {car?.description ? (
+                        car.description.split('\n').map((line, index) => {
+                          // Check if line starts with list markers
+                          const isListItem = /^\s*[-*•]\s+/.test(line);
+                          const isNumberedItem = /^\s*\d+\.\s+/.test(line);
+                          
+                          if (isListItem) {
+                            // Handle bullet list items
+                            return (
+                              <div key={index} className="flex items-start mb-2">
+                                <span className="mr-2">•</span>
+                                <span>{line.replace(/^\s*[-*•]\s+/, '')}</span>
+                              </div>
+                            );
+                          } else if (isNumberedItem) {
+                            // Handle numbered list items
+                            const number = line.match(/^\s*(\d+)\.\s+/)?.[1] || '';
+                            return (
+                              <div key={index} className="flex items-start mb-2">
+                                <span className="mr-2">{number}.</span>
+                                <span>{line.replace(/^\s*\d+\.\s+/, '')}</span>
+                              </div>
+                            );
+                          } else {
+                            // Regular paragraph
+                            return <p key={index} className="mb-2">{line}</p>;
+                          }
+                        })
+                      ) : (
+                        <p>This is just a demo test to see if everything is working well.</p>
+                      )}
+                    </div>
+                    {car?.description && car.description.length > 260 && (
+                      <button
+                        type="button"
+                        onClick={() => setDescExpanded((v) => !v)}
+                        className="mt-2 text-blue-400 hover:text-blue-300 text-sm"
+                      >
+                        {descExpanded ? 'Show less' : 'Show more'}
+                      </button>
+                    )}
+                  </div>
+                  </div>
+                </div>
+              </div>
+          </div>
+          ) : (
+            // Mobile layout
+            <>
+              {/* Mobile Image Gallery */}
+              <div className="relative w-full aspect-[4/3] bg-slate-800 rounded-xl overflow-hidden mb-4" style={{ marginTop: '20px' }}>
+                {car?.images && car.images.length > 0 ? (
+                  <>
+                    <div {...swipeHandlers} className="w-full h-full">
+                      {car.images[currentImageIndex].startsWith('http') ? (
+                        <img 
+                          src={car.images[currentImageIndex]} 
+                          alt={`${car.make} ${car.model} main image`}
+                          className="w-full h-full object-contain"
+                        />
+                      ) : (
+                        <CarImageWithUrl
+                          storageId={car.images[currentImageIndex]}
+                          alt={`${car.make} ${car.model} main image`}
+                          className="w-full h-full object-contain"
+                        />
+                      )}
+                    </div>
+                    {car.images.length > 1 && (
+                      <div className="absolute bottom-3 right-3 bg-black/60 px-3 py-1 rounded-full text-sm text-white">
+                        {currentImageIndex + 1} / {car.images.length}
+                      </div>
                     )}
                   </>
                 ) : (
@@ -239,46 +445,105 @@ const CarDetailsPage = () => {
                 )}
               </div>
               
-              {/* Desktop Thumbnails */}
-              {car.images && car.images.length > 1 && (
-                <div className="grid grid-cols-6 gap-2 mt-4">
+              {/* Image thumbnails */}
+              {car?.images && car.images.length > 1 && (
+                <div className="flex gap-3 mt-2 overflow-x-auto pb-1 px-4 scrollbar-hide">
                   {car.images.map((image, index) => (
                     <button
                       key={index}
-                      onClick={() => handleImageNavigation.thumbnail(index)}
-                      className={`flex-shrink-0 aspect-square rounded-md ${currentImageIndex === index ? 'ring-2 ring-blue-500' : 'opacity-70 hover:opacity-100'} transition-all`}
+                      className={`w-20 h-14 flex-shrink-0 rounded-lg overflow-hidden border ${index === currentImageIndex ? 'border-blue-500 ring-2 ring-blue-500' : 'border-slate-700 hover:border-slate-500'}`}
+                      onClick={() => setCurrentImageIndex(index)}
+                      aria-label={`View image ${index + 1}`}
                     >
                       <CarImageWithUrl
                         storageId={image}
                         alt={`${car.make} ${car.model} thumbnail ${index + 1}`}
-                        className="w-full h-full object-cover rounded-md"
+                        className="w-full h-full object-cover"
                       />
                     </button>
                   ))}
                 </div>
               )}
-            </div>
 
-            {/* Right column: Car details */}
-            <div className="w-[45%]">
-              {/* Title, Year Badge, then Description */}
-              <div>
-                <h1 className="text-4xl font-bold text-white mb-4">
-                  {car.make} {car.model}
+              {/* Mobile Title & Info */}
+              <div className="px-4 mt-6">
+                <h1 className="text-3xl font-semibold tracking-tight text-white mb-2">
+                  {car?.make} {car?.model}
                 </h1>
                 
-                {/* Description */}
-                <div className="mb-8 mt-4">
-                  <h3 className="text-2xl font-semibold text-white mb-4">Description</h3>
-                  <div className="text-slate-400 min-h-[60px]">
-                    {car.description ? (
-                      car.description.split('\n').map((line, index) => {
-                        // Check if line starts with list markers
+                {/* Mobile Specifications / Shop Tabs */}
+                <div className="mb-3">
+                  <Tabs defaultValue="specs" className="w-full">
+                    <TabsList className="bg-transparent p-0 border-b border-slate-800 text-slate-400">
+                      <TabsTrigger value="specs" className="px-0 mr-6 py-2 border-b-2 border-transparent data-[state=active]:border-blue-500 data-[state=active]:text-white data-[state=active]:bg-transparent data-[state=active]:shadow-none">Specifications</TabsTrigger>
+                      <TabsTrigger value="shop" className="px-0 py-2 border-b-2 border-transparent data-[state=active]:border-blue-500 data-[state=active]:text-white data-[state=active]:bg-transparent data-[state=active]:shadow-none">Shop the Build</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="specs" className="mt-3">
+                      <div className="space-y-2">
+                        {specItems.map((item, i) => (
+                          <div key={i} className="py-2 flex justify-between">
+                            <span className="text-slate-400">{item.label}</span>
+                            <span className="text-white text-right ml-4">{String(item.value) || 'N/A'}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </TabsContent>
+                    <TabsContent value="shop" className="mt-3">
+                      {parts && parts.length > 0 ? (
+                        <div className="divide-y divide-slate-800">
+                          {parts.map((part: any) => (
+                            <div key={part._id} className="py-4">
+                              <div className="flex items-center justify-between">
+                                <h3 className="font-medium text-white">{part.name}</h3>
+                                <a 
+                                  href={part.purchaseUrl} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="text-blue-400 flex items-center gap-1 hover:text-blue-300 transition-colors"
+                                  onClick={() => {
+                                    if (typedCarId) {
+                                      logAnalytics({
+                                        type: "product_click",
+                                        partId: part._id,
+                                        carId: typedCarId,
+                                        visitorId: crypto.randomUUID(),
+                                        visitorDevice: isMobile ? "mobile" : "desktop",
+                                      });
+                                    }
+                                  }}
+                                >
+                                  <span>View</span>
+                                  <ExternalLink size={14} />
+                                </a>
+                              </div>
+                              {part.description && (
+                                <p className="text-sm text-slate-400 mt-1">{part.description}</p>
+                              )}
+                              {part.price && (
+                                <p className="text-sm font-bold text-green-500 mt-1">${part.price.toFixed(2)}</p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center text-slate-400 py-8">
+                          <p>No products available for this build.</p>
+                        </div>
+                      )}
+                    </TabsContent>
+                  </Tabs>
+                </div>
+                
+                {/* Mobile Description - moved to last position with visual separation */}
+                {car?.description && (
+                  <div className="mt-6 pt-4 border-t border-slate-800">
+                    <h3 className="text-lg font-bold text-white mb-3 bg-slate-800/50 px-3 py-2 rounded-lg">Description</h3>
+                    <div className={`${descExpanded ? 'max-h-none' : 'max-h-48'} overflow-y-auto pr-2 text-slate-300 leading-relaxed bg-slate-900/30 p-3 rounded-lg border border-slate-800/50`}>
+                      {car.description.split('\n').map((line, index) => {
                         const isListItem = /^\s*[-*•]\s+/.test(line);
                         const isNumberedItem = /^\s*\d+\.\s+/.test(line);
                         
                         if (isListItem) {
-                          // Handle bullet list items
                           return (
                             <div key={index} className="flex items-start mb-2">
                               <span className="mr-2">•</span>
@@ -286,7 +551,6 @@ const CarDetailsPage = () => {
                             </div>
                           );
                         } else if (isNumberedItem) {
-                          // Handle numbered list items
                           const number = line.match(/^\s*(\d+)\.\s+/)?.[1] || '';
                           return (
                             <div key={index} className="flex items-start mb-2">
@@ -295,310 +559,35 @@ const CarDetailsPage = () => {
                             </div>
                           );
                         } else {
-                          // Regular paragraph
                           return <p key={index} className="mb-2">{line}</p>;
                         }
-                      })
-                    ) : (
-                      <p>This is just a demo test to see if everything is working well.</p>
-                    )}
-                  </div>
-                </div>
-                
-                {/* Detailed Specifications */}
-                <div className="mb-4">
-                  <h3 className="text-2xl font-semibold text-white mb-2">Specifications</h3>
-                  <div className="border-b border-slate-700 mb-4"></div>
-                  <div className="grid grid-cols-2 gap-x-8 gap-y-4">
-                    {/* Key Performance Specs */}
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Year:</span>
-                      <span className="text-white">{car.year || 'N/A'}</span>
+                      })}
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Horsepower:</span>
-                      <span className="text-white">{car.powerHp || 'N/A'}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Torque:</span>
-                      <span className="text-white">{car.torqueLbFt || 'N/A'}</span>
-                    </div>
-                    {car.engine && (
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">Engine:</span>
-                        <span className="text-white">{car.engine}</span>
-                      </div>
+                    {car.description && car.description.length > 260 && (
+                      <button
+                        type="button"
+                        onClick={() => setDescExpanded((v) => !v)}
+                        className="mt-2 text-blue-400 hover:text-blue-300 text-sm"
+                      >
+                        {descExpanded ? 'Show less' : 'Show more'}
+                      </button>
                     )}
-                    {car.transmission && (
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">Transmission:</span>
-                        <span className="text-white">{car.transmission}</span>
-                      </div>
-                    )}
-                    {car.drivetrain && (
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">Drivetrain:</span>
-                        <span className="text-white">{car.drivetrain}</span>
-                      </div>
-                    )}
-                    {car.bodyStyle && (
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">Body Style:</span>
-                        <span className="text-white">{car.bodyStyle}</span>
-                      </div>
-                    )}
-                    {car.exteriorColor && (
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">Exterior Color:</span>
-                        <span className="text-white">{car.exteriorColor}</span>
-                      </div>
-                    )}
-                    {car.interiorColor && (
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">Interior Color:</span>
-                        <span className="text-white">{car.interiorColor}</span>
-                      </div>
-                    )}
-                    {car.package && (
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">Package:</span>
-                        <span className="text-white">{car.package}</span>
-                      </div>
-                    )}
-                    {car.generation && (
-                      <div className="flex justify-between">
-                        <span className="text-slate-400">Generation:</span>
-                        <span className="text-white">{car.generation}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                
-                {/* Shop Build Button below specifications - always visible for consistency */}
-                <div className="mb-8">
-                  <button 
-                    onClick={() => {
-                      if (typedCarId) {
-                        logAnalytics({
-                          type: "shop_build_click",
-                          carId: typedCarId,
-                          visitorDevice: isMobile ? "mobile" : "desktop",
-                        });
-                        
-                        navigate(`/car/${id}/shop-build`);
-                      }
-                    }}
-                    className="w-full bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 py-3 px-6 rounded-md text-white font-semibold text-base flex items-center justify-center gap-3 shadow-lg transition-all duration-200 border border-blue-500/30 uppercase tracking-wider"
-                  >
-                    <ShoppingBag className="w-5 h-5" />
-                    Shop The Build
-                  </button>
-                </div>
-                
-                {/* Shop Build Button moved below specifications */}
-              </div>
-            </div>
-          </div>
-        ) : (
-          // Mobile layout
-          <>
-            {/* Mobile Image Gallery - Styled to match public view */}
-            <div className="relative w-full aspect-[4/3] bg-slate-800 mb-3">
-              {car.images && car.images.length > 0 ? (
-                <>
-                  {/* Swipeable container */}
-                  <div
-                    {...swipeHandlers}
-                    className="w-full h-full"
-                  >
-                    <CarImageWithUrl
-                      storageId={car.images[currentImageIndex]}
-                      alt={`${car.make} ${car.model}`}
-                      className="w-full h-full object-contain"
-                      priority={true}
-                      withFallback={true}
-                    />
-                  </div>
-
-                  {car.images.length > 1 && (
-                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/60 px-3 py-1 rounded-full text-sm text-white">
-                      {currentImageIndex + 1} / {car.images.length}
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-slate-800">
-                  <p className="text-slate-400">No image available</p>
-                </div>
-              )}
-            </div>
-            
-            {/* Mobile Thumbnails - Styled to match public view */}
-            {car.images && car.images.length > 1 && (
-              <div className="grid grid-cols-6 gap-2 px-4 mb-6">
-                {car.images.map((image, index) => (
-                  <div 
-                    key={index}
-                    onClick={() => handleImageNavigation.thumbnail(index)}
-                    className={`aspect-square rounded overflow-hidden cursor-pointer border-2 ${index === currentImageIndex ? 'border-blue-600' : 'border-transparent'}`}
-                  >
-                    <CarImageWithUrl
-                      storageId={image}
-                      alt={`${car.make} ${car.model} thumbnail ${index + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Mobile Title & Info */}
-            <div className="px-4 mt-6">
-              <h1 className="text-3xl font-bold text-white mb-4">
-                {car.make} {car.model}
-              </h1>
-              
-              {/* Description moved to top */}
-              <div className="mb-5">
-                <h3 className="text-xl font-semibold text-white mb-4">Description</h3>
-                <div className="text-slate-400 mb-6">
-                  {car.description ? (
-                    car.description.split('\n').map((line, index) => {
-                      // Check if line starts with list markers
-                      const isListItem = /^\s*[-*•]\s+/.test(line);
-                      const isNumberedItem = /^\s*\d+\.\s+/.test(line);
-                      
-                      if (isListItem) {
-                        // Handle bullet list items
-                        return (
-                          <div key={index} className="flex items-start mb-2">
-                            <span className="mr-2">•</span>
-                            <span>{line.replace(/^\s*[-*•]\s+/, '')}</span>
-                          </div>
-                        );
-                      } else if (isNumberedItem) {
-                        // Handle numbered list items
-                        const number = line.match(/^\s*(\d+)\.\s+/)?.[1] || '';
-                        return (
-                          <div key={index} className="flex items-start mb-2">
-                            <span className="mr-2">{number}.</span>
-                            <span>{line.replace(/^\s*\d+\.\s+/, '')}</span>
-                          </div>
-                        );
-                      } else {
-                        // Regular paragraph
-                        return <p key={index} className="mb-2">{line}</p>;
-                      }
-                    })
-                  ) : (
-                    <p>This is just a demo test to see if everything is working well.</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Mobile Specifications - Unified section with all specs */}
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-semibold text-white">Specifications</h3>
-                <button
-                  onClick={() => {
-                    if (typedCarId) {
-                      logAnalytics({
-                        type: "shop_build_click",
-                        carId: typedCarId,
-                        visitorDevice: "mobile",
-                      });
-                      
-                      navigate(`/car/${id}/shop-build`);
-                    }
-                  }}
-                  className="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 py-2 px-4 rounded-md text-white font-semibold text-sm shadow-lg transition-all duration-200 border border-blue-500/30 uppercase tracking-wider"
-                >
-                  <ShoppingCart className="w-4 h-4" />
-                  SHOP BUILD
-                </button>
-              </div>
-              
-              {/* All Mobile Car Specs */}
-              <div className="space-y-3 mb-6">
-                <div className="py-3 flex justify-between">
-                  <span className="text-slate-400">Year</span>
-                  <span className="text-white text-right">{car.year || 'N/A'}</span>
-                </div>
-                <div className="py-3 flex justify-between">
-                  <span className="text-slate-400">Horsepower</span>
-                  <span className="text-white text-right">{car.powerHp || 'N/A'}</span>
-                </div>
-                <div className="py-3 flex justify-between">
-                  <span className="text-slate-400">Torque</span>
-                  <span className="text-white text-right">{car.torqueLbFt || 'N/A'}</span>
-                </div>
-                {car.engine && (
-                  <div className="py-3 flex justify-between">
-                    <span className="text-slate-400">Engine</span>
-                    <span className="text-white text-right">{car.engine}</span>
-                  </div>
-                )}
-                {car.transmission && (
-                  <div className="py-3 flex justify-between">
-                    <span className="text-slate-400">Transmission</span>
-                    <span className="text-white text-right">{car.transmission}</span>
-                  </div>
-                )}
-                {car.drivetrain && (
-                  <div className="py-3 flex justify-between">
-                    <span className="text-slate-400">Drivetrain</span>
-                    <span className="text-white text-right">{car.drivetrain}</span>
-                  </div>
-                )}
-                {car.bodyStyle && (
-                  <div className="py-3 flex justify-between">
-                    <span className="text-slate-400">Body Style</span>
-                    <span className="text-white text-right">{car.bodyStyle}</span>
-                  </div>
-                )}
-                {car.exteriorColor && (
-                  <div className="py-3 flex justify-between">
-                    <span className="text-slate-400">Exterior Color</span>
-                    <span className="text-white text-right">{car.exteriorColor}</span>
-                  </div>
-                )}
-                {car.interiorColor && (
-                  <div className="py-3 flex justify-between">
-                    <span className="text-slate-400">Interior Color</span>
-                    <span className="text-white text-right">{car.interiorColor}</span>
-                  </div>
-                )}
-                {car.package && (
-                  <div className="py-3 flex justify-between">
-                    <span className="text-slate-400">Package</span>
-                    <span className="text-white text-right">{car.package}</span>
-                  </div>
-                )}
-                {car.generation && (
-                  <div className="py-3 flex justify-between">
-                    <span className="text-slate-400">Generation</span>
-                    <span className="text-white text-right">{car.generation}</span>
                   </div>
                 )}
               </div>
-            </div>
-          </>
-        )}
-        
-        {/* Main shop build button removed for mobile since we have the icon, 
-        and desktop has its own button in the specifications section */}
+            </>
+          )}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
-  // Render the page using MobileLayout
+  // Render the page directly without nested layout
   return (
     <>
-      <MobileLayout>
-        <div className="bg-slate-900 flex flex-col h-full">
-          {carDetailsContent}
-        </div>
-      </MobileLayout>
+      <div className="bg-slate-900 flex flex-col h-full">
+        {renderCarDetails()}
+      </div>
       {shopDialog}
       {deleteDialog}
     </>

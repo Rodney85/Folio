@@ -274,13 +274,6 @@
   }
 }
 
-/* Fallback for devices without safe area support */
-@media (max-width: 640px) {
-  .mobile-navbar-spacing {
-    margin-top: 1.5rem !important;
-  }
-}
-
 /* Hide scrollbar for Chrome, Safari and Firefox */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
