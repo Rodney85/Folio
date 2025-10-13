@@ -34,20 +34,10 @@ export default defineConfig(({ mode }) => {
           // Feature chunks
           auth: ['@clerk/clerk-react'],
           convex: ['convex'],
-          analytics: ['react-ga4'],
-          // Admin chunk
-          admin: [
-            './src/pages/admin/AdminDashboardPage.tsx',
-            './src/pages/admin/AdminOverviewPage.tsx',
-            './src/pages/admin/AdminUsersPage.tsx',
-            './src/pages/admin/AdminContentPage.tsx',
-            './src/pages/admin/AdminOperationsPage.tsx',
-          ],
           // Analytics page chunks
           analyticsPages: [
             './src/pages/AnalyticsPage.tsx',
             './src/pages/ProAnalyticsPage.tsx',
-            './src/pages/CarInsightsPage.tsx',
           ],
         },
       },
