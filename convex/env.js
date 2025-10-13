@@ -8,11 +8,20 @@ export function isDevelopment() {
     return true;
   }
   
-  // Check for development Convex URL
+  // Check for development Convex URL patterns
+  if (process.env.CONVEX_URL) {
+    const url = process.env.CONVEX_URL;
+    if (url.includes('proficient-alpaca') || 
+        url.includes('localhost') ||
+        url.includes('127.0.0.1')) {
+      return true;
+    }
+  }
+  
+  // Check for production Convex URL patterns
   if (process.env.CONVEX_URL && 
-      (process.env.CONVEX_URL.includes('proficient-alpaca') || 
-       process.env.CONVEX_URL.includes('localhost'))) {
-    return true;
+      process.env.CONVEX_URL.includes('cheerful-nightingale')) {
+    return false; // This is production
   }
   
   // Default to production if we can't determine
