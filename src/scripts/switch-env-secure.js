@@ -26,7 +26,7 @@ const rl = readline.createInterface({
 });
 
 // Get root directory
-const rootDir = path.join(__dirname, '..');
+const rootDir = path.join(__dirname, '..', '..');
 
 // Target files
 const envTempFile = path.join(rootDir, '.env.temp');

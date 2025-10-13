@@ -12,11 +12,11 @@
     "preview": "vite preview",
     "convex": "convex dev",
     "convex:dev": "convex dev --env-file .env.temp",
-    "env:dev": "node scripts/switch-env-secure.js development",
-    "env:prod": "node scripts/switch-env-secure.js production",
-    "env:switch": "node scripts/switch-env-secure.js",
-    "switch:dev:preserve-user": "node scripts/switch-env-preserve-user.js development",
-    "switch:prod:preserve-user": "node scripts/switch-env-preserve-user.js production"
+    "env:dev": "node src/scripts/switch-env-secure.js development",
+    "env:prod": "node src/scripts/switch-env-secure.js production",
+    "env:switch": "node src/scripts/switch-env-secure.js",
+    "switch:dev:preserve-user": "node src/scripts/switch-env-preserve-user.js development",
+    "switch:prod:preserve-user": "node src/scripts/switch-env-preserve-user.js production"
   },
   "dependencies": {
     "@clerk/clerk-react": "^5.32.1",
