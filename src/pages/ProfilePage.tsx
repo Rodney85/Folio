@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
-import { useUser } from "@clerk/clerk-react";
+import { useUser, useClerk } from "@clerk/clerk-react";
 import { toast } from "sonner";
-import { Share, Menu, Car, Plus, Loader, GripHorizontal, Sparkles, HelpCircle, Instagram, Youtube } from "lucide-react";
+import { Share, Car, Plus, Loader, GripHorizontal, Sparkles, HelpCircle, Instagram, Youtube, Settings } from "lucide-react";
 import { useState } from "react";
 import MobileLayout from "@/components/layout/MobileLayout";
 import { ResponsiveLayout } from "@/components/layout/ResponsiveLayout";
@@ -22,9 +22,11 @@ import ShareModal from "@/components/ShareModal";
 import DraggableCarGrid from "@/components/cars/DraggableCarGrid";
 import { motion } from "framer-motion";
 import { SectionTransition, AnimatedItem } from "@/components/ui/page-transition";
+import ProfileSetupBanner from "@/components/ProfileSetupBanner";
 
 const ProfilePage = () => {
   const { user } = useUser();
+  const clerk = useClerk();
   const navigate = useNavigate();
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -45,7 +47,7 @@ const ProfilePage = () => {
   
   // Define the profile URL for QR code - using public profile URL format
   const baseUrl = window.location.origin;
-  const profileUrl = `${baseUrl}/u/${profile?.username || user?.firstName?.toLowerCase() || "itsrod"}`;
+  const profileUrl = profile?.username ? `${baseUrl}/u/${profile.username}` : `${baseUrl}/profile`;
   
   const handleCarClick = (car) => {
     navigate(`/car/${car._id}`);
@@ -59,11 +61,27 @@ const ProfilePage = () => {
       {/* Top bar - Only visible on mobile */}
       {isMobile && (
         <div className="flex justify-between items-center p-4 pb-2">
-          <Share className="text-white" onClick={() => setShareModalOpen(true)} />
-          <Menu className="text-white" onClick={() => navigate('/profile/menu')} />
+          <Share className="text-white cursor-pointer" onClick={() => setShareModalOpen(true)} />
+          <Settings className="text-white cursor-pointer" onClick={() => {
+            clerk.openUserProfile({
+              appearance: {
+                elements: {
+                  rootBox: {
+                    boxShadow: "none",
+                    width: "100%"
+                  },
+                },
+              },
+            });
+          }} />
         </div>
       )}
-      
+
+      {/* Profile Setup Banner */}
+      <div className="px-4 pt-4">
+        <ProfileSetupBanner />
+      </div>
+
       {/* Profile header */}
       <div className="flex flex-col items-center px-6 pb-4">
         <div className="relative">
@@ -80,91 +98,91 @@ const ProfilePage = () => {
           </button>
         </div>
 
-        <h2 className="font-bold mt-6 text-xl">@{profile?.username || user?.firstName?.toLowerCase() || "itsrod"}</h2>
-        <p className="text-center text-sm text-muted-foreground mt-4 mb-6 max-w-xs whitespace-pre-wrap">
-          {profile?.bio ? (
-            <span className="whitespace-pre-wrap">{profile.bio}</span>
-          ) : (
-            "I don't wanna end up like Muqtada\nLive in the moment"
+        <h2 className="font-bold mt-6 text-xl">
+          {profile?.username ? `@${profile.username}` : (
+            <span className="text-muted-foreground text-base">No username set</span>
           )}
-        </p>
+        </h2>
+        {profile?.bio ? (
+          <p className="text-center text-sm text-muted-foreground mt-4 mb-6 max-w-xs whitespace-pre-wrap">
+            {profile.bio}
+          </p>
+        ) : (
+          <button
+            onClick={() => navigate('/profile/edit')}
+            className="text-center text-sm text-muted-foreground/60 mt-4 mb-6 hover:text-muted-foreground transition-colors"
+          >
+            Add a bio to tell people about yourself
+          </button>
+        )}
 
-        {/* Social media links */}
-        <SectionTransition className="flex space-x-8 mb-6">
-          {/* Instagram Icon */}
-          <AnimatedItem>
-            <motion.a 
-              href={profile?.instagram ? `https://instagram.com/${profile.instagram}` : "#"} 
-              target={profile?.instagram ? "_blank" : "_self"}
-              rel="noopener noreferrer"
-              onClick={(e) => {
-                if (!profile?.instagram) {
-                  e.preventDefault();
-                  toast("Instagram not configured", {
-                    description: "Configure your Instagram link in your profile settings."
-                  });
-                }
-              }}
-              whileHover={{ scale: 1.2, y: -2 }}
-              whileTap={{ scale: 0.95 }}
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
-            >
-              <Instagram 
-                className={`h-6 w-6 transition-colors duration-200 ${profile?.instagram ? 'text-pink-500 hover:text-pink-600' : 'text-gray-400 hover:text-gray-500'}`} 
-              />
-            </motion.a>
-          </AnimatedItem>
-          
-          {/* TikTok Icon */}
-          <AnimatedItem>
-            <motion.a 
-              href={profile?.tiktok ? `https://tiktok.com/@${profile.tiktok}` : "#"} 
-              target={profile?.tiktok ? "_blank" : "_self"}
-              rel="noopener noreferrer"
-              onClick={(e) => {
-                if (!profile?.tiktok) {
-                  e.preventDefault();
-                  toast("TikTok not configured", {
-                    description: "Configure your TikTok link in your profile settings."
-                  });
-                }
-              }}
-              whileHover={{ scale: 1.2, y: -2 }}
-              whileTap={{ scale: 0.95 }}
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
-            >
-              <div className={`h-6 w-6 transition-colors duration-200 ${profile?.tiktok ? 'text-black hover:text-gray-800' : 'text-gray-400 hover:text-gray-500'}`}>
-                <svg viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6">
-                  <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
-                </svg>
-              </div>
-            </motion.a>
-          </AnimatedItem>
-          
-          {/* YouTube Icon */}
-          <AnimatedItem>
-            <motion.a 
-              href={profile?.youtube ? `https://youtube.com/${profile.youtube}` : "#"} 
-              target={profile?.youtube ? "_blank" : "_self"}
-              rel="noopener noreferrer"
-              onClick={(e) => {
-                if (!profile?.youtube) {
-                  e.preventDefault();
-                  toast("YouTube not configured", {
-                    description: "Configure your YouTube link in your profile settings."
-                  });
-                }
-              }}
-              whileHover={{ scale: 1.2, y: -2 }}
-              whileTap={{ scale: 0.95 }}
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
-            >
-              <Youtube 
-                className={`h-6 w-6 transition-colors duration-200 ${profile?.youtube ? 'text-red-600 hover:text-red-700' : 'text-gray-400 hover:text-red-600'}`} 
-              />
-            </motion.a>
-          </AnimatedItem>
-        </SectionTransition>
+        {/* Social media links - Only show configured ones */}
+        {(profile?.instagram || profile?.tiktok || profile?.youtube) ? (
+          <SectionTransition className="flex space-x-8 mb-6">
+            {/* Instagram Icon */}
+            {profile?.instagram && (
+              <AnimatedItem>
+                <motion.a
+                  href={`https://instagram.com/${profile.instagram}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileHover={{ scale: 1.2, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                >
+                  <Instagram
+                    className="h-6 w-6 text-pink-500 hover:text-pink-600 transition-colors duration-200"
+                  />
+                </motion.a>
+              </AnimatedItem>
+            )}
+
+            {/* TikTok Icon */}
+            {profile?.tiktok && (
+              <AnimatedItem>
+                <motion.a
+                  href={`https://tiktok.com/@${profile.tiktok}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileHover={{ scale: 1.2, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                >
+                  <div className="h-6 w-6 text-black hover:text-gray-800 transition-colors duration-200">
+                    <svg viewBox="0 0 24 24" fill="currentColor" className="h-6 w-6">
+                      <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+                    </svg>
+                  </div>
+                </motion.a>
+              </AnimatedItem>
+            )}
+
+            {/* YouTube Icon */}
+            {profile?.youtube && (
+              <AnimatedItem>
+                <motion.a
+                  href={`https://youtube.com/${profile.youtube}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileHover={{ scale: 1.2, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                >
+                  <Youtube
+                    className="h-6 w-6 text-red-600 hover:text-red-700 transition-colors duration-200"
+                  />
+                </motion.a>
+              </AnimatedItem>
+            )}
+          </SectionTransition>
+        ) : (
+          <button
+            onClick={() => navigate('/profile/edit')}
+            className="text-center text-sm text-muted-foreground/60 mb-6 hover:text-muted-foreground transition-colors"
+          >
+            Add social media links
+          </button>
+        )}
       </div>
       
       {/* Divider line */}
@@ -240,7 +258,7 @@ const ProfilePage = () => {
       <ShareModal
         open={shareModalOpen}
         onClose={() => setShareModalOpen(false)}
-        username={profile?.username || user?.firstName?.toLowerCase() || "itsrod"}
+        username={profile?.username || "your-profile"}
         profileUrl={profileUrl}
       />
 

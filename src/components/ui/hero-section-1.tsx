@@ -1,11 +1,9 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, ChevronRight, Menu, X, Car, Squirrel, Home, Star, DollarSign, FileText } from 'lucide-react'
+import { ArrowRight, ChevronRight, Car, Squirrel, Home, Star, DollarSign, FileText } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { motion } from 'framer-motion'
 import { cn, getDemoProfileUrl } from '@/lib/utils'
-import { Logo } from '@/components/ui/logo'
-import { NavBar } from '@/components/ui/tubelight-navbar'
 
 const transitionVariants = {
     item: {
@@ -28,17 +26,9 @@ const transitionVariants = {
 }
 
 export function HeroSection() {
-    const navItems = [
-        { name: 'Home', url: '/', icon: Home },
-        { name: 'Features', url: '/#features', icon: Star },
-        { name: 'Pricing', url: '/#pricing', icon: DollarSign },
-        { name: 'About', url: '/#about', icon: FileText }
-    ]
-
     return (
         <>
-            <NavBar items={navItems} />
-            <main className="overflow-hidden bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-blue-950">
+            <main className="bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-blue-950">
                 <div
                     aria-hidden
                     className="z-[2] absolute inset-0 pointer-events-none isolate opacity-50 contain-strict hidden lg:block">
@@ -46,8 +36,8 @@ export function HeroSection() {
                     <div className="h-[80rem] absolute left-0 top-0 w-56 -rotate-45 rounded-full bg-[radial-gradient(50%_50%_at_50%_50%,hsla(220,100%,85%,.06)_0,hsla(220,100%,45%,.02)_80%,transparent_100%)] dark:bg-[radial-gradient(50%_50%_at_50%_50%,hsla(220,100%,25%,.08)_0,hsla(220,100%,15%,.03)_80%,transparent_100%)] [translate:5%_-50%]" />
                     <div className="h-[80rem] -translate-y-[350px] absolute left-0 top-0 w-56 -rotate-45 bg-[radial-gradient(50%_50%_at_50%_50%,hsla(220,100%,85%,.04)_0,hsla(220,100%,45%,.02)_80%,transparent_100%)] dark:bg-[radial-gradient(50%_50%_at_50%_50%,hsla(220,100%,25%,.06)_0,hsla(220,100%,15%,.02)_80%,transparent_100%)]" />
                 </div>
-                <section>
-                    <div className="relative pt-32">
+                <section id="hero-section">
+                    <div className="relative pt-24 md:pt-28 lg:pt-32">
                         <motion.div
                             initial="hidden"
                             animate="visible"

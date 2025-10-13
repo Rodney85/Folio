@@ -29,16 +29,25 @@ export const updateProfile = mutation({
     const currentTimestamp = new Date().toISOString();
 
     if (existingUser) {
-      // Update existing user
-      return await ctx.db.patch(existingUser._id, {
+      // Prepare update data
+      const updateData: any = {
         ...(args.username !== undefined ? { username: args.username } : {}),
         ...(args.bio !== undefined ? { bio: args.bio } : {}),
         ...(args.instagram !== undefined ? { instagram: args.instagram } : {}),
         ...(args.tiktok !== undefined ? { tiktok: args.tiktok } : {}),
         ...(args.youtube !== undefined ? { youtube: args.youtube } : {}),
-        profileCompleted: true,
         updatedAt: currentTimestamp,
-      });
+      };
+
+      // Only set profileCompleted to true if username is provided
+      // This is the minimum requirement for profile completion
+      const finalUsername = args.username !== undefined ? args.username : existingUser.username;
+      if (finalUsername && finalUsername.trim()) {
+        updateData.profileCompleted = true;
+      }
+
+      // Update existing user
+      return await ctx.db.patch(existingUser._id, updateData);
     } else {
       // This case shouldn't happen often as users are typically created during auth sync
       throw new ConvexError("User not found in the database");
@@ -91,6 +100,82 @@ export const isProfileComplete = query({
 
     // Consider profile complete if username is set and profileCompleted flag is true
     return user.profileCompleted === true && !!user.username;
+  },
+});
+
+/**
+ * Get profile completion status with percentage and missing fields.
+ * Returns completion percentage and list of fields that need to be filled.
+ */
+export const getProfileCompletionStatus = query({
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      return { percentage: 0, missingFields: [], isComplete: false };
+    }
+
+    // Look up the user
+    const tokenIdentifier = identity.tokenIdentifier;
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) => q.eq("tokenIdentifier", tokenIdentifier))
+      .first();
+
+    if (!user) {
+      return { percentage: 0, missingFields: [], isComplete: false };
+    }
+
+    // Calculate completion percentage based on field weights
+    let percentage = 0;
+    const missingFields: string[] = [];
+
+    // Username: 30% (most important)
+    if (user.username && user.username.trim()) {
+      percentage += 30;
+    } else {
+      missingFields.push("username");
+    }
+
+    // Bio: 20%
+    if (user.bio && user.bio.trim()) {
+      percentage += 20;
+    } else {
+      missingFields.push("bio");
+    }
+
+    // Instagram: 15%
+    if (user.instagram && user.instagram.trim()) {
+      percentage += 15;
+    } else {
+      missingFields.push("instagram");
+    }
+
+    // TikTok: 15%
+    if (user.tiktok && user.tiktok.trim()) {
+      percentage += 15;
+    } else {
+      missingFields.push("tiktok");
+    }
+
+    // YouTube: 15%
+    if (user.youtube && user.youtube.trim()) {
+      percentage += 15;
+    } else {
+      missingFields.push("youtube");
+    }
+
+    // Profile photo: 5% (from Clerk)
+    if (user.pictureUrl) {
+      percentage += 5;
+    } else {
+      missingFields.push("profile_photo");
+    }
+
+    return {
+      percentage,
+      missingFields,
+      isComplete: percentage === 100,
+    };
   },
 });
 

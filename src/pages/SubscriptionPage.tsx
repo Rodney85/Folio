@@ -1,392 +1,399 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Crown, CheckCircle2, ChevronRight, Clock, CreditCard, AlertCircle, Loader, ShieldCheck } from 'lucide-react';
-import { useUser } from '@clerk/clerk-react';
-import { useCurrentSubscription, useStartUserTrial } from '@/lib/subscription-utils';
-import ResponsiveLayout from '@/components/layout/ResponsiveLayout';
-import { Button } from '@/components/ui/button';
-import { useQuery, useMutation } from 'convex/react';
-import { api } from '../../convex/_generated/api';
+import { useQuery, useMutation } from "convex/react";
+import { api } from "../../convex/_generated/api";
+import { useUser } from "@clerk/clerk-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Loader2, CheckCircle2, XCircle, AlertCircle, ExternalLink, Crown, Calendar, CreditCard } from "lucide-react";
+import { toast } from "sonner";
+import { useState } from "react";
 
-// Type definition for subscription to include subscriptionId
-interface SubscriptionWithId {
-  status: string;
-  plan: string;
-  isActive: boolean;
-  isInTrial: boolean;
-  daysRemaining: number;
-  trialEnded: boolean;
-  trialEndDate?: number;
-  currentPeriodEnd?: number | string;
-  subscriptionId?: string; // Make it optional to handle both cases
-}
-
-const SubscriptionPage = () => {
-  const navigate = useNavigate();
+export default function SubscriptionPage() {
   const { user } = useUser();
-  const subscription = useCurrentSubscription() as SubscriptionWithId | undefined;
-  const startTrial = useStartUserTrial();
+  const subscription = useQuery(api.subscriptions.getUserSubscription);
   const [isLoading, setIsLoading] = useState(false);
-  
-  // Check if the user has an admin role
-  const isAdmin = user?.publicMetadata?.role === 'admin';
 
-  // Helper function to format date
-  const formatDate = (timestamp?: number | string) => {
-    if (!timestamp) return 'N/A';
-    // Ensure we're working with a number
-    const dateValue = typeof timestamp === 'string' ? parseInt(timestamp) : timestamp;
-    return new Date(dateValue).toLocaleDateString(undefined, { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
-    });
-  };
+  const handleCheckout = async (plan: "monthly" | "yearly") => {
+    if (!user) return;
 
-  // Calculate days remaining in trial if applicable
-  const calculateTrialDaysLeft = () => {
-    if (!subscription || subscription.status !== 'trial') {
-      return 0;
-    }
-    
-    // Use the pre-calculated daysRemaining if available
-    return subscription.daysRemaining || 0;
-  };
-  
-  const trialDaysLeft = calculateTrialDaysLeft();
-  
-  // Handle checkout for subscription
-  const handleCheckout = async (planType: 'monthly' | 'yearly') => {
     setIsLoading(true);
     try {
-      // Implement the checkout flow using Lemon Squeezy
-      window.location.href = `/api/create-checkout?plan=${planType}&userId=${user?.id}`;
+      const response = await fetch(`${import.meta.env.VITE_CONVEX_URL}/checkoutSession`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          plan,
+          userId: user.id,
+          email: user.emailAddresses[0]?.emailAddress,
+          name: user.fullName || user.firstName || user.emailAddresses[0]?.emailAddress.split("@")[0],
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.checkoutUrl) {
+        // Redirect to Dodo Payments checkout
+        window.location.href = data.checkoutUrl;
+      } else {
+        throw new Error(data.error || "Failed to create checkout session");
+      }
     } catch (error) {
-      console.error("Failed to start checkout process:", error);
+      console.error("Error creating checkout session:", error);
+      toast.error("Failed to start checkout. Please try again.");
       setIsLoading(false);
     }
   };
 
-  // Handle starting a trial
-  const handleStartTrial = async () => {
+  const handleManageSubscription = async () => {
+    if (!subscription || !subscription.isActive) return;
+
     setIsLoading(true);
     try {
-      await startTrial();
-      // Wait a moment for the UI to update
-      setTimeout(() => {
+      // Use the customerId from the subscription record, not the userId
+      const customerId = (subscription as any).customerId || user?.id;
+
+      if (!customerId) {
+        toast.error("Customer ID not found. Please contact support.");
         setIsLoading(false);
-      }, 1000);
+        return;
+      }
+
+      // Get the subscription data to find customerId
+      const subscriptionData = await fetch(`${import.meta.env.VITE_CONVEX_URL}/customerPortal`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          customerId: customerId,
+        }),
+      });
+
+      const data = await subscriptionData.json();
+
+      if (data.portal_url) {
+        // Redirect to Dodo Payments customer portal
+        window.location.href = data.portal_url;
+      } else {
+        throw new Error("Failed to get portal URL");
+      }
     } catch (error) {
-      console.error("Failed to start trial:", error);
+      console.error("Error accessing customer portal:", error);
+      toast.error("Failed to access subscription portal. Please try again.");
       setIsLoading(false);
     }
   };
 
   if (!user) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <Loader className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="container max-w-4xl mx-auto py-12 px-4">
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
+            <p className="text-muted-foreground">Please sign in to view your subscription</p>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
+  if (subscription === undefined) {
+    return (
+      <div className="container max-w-4xl mx-auto py-12 px-4">
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+            <p className="text-muted-foreground">Loading subscription details...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const getStatusBadge = () => {
+    if (subscription.isActive) {
+      return (
+        <Badge className="bg-green-500/10 text-green-500 hover:bg-green-500/20 border-green-500/20">
+          <CheckCircle2 className="h-3 w-3 mr-1" />
+          Active
+        </Badge>
+      );
+    }
+    if (subscription.isInTrial) {
+      return (
+        <Badge className="bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 border-blue-500/20">
+          <Crown className="h-3 w-3 mr-1" />
+          Free Trial
+        </Badge>
+      );
+    }
+    if (subscription.trialEnded) {
+      return (
+        <Badge variant="destructive">
+          <XCircle className="h-3 w-3 mr-1" />
+          Trial Ended
+        </Badge>
+      );
+    }
+    return (
+      <Badge variant="secondary">
+        <AlertCircle className="h-3 w-3 mr-1" />
+        No Subscription
+      </Badge>
+    );
+  };
+
+  const getPlanName = () => {
+    if (!subscription.plan) return "No active plan";
+    return subscription.plan === "monthly" ? "Monthly Plan" : "Yearly Plan";
+  };
+
+  const getPlanPrice = () => {
+    if (!subscription.plan) return "";
+    return subscription.plan === "monthly" ? "$29.99/month" : "$299.99/year";
+  };
+
   return (
-    <ResponsiveLayout>
-      <div className="max-w-3xl mx-auto p-4 md:p-8">
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center">
-          <h1 className="text-3xl font-bold">Subscription</h1>
-          {isAdmin && (
-            <div className="ml-4 flex items-center bg-purple-500/10 text-purple-500 px-4 py-2 rounded-full text-sm font-medium">
-              <ShieldCheck className="h-5 w-5 mr-2" />
-              <span>Admin Access</span>
+    <div className="container max-w-4xl mx-auto py-12 px-4 space-y-6">
+      {/* Current Subscription Status */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-2xl">Your Subscription</CardTitle>
+              <CardDescription>Manage your Carfolio subscription</CardDescription>
+            </div>
+            {getStatusBadge()}
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Active Subscription */}
+          {subscription.isActive && (
+            <>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="flex items-start space-x-3">
+                  <Crown className="h-5 w-5 text-primary mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium">Plan</p>
+                    <p className="text-sm text-muted-foreground">{getPlanName()}</p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <CreditCard className="h-5 w-5 text-primary mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium">Price</p>
+                    <p className="text-sm text-muted-foreground">{getPlanPrice()}</p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <Calendar className="h-5 w-5 text-primary mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium">Next Billing Date</p>
+                    <p className="text-sm text-muted-foreground">
+                      {subscription.currentPeriodEnd
+                        ? new Date(subscription.currentPeriodEnd).toLocaleDateString()
+                        : "N/A"}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium">Status</p>
+                    <p className="text-sm text-muted-foreground">Active & Renewing</p>
+                  </div>
+                </div>
+              </div>
+              <Button
+                onClick={handleManageSubscription}
+                disabled={isLoading}
+                className="w-full md:w-auto"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Loading...
+                  </>
+                ) : (
+                  <>
+                    Manage Subscription
+                    <ExternalLink className="ml-2 h-4 w-4" />
+                  </>
+                )}
+              </Button>
+            </>
+          )}
+
+          {/* Free Trial */}
+          {subscription.isInTrial && (
+            <>
+              <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
+                <div className="flex items-center space-x-2 mb-2">
+                  <Crown className="h-5 w-5 text-blue-500" />
+                  <h3 className="font-semibold text-blue-500">Free Trial Active</h3>
+                </div>
+                <p className="text-sm text-muted-foreground mb-2">
+                  You have {subscription.daysRemaining} days remaining in your free trial.
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Trial ends on {subscription.trialEndDate ? new Date(subscription.trialEndDate).toLocaleDateString() : "N/A"}
+                </p>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Upgrade to a paid plan to continue enjoying premium features after your trial ends.
+              </p>
+            </>
+          )}
+
+          {/* Trial Ended / No Subscription */}
+          {(subscription.trialEnded || subscription.status === "none") && (
+            <div className="bg-muted/50 border rounded-lg p-4">
+              <div className="flex items-center space-x-2 mb-2">
+                <AlertCircle className="h-5 w-5 text-muted-foreground" />
+                <h3 className="font-semibold">No Active Subscription</h3>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Subscribe to unlock premium features including advanced analytics, unlimited cars, and more.
+              </p>
             </div>
           )}
-        </div>
-        {subscription?.status === 'active' && (
-          <div className="flex items-center bg-green-500/10 text-green-500 px-4 py-2 rounded-full text-sm font-medium">
-            <Crown className="h-5 w-5 mr-2" />
-            <span>Active</span>
-          </div>
-        )}
-        
-        {subscription?.status === 'trial' && (
-          <div className="flex items-center bg-blue-500/10 text-blue-500 px-4 py-2 rounded-full text-sm font-medium">
-            <Clock className="h-5 w-5 mr-2" />
-            <span>Trial • {trialDaysLeft} days left</span>
-          </div>
-        )}
-        
-        {subscription?.status === 'expired' && (
-          <div className="flex items-center bg-red-500/10 text-red-500 px-4 py-2 rounded-full text-sm font-medium">
-            <AlertCircle className="h-5 w-5 mr-2" />
-            <span>Expired</span>
-          </div>
-        )}
-        
-        {subscription?.status === 'canceled' && (
-          <div className="flex items-center bg-slate-500/10 text-slate-500 px-4 py-2 rounded-full text-sm font-medium">
-            <span>Canceled</span>
-          </div>
-        )}
-      </div>
+        </CardContent>
+      </Card>
 
-      {/* Subscription Details */}
-      {subscription && (
-        <div className="bg-slate-800/50 rounded-lg p-6 mb-8">
-          <h2 className="text-xl font-medium mb-4">Your Subscription</h2>
-          
-          <div className="space-y-3">
-            <div className="flex justify-between py-2 border-b border-slate-700">
-              <span className="text-slate-400">Status</span>
-              <span className="font-medium">
-                {subscription.status === 'active' ? 'Active' : 
-                 subscription.status === 'trial' ? 'Trial' :
-                 subscription.status === 'canceled' ? 'Canceled' : 'Expired'}
-              </span>
-            </div>
-            
-            {subscription.plan && (
-              <div className="flex justify-between py-2 border-b border-slate-700">
-                <span className="text-slate-400">Plan</span>
-                <span className="font-medium">
-                  {subscription.plan.charAt(0).toUpperCase() + subscription.plan.slice(1)}
-                </span>
+      {/* Pricing Plans */}
+      {(!subscription.isActive || subscription.status === "none" || subscription.trialEnded) && (
+        <div className="grid gap-6 md:grid-cols-2">
+          {/* Monthly Plan */}
+          <Card className="relative overflow-hidden">
+            <CardHeader>
+              <CardTitle>Monthly</CardTitle>
+              <CardDescription>Perfect for trying out premium features</CardDescription>
+              <div className="mt-4">
+                <span className="text-4xl font-bold">$29.99</span>
+                <span className="text-muted-foreground">/month</span>
               </div>
-            )}
-            
-            {subscription.status === 'trial' && (
-              <>
-                <div className="flex justify-between py-2 border-b border-slate-700">
-                  <span className="text-slate-400">Trial Status</span>
-                  <span className="font-medium">
-                    {trialDaysLeft > 0 ? `${trialDaysLeft} days remaining` : 'Ending today'}
-                  </span>
-                </div>
-                <div className="flex justify-between py-2 border-b border-slate-700">
-                  <span className="text-slate-400">Trial Ends</span>
-                  <span className="font-medium">{formatDate(subscription.trialEndDate)}</span>
-                </div>
-              </>
-            )}
-            
-            {subscription.currentPeriodEnd && subscription.status === 'active' && (
-              <div className="flex justify-between py-2 border-b border-slate-700">
-                <span className="text-slate-400">Next Billing Date</span>
-                <span className="font-medium">{formatDate(subscription.currentPeriodEnd)}</span>
-              </div>
-            )}
-            
-            {subscription.status === 'canceled' && (
-              <div className="flex justify-between py-2 border-b border-slate-700">
-                <span className="text-slate-400">Canceled</span>
-                <span className="font-medium">Your subscription has been canceled</span>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Admin full access notice */}
-      {isAdmin && (
-        <div className="bg-purple-500/10 rounded-lg p-6 mb-8 border border-purple-500/20">
-          <div className="flex items-start">
-            <ShieldCheck className="h-6 w-6 text-purple-500 mr-3 mt-0.5" />
-            <div>
-              <h3 className="font-medium text-lg">Admin Full Access</h3>
-              <p className="text-slate-400 mt-1">As an admin, you have full access to all premium features regardless of subscription status.</p>
-            </div>
-          </div>
-        </div>
-      )}
-      
-      {/* No subscription case */}
-      {!subscription && !isAdmin && (
-        <div className="bg-slate-800/50 rounded-lg p-8 text-center mb-8">
-          <h2 className="text-xl font-medium mb-4">You don't have an active subscription yet</h2>
-          <p className="text-slate-400 mb-6">Start your 14-day free trial to access all features</p>
-          <Button 
-            onClick={handleStartTrial}
-            disabled={isLoading}
-            className="bg-blue-600 hover:bg-blue-700"
-          >
-            {isLoading ? (
-              <>
-                <Loader className="h-4 w-4 mr-2 animate-spin" />
-                Setting up trial...
-              </>
-            ) : (
-              <>
-                Start 14-Day Free Trial
-              </>
-            )}
-          </Button>
-        </div>
-      )}
-
-      {/* Pricing options - show if in trial or expired, but not for admins */}
-      {(subscription?.status === 'trial' || subscription?.status === 'expired') && !isAdmin && (
-        <div className="space-y-6">
-          <h2 className="text-xl font-medium">Upgrade Your Subscription</h2>
-          <p className="text-slate-400">
-            {subscription.status === 'trial' 
-              ? `Your trial ends in ${trialDaysLeft} days. Upgrade now to keep sharing your cars.` 
-              : 'Your trial has expired. Subscribe now to restore access to all features.'}
-          </p>
-          
-          <div className="grid md:grid-cols-2 gap-6 mt-6">
-            {/* Monthly Plan */}
-            <div className="bg-slate-800/50 rounded-lg p-6 hover:border hover:border-blue-500/50 transition-all">
-              <div className="flex justify-between items-start mb-4">
-                <h3 className="text-lg font-medium">Monthly</h3>
-                <div className="text-right">
-                  <span className="text-2xl font-bold">$9.99</span>
-                  <span className="text-slate-400 block text-sm">per month</span>
-                </div>
-              </div>
-              
-              <ul className="space-y-3 mb-6">
-                <li className="flex items-start">
-                  <CheckCircle2 className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
-                  <span>Unlimited car profiles</span>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-center">
+                  <CheckCircle2 className="h-4 w-4 text-green-500 mr-2" />
+                  Advanced Analytics
                 </li>
-                <li className="flex items-start">
-                  <CheckCircle2 className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
-                  <span>Public sharing links</span>
+                <li className="flex items-center">
+                  <CheckCircle2 className="h-4 w-4 text-green-500 mr-2" />
+                  Unlimited Cars
                 </li>
-                <li className="flex items-start">
-                  <CheckCircle2 className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
-                  <span>Analytics and insights</span>
+                <li className="flex items-center">
+                  <CheckCircle2 className="h-4 w-4 text-green-500 mr-2" />
+                  Custom Branding
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle2 className="h-4 w-4 text-green-500 mr-2" />
+                  Priority Support
                 </li>
               </ul>
-              
-              <Button 
-                onClick={() => handleCheckout('monthly')}
+              <Button
+                className="w-full"
+                onClick={() => handleCheckout("monthly")}
                 disabled={isLoading}
-                className="w-full bg-blue-600 hover:bg-blue-700"
               >
                 {isLoading ? (
                   <>
-                    <Loader className="h-4 w-4 mr-2 animate-spin" />
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Processing...
                   </>
                 ) : (
-                  <>
-                    <CreditCard className="h-4 w-4 mr-2" />
-                    Subscribe Monthly
-                  </>
+                  "Subscribe Monthly"
                 )}
               </Button>
+            </CardContent>
+          </Card>
+
+          {/* Yearly Plan */}
+          <Card className="relative overflow-hidden border-primary">
+            <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-bl-lg">
+              SAVE 17%
             </div>
-            
-            {/* Yearly Plan */}
-            <div className="bg-slate-800/50 rounded-lg p-6 relative hover:border hover:border-blue-500/50 transition-all">
-              <div className="absolute -top-3 right-4 bg-blue-600 px-3 py-1 rounded-full text-xs font-medium">
-                Save 20%
+            <CardHeader>
+              <CardTitle>Yearly</CardTitle>
+              <CardDescription>Best value for committed users</CardDescription>
+              <div className="mt-4">
+                <span className="text-4xl font-bold">$299.99</span>
+                <span className="text-muted-foreground">/year</span>
               </div>
-              
-              <div className="flex justify-between items-start mb-4">
-                <h3 className="text-lg font-medium">Yearly</h3>
-                <div className="text-right">
-                  <span className="text-2xl font-bold">$99.99</span>
-                  <span className="text-slate-400 block text-sm">per year</span>
-                </div>
-              </div>
-              
-              <ul className="space-y-3 mb-6">
-                <li className="flex items-start">
-                  <CheckCircle2 className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
-                  <span>Unlimited car profiles</span>
+              <p className="text-sm text-muted-foreground">$24.99/month when billed annually</p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-center">
+                  <CheckCircle2 className="h-4 w-4 text-green-500 mr-2" />
+                  Advanced Analytics
                 </li>
-                <li className="flex items-start">
-                  <CheckCircle2 className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
-                  <span>Public sharing links</span>
+                <li className="flex items-center">
+                  <CheckCircle2 className="h-4 w-4 text-green-500 mr-2" />
+                  Unlimited Cars
                 </li>
-                <li className="flex items-start">
-                  <CheckCircle2 className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
-                  <span>Analytics and insights</span>
+                <li className="flex items-center">
+                  <CheckCircle2 className="h-4 w-4 text-green-500 mr-2" />
+                  Custom Branding
                 </li>
-                <li className="flex items-start">
-                  <CheckCircle2 className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" />
-                  <span>Priority support</span>
+                <li className="flex items-center">
+                  <CheckCircle2 className="h-4 w-4 text-green-500 mr-2" />
+                  Priority Support
+                </li>
+                <li className="flex items-center">
+                  <CheckCircle2 className="h-4 w-4 text-green-500 mr-2" />
+                  <span className="font-semibold">2 Months FREE</span>
                 </li>
               </ul>
-              
-              <Button 
-                onClick={() => handleCheckout('yearly')}
+              <Button
+                className="w-full"
+                variant="default"
+                onClick={() => handleCheckout("yearly")}
                 disabled={isLoading}
-                className="w-full bg-blue-600 hover:bg-blue-700"
               >
                 {isLoading ? (
                   <>
-                    <Loader className="h-4 w-4 mr-2 animate-spin" />
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Processing...
                   </>
                 ) : (
-                  <>
-                    <CreditCard className="h-4 w-4 mr-2" />
-                    Subscribe Yearly
-                  </>
+                  "Subscribe Yearly"
                 )}
               </Button>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
       )}
 
-      {/* Manage subscription - only show when active */}
-      {subscription?.status === 'active' && (
-        <div className="mt-8">
-          <h2 className="text-xl font-medium mb-4">Manage Subscription</h2>
-          
-          <div className="bg-slate-800/50 rounded-lg">
-            <button 
-              onClick={() => navigate('/subscription/manage')}
-              className="w-full flex items-center justify-between px-6 py-4 text-white hover:bg-slate-800"
-            >
-              <div className="flex items-center">
-                <CreditCard className="h-5 w-5 mr-3" />
-                <span>Manage Payment Methods</span>
-              </div>
-              <ChevronRight className="h-5 w-5 text-slate-400" />
-            </button>
-            
-            <hr className="border-t border-slate-700" />
-            
-            <button 
-              onClick={() => navigate('/subscription/billing')}
-              className="w-full flex items-center justify-between px-6 py-4 text-white hover:bg-slate-800"
-            >
-              <div className="flex items-center">
-                <Clock className="h-5 w-5 mr-3" />
-                <span>Billing History</span>
-              </div>
-              <ChevronRight className="h-5 w-5 text-slate-400" />
-            </button>
-            
-            <hr className="border-t border-slate-700" />
-            
-            <button 
-              onClick={() => {
-                // Open Lemon Squeezy customer portal
-                // Open the customer portal
-                // Use optional chaining to safely access subscriptionId
-                window.location.href = `/api/customer-portal?subscriptionId=${subscription?.subscriptionId || ''}`;
-              }}
-              className="w-full flex items-center justify-between px-6 py-4 text-white hover:bg-slate-800"
-            >
-              <div className="flex items-center text-red-500">
-                <AlertCircle className="h-5 w-5 mr-3" />
-                <span>Cancel Subscription</span>
-              </div>
-              <ChevronRight className="h-5 w-5 text-slate-400" />
-            </button>
+      {/* FAQ */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Frequently Asked Questions</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <h4 className="font-semibold text-sm mb-1">Can I cancel anytime?</h4>
+            <p className="text-sm text-muted-foreground">
+              Yes, you can cancel your subscription at any time from the customer portal. You'll continue to have access until the end of your billing period.
+            </p>
           </div>
-        </div>
-      )}
+          <div>
+            <h4 className="font-semibold text-sm mb-1">What happens after my trial ends?</h4>
+            <p className="text-sm text-muted-foreground">
+              Your trial lasts 14 days. After that, you'll need to subscribe to continue using premium features.
+            </p>
+          </div>
+          <div>
+            <h4 className="font-semibold text-sm mb-1">Can I change my plan?</h4>
+            <p className="text-sm text-muted-foreground">
+              Yes, you can upgrade or downgrade your plan at any time through the customer portal.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
     </div>
-    </ResponsiveLayout>
   );
-};
-
-export default SubscriptionPage;
+}

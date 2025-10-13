@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth, useUser } from "@clerk/clerk-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,8 +30,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import ResponsiveLayout from "@/components/layout/ResponsiveLayout";
-import { Camera, X, PlusCircle, ShoppingBag, Loader2, Link } from "lucide-react";
-import { useMutation, useConvex } from "convex/react";
+import { Camera, X, PlusCircle, ShoppingBag, Loader2, Link, Lock, Crown } from "lucide-react";
+import { useMutation, useConvex, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { uploadToBackblaze } from "@/utils/storageService";
 import { trackCarAdded } from "@/utils/analytics";
@@ -258,10 +259,26 @@ const Combobox = ({ options, value, onChange, placeholder, emptyMessage }: Combo
 export default function AddCarPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { userId } = useAuth();
+  const { user } = useUser();
   const [loading, setLoading] = useState(false);
   const convex = useConvex();
   const createCar = useMutation(api.cars.createCar);
   const createPart = useMutation(api.parts.createPart);
+
+  const subscriptionAccess = useQuery(
+    userId ? api.subscriptions.checkUserAccess : undefined,
+    userId ? {} : undefined
+  ) as boolean | undefined;
+
+  const isAdmin = Boolean(
+    user?.publicMetadata?.role === "admin" ||
+      user?.primaryEmailAddress?.emailAddress?.toLowerCase().endsWith("@carfolio.cc")
+  );
+
+  const isLoadingAccess = Boolean(userId) && subscriptionAccess === undefined;
+  const hasSubscription = subscriptionAccess ?? false;
+  const hasAccess = isAdmin || hasSubscription;
 
   const [carData, setCarData] = useState(initialCarData);
   const [mods, setMods] = useState<(typeof initialModData)[]>([]);
@@ -347,6 +364,15 @@ export default function AddCarPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!hasAccess) {
+      toast({
+        title: "Subscription Required",
+        description: "You need an active subscription to add cars. Upgrade your plan to continue.",
+        variant: "destructive",
+      });
+        navigate("/subscription");
+      return;
+    }
     if (images.length === 0) {
       toast({ title: "No images", description: "Please upload at least one image.", variant: "destructive" });
       return;
@@ -402,7 +428,8 @@ export default function AddCarPage() {
       navigate(`/car/${carId}`);
     } catch (error) {
       console.error("Failed to add car:", error);
-      toast({ title: "Error", description: "Failed to add car. Please try again.", variant: "destructive" });
+      const message = error instanceof Error ? error.message : "Failed to add car. Please try again.";
+      toast({ title: "Error", description: message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -410,11 +437,43 @@ export default function AddCarPage() {
 
   const formGridClass = "grid grid-cols-1 md:grid-cols-2 gap-4";
 
+  if (isLoadingAccess) {
+    return (
+      <ResponsiveLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      </ResponsiveLayout>
+    );
+  }
+
+  if (!hasAccess) {
+    return (
+      <ResponsiveLayout>
+        <div className="max-w-3xl mx-auto py-16 px-4 text-center">
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-slate-800">
+            <Lock className="h-8 w-8 text-slate-300" />
+          </div>
+          <h1 className="text-3xl font-bold mb-3">Subscription Required</h1>
+          <p className="text-muted-foreground mb-8">
+            You need an active Carfolio subscription to add cars to your garage. Upgrade your plan to unlock the full experience.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Button onClick={() => navigate("/subscription")} size="lg" className="bg-blue-600 hover:bg-blue-700 text-white">
+              <Crown className="h-4 w-4 mr-2" />
+              View Subscription Plans
+            </Button>
+          </div>
+        </div>
+      </ResponsiveLayout>
+    );
+  }
+
   return (
     <ResponsiveLayout>
-      <div className="bg-background text-foreground min-h-screen">
-        <div className="container mx-auto px-4 py-8 max-w-4xl">
-          <form onSubmit={handleSubmit} className="space-y-8">
+      <div className="bg-background text-foreground">
+        <div className="container mx-auto px-0 md:px-4 py-0 md:py-8 max-w-4xl">
+          <form onSubmit={handleSubmit} className="space-y-6 md:space-y-8">
             <h1 className="text-2xl font-bold mb-6">Add a New Car</h1>
 
             {/* Image Upload Section */}
@@ -492,8 +551,8 @@ export default function AddCarPage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectGroup>
-                        <SelectLabel>Recent</SelectLabel>
-                        {YEARS.slice(0, 10).map((year) => (
+                        <SelectLabel>2020s</SelectLabel>
+                        {YEARS.filter(year => year >= "2020" && year <= "2029").map((year) => (
                           <SelectItem key={year} value={year}>
                             {year}
                           </SelectItem>
@@ -789,10 +848,10 @@ export default function AddCarPage() {
               )}
             </div>
 
-            <Button 
-              type="submit" 
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-6 rounded-md font-semibold text-center tracking-wide" 
-              disabled={loading}
+            <Button
+              type="submit"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-6 rounded-md font-semibold text-center tracking-wide"
+              disabled={loading || !hasAccess}
             >
               {loading ? (
                 <>

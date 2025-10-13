@@ -27,7 +27,7 @@ export const createCar = mutation({
   handler: async (ctx, args) => {
     try {
       const user = await getUser(ctx);
-      
+
       const carId = await ctx.db.insert("cars", {
         userId: user.id,
         make: args.make,
@@ -51,6 +51,9 @@ export const createCar = mutation({
 
       return { carId };
     } catch (error) {
+      if (error instanceof ConvexError) {
+        throw error;
+      }
       throw new ConvexError("Not authorized");
     }
   },
@@ -94,8 +97,6 @@ export const getUserFirstCar = query({
   },
 });
 
-import { hasSubscriptionAccess } from "./subscriptions";
-
 // Get a specific car by ID with access control
 export const getCarById = query({
   args: { carId: v.id("cars") },
@@ -121,13 +122,6 @@ export const getCarById = query({
 
     // The owner can always see their own car
     if (car.userId === identity.subject) {
-      return car;
-    }
-
-    // Check if the viewer has an active subscription to see the unpublished car
-    const hasAccess = await hasSubscriptionAccess(ctx, car.userId);
-    
-    if (hasAccess) {
       return car;
     }
 

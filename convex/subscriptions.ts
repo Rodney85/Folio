@@ -21,6 +21,36 @@ const TRIAL_DURATION_MS = 14 * 24 * 60 * 60 * 1000;
 
 // Helper to check if a user has an active subscription or is in trial
 export const hasSubscriptionAccess = async (ctx: any, userId: string): Promise<boolean> => {
+  // Check if user is admin by getting their identity
+  const identity = await ctx.auth.getUserIdentity();
+  if (identity) {
+    // Check if user has admin role in Clerk metadata
+    // Note: This is a simplified check - in practice you'd want more robust admin checking
+    const user = await ctx.db
+      .query("users")
+      .filter(q => q.eq(q.field("tokenIdentifier"), identity.tokenIdentifier))
+      .first();
+    
+    // Admin email list - add admin emails here
+    const adminEmails = [
+      "admin@example.com",
+      "creativesrodney@gmail.com", // Your admin email
+    ];
+    
+    // If user has admin role, grant access without subscription
+    if (identity.email && (
+      identity.email.endsWith("@carfolio.cc") || 
+      adminEmails.includes(identity.email.toLowerCase())
+    )) {
+      return true;
+    }
+    
+    // Check for admin role in public metadata
+    if (user && user.publicMetadata?.role === "admin") {
+      return true;
+    }
+  }
+
   const subscription = await ctx.db
     .query("subscriptions")
     .filter((q) => q.eq(q.field("userId"), userId))
@@ -209,13 +239,32 @@ export const getUserSubscription = query({
       return null;
     }
 
-    const userId = identity.subject;
-    
-    // Find user's subscription
-    const subscription = await ctx.db
+    const clerkId = identity.subject;
+    const tokenIdentifier = identity.tokenIdentifier;
+
+    // Try to find subscription using multiple ID formats for compatibility
+    // This handles old data that might use different ID formats
+    let subscription = await ctx.db
       .query("subscriptions")
-      .filter((q) => q.eq(q.field("userId"), userId))
+      .filter((q) => q.eq(q.field("userId"), clerkId))
       .first();
+
+    // If not found with Clerk ID, try with token identifier
+    if (!subscription) {
+      subscription = await ctx.db
+        .query("subscriptions")
+        .filter((q) => q.eq(q.field("userId"), tokenIdentifier))
+        .first();
+    }
+
+    // If still not found, try extracting Clerk ID from tokenIdentifier format
+    if (!subscription && tokenIdentifier.includes("|")) {
+      const extractedId = tokenIdentifier.split("|")[1];
+      subscription = await ctx.db
+        .query("subscriptions")
+        .filter((q) => q.eq(q.field("userId"), extractedId))
+        .first();
+    }
 
     if (!subscription) {
       // No subscription found, user might need to start trial

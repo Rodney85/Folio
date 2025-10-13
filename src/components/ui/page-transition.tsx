@@ -7,29 +7,26 @@ interface PageTransitionProps {
   className?: string;
 }
 
-// Page transition variants
+// Page transition variants - Subtle and smooth
 const pageVariants = {
   initial: {
     opacity: 0,
-    y: 20,
-    scale: 0.98
+    y: 8
   },
   in: {
     opacity: 1,
-    y: 0,
-    scale: 1
+    y: 0
   },
   out: {
     opacity: 0,
-    y: -20,
-    scale: 1.02
+    y: -8
   }
 };
 
 const pageTransition = {
   type: 'tween' as const,
-  ease: 'anticipate' as const,
-  duration: 0.4
+  ease: 'easeInOut' as const,
+  duration: 0.2
 };
 
 // Staggered children animation for sections
@@ -87,7 +84,7 @@ export const PageTransition: React.FC<PageTransitionProps> = ({
   const location = useLocation();
 
   return (
-    <AnimatePresence mode="wait">
+    <AnimatePresence mode="sync">
       <motion.div
         key={location.pathname}
         initial="initial"

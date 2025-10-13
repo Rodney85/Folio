@@ -1,40 +1,58 @@
 import { query } from "./_generated/server";
-import { v } from "convex/values";
 
 /**
- * Debug query to find all cars in the system
- * This will help identify what userId format is used in the cars table
+ * Debug query to check authentication and data
  */
-export const getAllCarsDebug = query({
+export const debugAuth = query({
   args: {},
   handler: async (ctx) => {
-    // Get all cars in the database to see what userId formats exist
-    const allCars = await ctx.db
-      .query("cars")
-      .collect();
-    
-    // Map cars to only show necessary debugging info
-    const carDetails = allCars.map(car => ({
-      carId: car._id,
-      userId: car.userId,
-      make: car.make,
-      model: car.model,
-      year: car.year,
-      isPublished: car.isPublished
-    }));
-    
-    // Count unique userIds
-    const uniqueUserIds = new Set(allCars.map(car => car.userId));
-    const userIdFormats = Array.from(uniqueUserIds);
-    
-    console.log(`Found ${allCars.length} total cars in database`);
-    console.log(`Cars are associated with ${uniqueUserIds.size} unique userIds`);
-    console.log(`UserId formats found:`, userIdFormats);
-    
+    const identity = await ctx.auth.getUserIdentity();
+
+    if (!identity) {
+      return {
+        authenticated: false,
+        message: "Not authenticated - identity is null",
+        hint: "Make sure you are logged in with Clerk and that VITE_CLERK_PUBLISHABLE_KEY is set correctly"
+      };
+    }
+
+    // Get user from database
+    const user = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("tokenIdentifier"), identity.tokenIdentifier))
+      .first();
+
+    // Get subscription from database
+    const subscription = await ctx.db
+      .query("subscriptions")
+      .filter((q) => q.eq(q.field("userId"), identity.subject))
+      .first();
+
+    // Get all subscriptions to see what is in the database
+    const allSubscriptions = await ctx.db.query("subscriptions").collect();
+
     return {
-      totalCars: allCars.length,
-      uniqueUserIds: userIdFormats,
-      carDetails
+      authenticated: true,
+      identity: {
+        subject: identity.subject,
+        tokenIdentifier: identity.tokenIdentifier,
+        email: identity.email,
+        name: identity.name,
+      },
+      user: user ? {
+        _id: user._id,
+        email: user.email,
+        name: user.name,
+        username: user.username,
+      } : null,
+      subscription: subscription ? {
+        _id: subscription._id,
+        userId: subscription.userId,
+        status: subscription.status,
+        plan: subscription.plan,
+      } : null,
+      allSubscriptionsCount: allSubscriptions.length,
+      allSubscriptionsUserIds: allSubscriptions.map(s => s.userId),
     };
   },
 });

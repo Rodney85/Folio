@@ -1,42 +1,18 @@
 import React, { ReactNode, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useUser, useAuth, useClerk } from '@clerk/clerk-react';
-import { BarChart3, Plus, UserCircle2, Menu, X, Home, Shield, CreditCard, Monitor, Flag, LogOut, ChevronRight, Share, Eye } from 'lucide-react';
+import { Plus, UserCircle2, LogOut, ChevronRight, Share, Eye, BarChart3, Crown, Flag } from 'lucide-react';
 import { Logo } from '@/components/ui/logo';
 import ShareModal from '@/components/ShareModal';
-import SubscriptionStatusBadge from '@/components/subscription/SubscriptionStatusBadge';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { useQuery } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
+import BottomNavigation from '@/components/navigation/BottomNavigation';
+import MobileMenu from '@/components/navigation/MobileMenu';
 
 interface ResponsiveLayoutProps {
   children: ReactNode;
 }
-
-interface NavItemProps {
-  to: string;
-  icon: JSX.Element;
-  label: string;
-  active: boolean;
-  comingSoon?: boolean;
-}
-
-const NavItem = ({ to, icon, label, active, comingSoon }: NavItemProps) => {
-  return (
-    <Link 
-      to={to} 
-      className={`flex flex-col items-center justify-center px-2 py-1 relative ${active ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
-    >
-      <div className="mb-0.5">{icon}</div>
-      <span className="text-xs">{label}</span>
-      {comingSoon && (
-        <span className="absolute -top-1 -right-1 text-xs bg-blue-500 text-white px-1.5 py-0.5 rounded-full text-[10px]">
-          Soon
-        </span>
-      )}
-    </Link>
-  );
-};
 
 export const ResponsiveLayout = ({ children }: ResponsiveLayoutProps) => {
   const { user } = useUser();
@@ -45,10 +21,11 @@ export const ResponsiveLayout = ({ children }: ResponsiveLayoutProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isMobile = useMediaQuery("(max-width: 767px)");
   const isTablet = useMediaQuery("(min-width: 768px) and (max-width: 1023px)");
   const isDesktop = useMediaQuery("(min-width: 1024px)");
-  
+
   // Get user profile data for share modal
   // @ts-ignore - Suppressing TypeScript error for deep instantiation
   const profile = useQuery(api.users.getProfile)!;
@@ -62,7 +39,7 @@ export const ResponsiveLayout = ({ children }: ResponsiveLayoutProps) => {
 
   // Define the profile URL for QR code
   const baseUrl = window.location.origin;
-  const profileUrl = `${baseUrl}/profile/${profile?.username || user?.firstName?.toLowerCase() || "itsrod"}`;
+  const profileUrl = `${baseUrl}/u/${profile?.username || user?.firstName?.toLowerCase() || "itsrod"}`;
 
   // Navigation items for mobile bottom nav and main navigation
   const navItems = [
@@ -78,6 +55,13 @@ export const ResponsiveLayout = ({ children }: ResponsiveLayoutProps) => {
       icon: <Plus size={24} />,
       label: "Add Car",
       active: location.pathname.startsWith('/add-car'),
+      comingSoon: false
+    },
+    {
+      to: "/subscription",
+      icon: <Crown size={24} />,
+      label: "Subscription",
+      active: location.pathname.startsWith('/subscription'),
       comingSoon: false
     },
     {
@@ -109,13 +93,6 @@ export const ResponsiveLayout = ({ children }: ResponsiveLayoutProps) => {
       onClick: handleShare
     },
     {
-      title: "Subscription",
-      icon: <CreditCard className="h-5 w-5" />,
-      onClick: () => {
-        navigate('/subscription');
-      }
-    },
-    {
       title: "Report an Issue",
       icon: <Flag className="h-5 w-5" />,
       onClick: () => {
@@ -126,7 +103,7 @@ export const ResponsiveLayout = ({ children }: ResponsiveLayoutProps) => {
 
   return (
     <>
-      <div className="flex h-[100svh] bg-slate-900 text-white overflow-hidden">
+      <div className="flex h-[100dvh] bg-slate-900 text-white overflow-hidden">
         {/* Sidebar for tablet and desktop only */}
         {(isTablet || isDesktop) && (
           <div className="w-64 md:w-72 lg:w-80 border-r border-slate-800 flex-shrink-0">
@@ -209,9 +186,6 @@ export const ResponsiveLayout = ({ children }: ResponsiveLayoutProps) => {
                         <span className="text-xs text-slate-400 truncate max-w-[140px]">
                           {user?.primaryEmailAddress?.emailAddress || "email@example.com"}
                         </span>
-                        <div className="mt-1">
-                          <SubscriptionStatusBadge />
-                        </div>
                       </div>
                     </button>
                     <button 
@@ -232,71 +206,24 @@ export const ResponsiveLayout = ({ children }: ResponsiveLayoutProps) => {
         )}
         
         <div className={`flex-1 flex flex-col overflow-hidden ${(isTablet || isDesktop) ? 'ml-0' : ''}`}>
-          <main className={`flex-1 overflow-y-auto ${isMobile ? 'pb-[70px]' : 'p-4 md:p-6 lg:p-8'}`}>
+          <main className={`flex-1 overflow-y-auto ${isMobile ? 'p-4 pb-[90px]' : 'p-4 md:p-6 lg:p-8'}`}>
             {children}
           </main>
         </div>
       </div>
       
-      {/* Mobile bottom navigation - only show on mobile, positioned outside flow */}
-      {isMobile && (
-        <div 
-          style={{ 
-            position: 'fixed', 
-            bottom: 0, 
-            left: 0, 
-            right: 0,
-            zIndex: 9999,
-            transform: 'translate3d(0,0,0)', 
-            backfaceVisibility: 'hidden',
-            transition: 'none',
-            willChange: 'transform',
-            width: '100%',
-            height: '50px',
-            pointerEvents: 'auto'
-          }} 
-          className="border-t bg-background shadow-md flex items-center"
-        >
-          <div className="flex justify-around w-full py-1">
-            {/* Profile navigation item */}
-            <NavItem 
-              key="profile"
-              to="/profile"
-              icon={<UserCircle2 size={24} />}
-              label="Profile"
-              active={location.pathname.startsWith('/profile')}
-            />
-            
-            {/* Preview button */}
-            <button 
-              onClick={openPublicProfile}
-              className="flex flex-col items-center justify-center px-2 py-1 text-muted-foreground hover:text-foreground"
-              disabled={!profile?.username}
-            >
-              <div className="mb-0.5"><Eye size={24} /></div>
-              <span className="text-xs">Preview</span>
-            </button>
-            
-            {/* Add Car navigation item */}
-            <NavItem 
-              key="add-car"
-              to="/add-car"
-              icon={<Plus size={24} />}
-              label="Add Car"
-              active={location.pathname.startsWith('/add-car')}
-            />
-            
-            {/* Analytics navigation item */}
-            <NavItem 
-              key="analytics"
-              to="/analytics"
-              icon={<BarChart3 size={24} />}
-              label="Analytics"
-              active={location.pathname.startsWith('/analytics')}
-              comingSoon={true}
-            />
-          </div>
-        </div>
+      {/* Mobile bottom navigation */}
+      {isMobile && user && (
+        <BottomNavigation onMenuClick={() => setMobileMenuOpen(true)} />
+      )}
+
+      {/* Mobile hamburger menu */}
+      {isMobile && user && (
+        <MobileMenu
+          open={mobileMenuOpen}
+          onClose={() => setMobileMenuOpen(false)}
+          onShareClick={() => setShareModalOpen(true)}
+        />
       )}
 
       {/* Share Modal */}

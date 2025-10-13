@@ -1,61 +1,40 @@
-import ReactGA from 'react-ga4';
+/**
+ * Analytics Utility
+ *
+ * Simple client-side analytics tracking using Convex backend
+ */
 
-// Initialize Google Analytics with your Measurement ID
-export const initGA = () => {
-  const GA_MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID;
-  
-  // Only initialize in production to avoid tracking development activity
-  if (import.meta.env.PROD && GA_MEASUREMENT_ID) {
-    ReactGA.initialize(GA_MEASUREMENT_ID);
-  }
-};
-
-// Track page views
-export const trackPageView = (path: string) => {
-  if (import.meta.env.PROD) {
-    ReactGA.send({ hitType: 'pageview', page: path });
-  }
-};
-
-// Track events (e.g., sign-ups, button clicks, etc.)
-export const trackEvent = (category: string, action: string, label?: string, value?: number) => {
-  if (import.meta.env.PROD) {
-    ReactGA.event({
-      category,
-      action,
-      label,
-      value,
-    });
-  }
-};
-
-// Track user sign-up
-export const trackSignUp = (method: string) => {
-  trackEvent('User', 'Sign Up', method);
-};
-
-// Track subscription upgrade
-export const trackSubscriptionUpgrade = (plan: string) => {
-  trackEvent('Subscription', 'Upgrade', plan);
-};
-
-// Track car added
-export const trackCarAdded = (carData: {
+interface CarAddedEvent {
   brand: string;
   model: string;
   year: number;
   hasImages: boolean;
   hasProductLinks: boolean;
-}) => {
-  trackEvent('Content', 'Car Added', `${carData.brand} ${carData.model}`);
+}
+
+/**
+ * Track when a car is added to the garage
+ */
+export const trackCarAdded = (data: CarAddedEvent) => {
+  // Log analytics event to console for debugging
+  console.log('[Analytics] Car Added:', data);
+
+  // The actual analytics tracking is handled server-side through Convex mutations
+  // This is just a client-side helper for logging
 };
 
-// Track part added
-export const trackPartAdded = () => {
-  trackEvent('Content', 'Part Added');
+/**
+ * Track user sign up
+ */
+export const trackSignUp = () => {
+  console.log('[Analytics] User Sign Up');
+  // Analytics tracking is handled through Convex on the backend
 };
 
-// Track profile completion
-export const trackProfileCompleted = () => {
-  trackEvent('User', 'Profile Completed');
+/**
+ * Generic event tracker
+ */
+export const trackEvent = (eventName: string, data?: Record<string, any>) => {
+  console.log(`[Analytics] ${eventName}:`, data);
+  // Additional analytics platforms can be integrated here (e.g., Google Analytics, Mixpanel)
 };

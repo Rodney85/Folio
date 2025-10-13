@@ -6,6 +6,7 @@ import { Id } from '../../convex/_generated/dataModel';
 import { cn } from '@/lib/utils';
 import { ArrowLeft, Pencil, ExternalLink, ShoppingBag, ShoppingCart, Trash2, Loader } from 'lucide-react';
 import CarImageWithUrl from '@/components/cars/CarImageWithUrl';
+import CarImageSwiper from '@/components/cars/CarImageSwiper';
 import { Button } from '@/components/ui/button';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import MobileLayout from '@/components/layout/MobileLayout';
@@ -181,9 +182,9 @@ const CarDetailsPage = () => {
     ].filter(Boolean) as { label: string; value: string | number }[];
 
     return (
-      <div className="flex flex-col bg-slate-900 text-white">
+      <div className="min-h-screen flex flex-col bg-slate-900 text-white">
         {/* Header with edit/delete buttons */}
-        <header className="p-4 flex items-center justify-between sticky top-0 bg-slate-900 z-50 border-b border-slate-800 shadow-sm">
+        <header className="sticky top-0 p-4 flex items-center justify-between bg-slate-900 z-50 border-b border-slate-800 shadow-sm">
           <button
             onClick={() => navigate(-1)}
             className="flex items-center justify-center rounded-full bg-slate-700 p-2 hover:bg-slate-600 transition-colors"
@@ -209,123 +210,320 @@ const CarDetailsPage = () => {
         </header>
 
         {/* Main content */}
-        <div className="flex-1 px-4 md:px-8 pb-6 pt-4">
+        <div className="flex-1 flex items-center px-4 md:px-8 py-6 md:py-8">
           {!isMobile ? (
             // Desktop layout - side by side: images left, content right
             <div className="w-full max-w-7xl mx-auto">
-              <div className="grid grid-cols-2 gap-8">
-                {/* Left Column - Images */}
-                <div className="space-y-4">
-                  {/* Main Image Gallery */}
-                  <div className="w-full">
-                    <div {...swipeHandlers} className="w-full aspect-[4/3] bg-slate-800 rounded-xl shadow-lg relative overflow-hidden">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+                {/* Left Column - Images with Thumbnails */}
+                <div className="space-y-4 sticky top-24">
+                  {/* Main Image */}
+                  <div className="w-full aspect-[4/3] bg-slate-800/30 rounded-2xl overflow-hidden shadow-2xl shadow-black/20 border border-slate-700/50">
                       {car?.images && car.images.length > 0 ? (
-                        <>
-                          {car.images[currentImageIndex].startsWith('http') ? (
-                            <img 
-                              src={car.images[currentImageIndex]} 
-                              alt={`${car.make} ${car.model} main image`}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <CarImageWithUrl
-                              storageId={car.images[currentImageIndex]}
-                              alt={`${car.make} ${car.model} main image`}
-                              className="w-full h-full object-cover"
-                            />
-                          )}
-                          {car.images.length > 1 && (
-                            <>
-                              {/* Image Navigation Controls */}
-                              <button
-                                onClick={handleImageNavigation.prev}
-                                className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full p-2.5 bg-black/50 hover:bg-black/70 ring-1 ring-white/20 shadow-lg transition"
-                              >
-                                <ArrowLeft className="h-5 w-5 text-white" />
-                              </button>
-                              <button
-                                onClick={handleImageNavigation.next}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-2.5 bg-black/50 hover:bg-black/70 ring-1 ring-white/20 shadow-lg transition"
-                              >
-                                <ArrowLeft className="h-5 w-5 text-white rotate-180" />
-                              </button>
-                              
-                              {/* Image Counter */}
-                              <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur px-2.5 py-1.5 rounded-md text-xs text-white/90 ring-1 ring-white/10">
-                                {currentImageIndex + 1} / {car.images.length}
-                              </div>
-                            </>
-                          )}
-                        </>
+                        <CarImageWithUrl
+                          storageId={car.images[currentImageIndex]}
+                          alt={`${car.make} ${car.model}`}
+                          className="w-full h-full object-contain transition-opacity duration-300"
+                        />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-slate-800">
+                        <div className="w-full h-full flex items-center justify-center">
                           <p className="text-slate-400">No image available</p>
                         </div>
                       )}
-                    </div>
-                    
-                    {/* Desktop Thumbnails */}
-                    {car?.images && car.images.length > 1 && (
-                      <div className="mt-3 flex gap-3 overflow-x-auto pb-1 scrollbar-hide">
-                        {car.images.map((image, index) => (
-                          <button
-                            key={index}
-                            onClick={() => handleImageNavigation.thumbnail(index)}
-                            className={`h-16 w-16 flex-shrink-0 rounded-lg overflow-hidden border transition ${currentImageIndex === index ? 'border-blue-500 ring-2 ring-blue-500' : 'border-slate-700 hover:border-slate-500'}`}
-                            aria-label={`View image ${index + 1}`}
-                          >
-                            <CarImageWithUrl
-                              storageId={image}
-                              alt={`${car.make} ${car.model} thumbnail ${index + 1}`}
-                              className="w-full h-full object-cover"
-                            />
-                          </button>
-                        ))}
-                      </div>
-                    )}
                   </div>
+
+                  {/* Thumbnail Strip */}
+                  {car?.images && car.images.length > 1 && (
+                    <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-slate-800/30">
+                      {car.images.map((image, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setCurrentImageIndex(index)}
+                          className={cn(
+                            "flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all duration-200",
+                            currentImageIndex === index
+                              ? "border-blue-500 ring-2 ring-blue-500/20 scale-105"
+                              : "border-slate-700/50 hover:border-slate-600 opacity-60 hover:opacity-100"
+                          )}
+                        >
+                          <CarImageWithUrl
+                            storageId={image}
+                            alt={`Thumbnail ${index + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Right Column - Content */}
                 <div className="space-y-6">
-
-                  {/* Car Title and Details */}
-                {/* Title and Year */}
-                <div>
-                  <h1 className="text-4xl md:text-5xl font-semibold tracking-tight text-white mb-2">
-                    {car?.make} {car?.model}
-                  </h1>
-                  <Separator className="my-2 bg-slate-800" />
+                  {/* Car Title */}
+                  <div>
+                    <h1 className="text-4xl font-bold tracking-tight text-white mb-2">
+                      {car?.make} {car?.model}
+                    </h1>
+                    <p className="text-slate-400 text-lg">{car?.year}</p>
+                  </div>
 
                   {/* Specifications / Shop Tabs */}
-                  <div className="mb-2">
+                  <div className="space-y-4">
                     <Tabs defaultValue="specs" className="w-full">
-                      <TabsList className="bg-transparent p-0 border-b border-slate-800 text-slate-400">
-                        <TabsTrigger value="specs" className="px-0 mr-6 py-2 border-b-2 border-transparent data-[state=active]:border-blue-500 data-[state=active]:text-white data-[state=active]:bg-transparent data-[state=active]:shadow-none">Specifications</TabsTrigger>
-                        <TabsTrigger value="shop" className="px-0 py-2 border-b-2 border-transparent data-[state=active]:border-blue-500 data-[state=active]:text-white data-[state=active]:bg-transparent data-[state=active]:shadow-none">Shop the Build</TabsTrigger>
+                      <TabsList className="w-full bg-transparent border-b border-slate-700 rounded-none h-auto p-0 justify-start gap-8">
+                        <TabsTrigger
+                          value="specs"
+                          className="bg-transparent data-[state=active]:bg-transparent border-b-2 border-transparent data-[state=active]:border-blue-500 rounded-none px-0 pb-3 data-[state=active]:shadow-none text-slate-400 data-[state=active]:text-white font-medium"
+                        >
+                          Specifications
+                        </TabsTrigger>
+                        <TabsTrigger
+                          value="shop"
+                          className="bg-transparent data-[state=active]:bg-transparent border-b-2 border-transparent data-[state=active]:border-blue-500 rounded-none px-0 pb-3 data-[state=active]:shadow-none text-slate-400 data-[state=active]:text-white font-medium"
+                        >
+                          Shop the Build
+                        </TabsTrigger>
                       </TabsList>
-                      <TabsContent value="specs" className="mt-4">
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-2 text-sm">
+
+                      <TabsContent value="specs" className="mt-6">
+                        <div className="space-y-0 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                           {specItems.map((item, i) => (
-                            <div key={i} className="flex justify-between">
-                              <span className="text-slate-400">{item.label}:</span>
-                              <span className="text-white ml-2">{String(item.value) || 'N/A'}</span>
+                            <div key={i} className="flex justify-between items-center py-4 border-b border-slate-700/50 last:border-b-0 hover:opacity-80 transition-opacity duration-200">
+                              <span className="text-slate-400 text-sm font-medium">{item.label}</span>
+                              <span className="text-white font-semibold text-sm">{String(item.value) || 'N/A'}</span>
                             </div>
                           ))}
                         </div>
                       </TabsContent>
-                      <TabsContent value="shop" className="mt-4">
+
+                      <TabsContent value="shop" className="mt-6">
                         {parts && parts.length > 0 ? (
-                          <div className="divide-y divide-slate-800">
+                          <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                             {parts.map((part: any) => (
-                              <div key={part._id} className="py-4">
-                                <div className="flex items-center justify-between">
-                                  <h3 className="font-medium text-white">{part.name}</h3>
-                                  <a 
-                                    href={part.purchaseUrl} 
-                                    target="_blank" 
+                              <div key={part._id} className="p-4 bg-slate-800/30 border border-slate-700/30 rounded-lg hover:bg-slate-800/50 hover:border-slate-600/50 transition-all duration-200">
+                                <div className="flex items-start gap-4">
+                                  {/* Product Image */}
+                                  {part.image && (
+                                    <div className="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden bg-slate-800">
+                                      <CarImageWithUrl
+                                        storageId={part.image}
+                                        alt={part.name}
+                                        className="w-full h-full object-cover"
+                                      />
+                                    </div>
+                                  )}
+                                  {/* Product Details */}
+                                  <div className="flex-1 min-w-0 flex items-start justify-between gap-3">
+                                    <div className="flex-1 min-w-0">
+                                      <h3 className="text-white font-semibold text-sm mb-1 truncate">{part.name}</h3>
+                                      {part.description && (
+                                        <p className="text-slate-400 text-xs mb-2 line-clamp-2">{part.description}</p>
+                                      )}
+                                      {part.price && (
+                                        <p className="text-green-400 font-bold text-sm">${part.price.toFixed(2)}</p>
+                                      )}
+                                    </div>
+                                    <a
+                                      href={part.purchaseUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-white text-xs font-medium flex items-center gap-1.5 transition-colors flex-shrink-0 shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30"
+                                      onClick={() => {
+                                        if (typedCarId) {
+                                          logAnalytics({
+                                            type: "product_click",
+                                            partId: part._id,
+                                            carId: typedCarId,
+                                            visitorId: crypto.randomUUID(),
+                                            visitorDevice: isMobile ? "mobile" : "desktop",
+                                          });
+                                        }
+                                      }}
+                                    >
+                                      <ExternalLink className="h-3.5 w-3.5" />
+                                      Shop
+                                    </a>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-center text-slate-400 py-12 bg-slate-800/20 rounded-lg border border-slate-700/30">
+                            <ShoppingBag className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                            <p>No products available for this build.</p>
+                          </div>
+                        )}
+                      </TabsContent>
+                    </Tabs>
+                  </div>
+
+                  {/* Description */}
+                  <div className="pt-6 border-t border-slate-700/50">
+                    <h3 className="text-xl font-bold text-white mb-4">Description</h3>
+                    <div className={cn(
+                      "overflow-y-auto pr-2 text-slate-300 text-sm leading-relaxed bg-slate-800/20 p-5 rounded-xl border border-slate-700/30 custom-scrollbar transition-all duration-300",
+                      descExpanded ? 'max-h-[300px]' : 'max-h-[150px]'
+                    )}>
+                      {car?.description ? (
+                        car.description.split('\n').map((line, index) => {
+                          const isListItem = /^\s*[-*•]\s+/.test(line);
+                          const isNumberedItem = /^\s*\d+\.\s+/.test(line);
+
+                          if (isListItem) {
+                            return (
+                              <div key={index} className="flex items-start mb-2">
+                                <span className="mr-2 text-blue-400">•</span>
+                                <span>{line.replace(/^\s*[-*•]\s+/, '')}</span>
+                              </div>
+                            );
+                          } else if (isNumberedItem) {
+                            const number = line.match(/^\s*(\d+)\.\s+/)?.[1] || '';
+                            return (
+                              <div key={index} className="flex items-start mb-2">
+                                <span className="mr-2 text-blue-400 font-medium">{number}.</span>
+                                <span>{line.replace(/^\s*\d+\.\s+/, '')}</span>
+                              </div>
+                            );
+                          } else {
+                            return line.trim() ? <p key={index} className="mb-3">{line}</p> : null;
+                          }
+                        })
+                      ) : (
+                        <p className="text-slate-400 italic">No description available.</p>
+                      )}
+                    </div>
+                    {car?.description && car.description.length > 200 && (
+                      <button
+                        type="button"
+                        onClick={() => setDescExpanded((v) => !v)}
+                        className="mt-3 text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors"
+                      >
+                        {descExpanded ? '← Show less' : 'Show more →'}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            // Mobile layout
+            <div className="w-full space-y-6">
+              {/* Mobile Image Gallery */}
+              <div className="relative w-full">
+                {/* Main Image */}
+                <div className="relative w-full aspect-[4/3] bg-slate-900 rounded-xl overflow-hidden" {...swipeHandlers}>
+                  {car?.images && car.images.length > 0 ? (
+                    <>
+                      <CarImageWithUrl
+                        storageId={car.images[currentImageIndex]}
+                        alt={`${car.make} ${car.model}`}
+                        className="w-full h-full object-contain"
+                      />
+                      {/* Pagination indicator */}
+                      {car.images.length > 1 && (
+                        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/60 backdrop-blur-sm px-3 py-1.5 rounded-full">
+                          <span className="text-white text-sm font-medium">
+                            {currentImageIndex + 1} / {car.images.length}
+                          </span>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <p className="text-slate-400">No image available</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Thumbnail Strip */}
+                {car?.images && car.images.length > 1 && (
+                  <div className="flex gap-2 overflow-x-auto mt-3 pb-2 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-slate-800/30">
+                    {car.images.map((image, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setCurrentImageIndex(index)}
+                        className={cn(
+                          "flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all duration-200",
+                          currentImageIndex === index
+                            ? "border-blue-500 ring-2 ring-blue-500/20"
+                            : "border-slate-700/50 opacity-60"
+                        )}
+                      >
+                        <CarImageWithUrl
+                          storageId={image}
+                          alt={`Thumbnail ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Mobile Title & Info */}
+              <div className="space-y-6">
+                {/* Car Title */}
+                <div>
+                  <h1 className="text-3xl font-bold tracking-tight text-white mb-1">
+                    {car?.make} {car?.model}
+                  </h1>
+                  <p className="text-slate-400 text-base">{car?.year}</p>
+                </div>
+
+                {/* Mobile Specifications / Shop Tabs */}
+                <Tabs defaultValue="specs" className="w-full">
+                  <TabsList className="w-full bg-transparent border-b border-slate-700 rounded-none h-auto p-0 justify-start gap-6">
+                    <TabsTrigger
+                      value="specs"
+                      className="bg-transparent data-[state=active]:bg-transparent border-b-2 border-transparent data-[state=active]:border-blue-500 rounded-none px-0 pb-3 data-[state=active]:shadow-none text-slate-400 data-[state=active]:text-white text-sm font-medium"
+                    >
+                      Specifications
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="shop"
+                      className="bg-transparent data-[state=active]:bg-transparent border-b-2 border-transparent data-[state=active]:border-blue-500 rounded-none px-0 pb-3 data-[state=active]:shadow-none text-slate-400 data-[state=active]:text-white text-sm font-medium"
+                    >
+                      Shop the Build
+                    </TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="specs" className="mt-4">
+                    <div className="space-y-0">
+                      {specItems.map((item, i) => (
+                        <div key={i} className="flex justify-between items-center py-4 border-b border-slate-700/50 last:border-b-0">
+                          <span className="text-slate-400 text-sm">{item.label}</span>
+                          <span className="text-white font-semibold text-sm text-right ml-4">{String(item.value) || 'N/A'}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="shop" className="mt-4">
+                    {parts && parts.length > 0 ? (
+                      <div className="space-y-3">
+                        {parts.map((part: any) => (
+                          <div key={part._id} className="p-4 bg-slate-800/30 border border-slate-700/30 rounded-lg">
+                            <div className="flex items-start gap-3">
+                              {/* Product Image */}
+                              {part.image && (
+                                <div className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden bg-slate-800">
+                                  <CarImageWithUrl
+                                    storageId={part.image}
+                                    alt={part.name}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                              )}
+                              {/* Product Details */}
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-start justify-between gap-2 mb-2">
+                                  <h3 className="font-semibold text-white text-sm flex-1">{part.name}</h3>
+                                  <a
+                                    href={part.purchaseUrl}
+                                    target="_blank"
                                     rel="noopener noreferrer"
-                                    className="text-blue-400 flex items-center gap-1 hover:text-blue-300 transition-colors"
+                                    className="bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-lg text-white text-xs font-medium flex items-center gap-1 transition-colors flex-shrink-0"
                                     onClick={() => {
                                       if (typedCarId) {
                                         logAnalytics({
@@ -338,215 +536,46 @@ const CarDetailsPage = () => {
                                       }
                                     }}
                                   >
-                                    <span>View</span>
-                                    <ExternalLink size={14} />
+                                    <ExternalLink className="h-3 w-3" />
+                                    Shop
                                   </a>
                                 </div>
                                 {part.description && (
-                                  <p className="text-sm text-slate-400 mt-1">{part.description}</p>
+                                  <p className="text-xs text-slate-400 mb-2 line-clamp-2">{part.description}</p>
                                 )}
                                 {part.price && (
-                                  <p className="text-sm font-bold text-green-500 mt-1">${part.price.toFixed(2)}</p>
+                                  <p className="text-sm font-bold text-green-400">${part.price.toFixed(2)}</p>
                                 )}
                               </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="text-center text-slate-400 py-8">
-                            <p>No products available for this build.</p>
-                          </div>
-                        )}
-                      </TabsContent>
-                    </Tabs>
-                  </div>
-                  
-                  {/* Description - moved to last position with visual separation */}
-                  <div className="mt-8 pt-6 border-t border-slate-800">
-                    <h3 className="text-xl font-bold text-white mb-3 bg-slate-800/50 px-4 py-2 rounded-lg">Description</h3>
-                    <div className={`${descExpanded ? 'max-h-none' : 'max-h-36'} overflow-y-auto pr-2 text-slate-300 text-sm leading-relaxed bg-slate-900/30 p-4 rounded-lg border border-slate-800/50`}>
-                      {car?.description ? (
-                        car.description.split('\n').map((line, index) => {
-                          // Check if line starts with list markers
-                          const isListItem = /^\s*[-*•]\s+/.test(line);
-                          const isNumberedItem = /^\s*\d+\.\s+/.test(line);
-                          
-                          if (isListItem) {
-                            // Handle bullet list items
-                            return (
-                              <div key={index} className="flex items-start mb-2">
-                                <span className="mr-2">•</span>
-                                <span>{line.replace(/^\s*[-*•]\s+/, '')}</span>
-                              </div>
-                            );
-                          } else if (isNumberedItem) {
-                            // Handle numbered list items
-                            const number = line.match(/^\s*(\d+)\.\s+/)?.[1] || '';
-                            return (
-                              <div key={index} className="flex items-start mb-2">
-                                <span className="mr-2">{number}.</span>
-                                <span>{line.replace(/^\s*\d+\.\s+/, '')}</span>
-                              </div>
-                            );
-                          } else {
-                            // Regular paragraph
-                            return <p key={index} className="mb-2">{line}</p>;
-                          }
-                        })
-                      ) : (
-                        <p>This is just a demo test to see if everything is working well.</p>
-                      )}
-                    </div>
-                    {car?.description && car.description.length > 260 && (
-                      <button
-                        type="button"
-                        onClick={() => setDescExpanded((v) => !v)}
-                        className="mt-2 text-blue-400 hover:text-blue-300 text-sm"
-                      >
-                        {descExpanded ? 'Show less' : 'Show more'}
-                      </button>
-                    )}
-                  </div>
-                  </div>
-                </div>
-              </div>
-          </div>
-          ) : (
-            // Mobile layout
-            <>
-              {/* Mobile Image Gallery */}
-              <div className="relative w-full aspect-[4/3] bg-slate-800 rounded-xl overflow-hidden mb-4" style={{ marginTop: '20px' }}>
-                {car?.images && car.images.length > 0 ? (
-                  <>
-                    <div {...swipeHandlers} className="w-full h-full">
-                      {car.images[currentImageIndex].startsWith('http') ? (
-                        <img 
-                          src={car.images[currentImageIndex]} 
-                          alt={`${car.make} ${car.model} main image`}
-                          className="w-full h-full object-contain"
-                        />
-                      ) : (
-                        <CarImageWithUrl
-                          storageId={car.images[currentImageIndex]}
-                          alt={`${car.make} ${car.model} main image`}
-                          className="w-full h-full object-contain"
-                        />
-                      )}
-                    </div>
-                    {car.images.length > 1 && (
-                      <div className="absolute bottom-3 right-3 bg-black/60 px-3 py-1 rounded-full text-sm text-white">
-                        {currentImageIndex + 1} / {car.images.length}
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-slate-800">
-                    <p className="text-slate-400">No image available</p>
-                  </div>
-                )}
-              </div>
-              
-              {/* Image thumbnails */}
-              {car?.images && car.images.length > 1 && (
-                <div className="flex gap-3 mt-2 overflow-x-auto pb-1 px-4 scrollbar-hide">
-                  {car.images.map((image, index) => (
-                    <button
-                      key={index}
-                      className={`w-20 h-14 flex-shrink-0 rounded-lg overflow-hidden border ${index === currentImageIndex ? 'border-blue-500 ring-2 ring-blue-500' : 'border-slate-700 hover:border-slate-500'}`}
-                      onClick={() => setCurrentImageIndex(index)}
-                      aria-label={`View image ${index + 1}`}
-                    >
-                      <CarImageWithUrl
-                        storageId={image}
-                        alt={`${car.make} ${car.model} thumbnail ${index + 1}`}
-                        className="w-full h-full object-cover"
-                      />
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {/* Mobile Title & Info */}
-              <div className="px-4 mt-6">
-                <h1 className="text-3xl font-semibold tracking-tight text-white mb-2">
-                  {car?.make} {car?.model}
-                </h1>
-                
-                {/* Mobile Specifications / Shop Tabs */}
-                <div className="mb-3">
-                  <Tabs defaultValue="specs" className="w-full">
-                    <TabsList className="bg-transparent p-0 border-b border-slate-800 text-slate-400">
-                      <TabsTrigger value="specs" className="px-0 mr-6 py-2 border-b-2 border-transparent data-[state=active]:border-blue-500 data-[state=active]:text-white data-[state=active]:bg-transparent data-[state=active]:shadow-none">Specifications</TabsTrigger>
-                      <TabsTrigger value="shop" className="px-0 py-2 border-b-2 border-transparent data-[state=active]:border-blue-500 data-[state=active]:text-white data-[state=active]:bg-transparent data-[state=active]:shadow-none">Shop the Build</TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="specs" className="mt-3">
-                      <div className="space-y-2">
-                        {specItems.map((item, i) => (
-                          <div key={i} className="py-2 flex justify-between">
-                            <span className="text-slate-400">{item.label}</span>
-                            <span className="text-white text-right ml-4">{String(item.value) || 'N/A'}</span>
+                            </div>
                           </div>
                         ))}
                       </div>
-                    </TabsContent>
-                    <TabsContent value="shop" className="mt-3">
-                      {parts && parts.length > 0 ? (
-                        <div className="divide-y divide-slate-800">
-                          {parts.map((part: any) => (
-                            <div key={part._id} className="py-4">
-                              <div className="flex items-center justify-between">
-                                <h3 className="font-medium text-white">{part.name}</h3>
-                                <a 
-                                  href={part.purchaseUrl} 
-                                  target="_blank" 
-                                  rel="noopener noreferrer"
-                                  className="text-blue-400 flex items-center gap-1 hover:text-blue-300 transition-colors"
-                                  onClick={() => {
-                                    if (typedCarId) {
-                                      logAnalytics({
-                                        type: "product_click",
-                                        partId: part._id,
-                                        carId: typedCarId,
-                                        visitorId: crypto.randomUUID(),
-                                        visitorDevice: isMobile ? "mobile" : "desktop",
-                                      });
-                                    }
-                                  }}
-                                >
-                                  <span>View</span>
-                                  <ExternalLink size={14} />
-                                </a>
-                              </div>
-                              {part.description && (
-                                <p className="text-sm text-slate-400 mt-1">{part.description}</p>
-                              )}
-                              {part.price && (
-                                <p className="text-sm font-bold text-green-500 mt-1">${part.price.toFixed(2)}</p>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="text-center text-slate-400 py-8">
-                          <p>No products available for this build.</p>
-                        </div>
-                      )}
-                    </TabsContent>
-                  </Tabs>
-                </div>
-                
-                {/* Mobile Description - moved to last position with visual separation */}
-                {car?.description && (
-                  <div className="mt-6 pt-4 border-t border-slate-800">
-                    <h3 className="text-lg font-bold text-white mb-3 bg-slate-800/50 px-3 py-2 rounded-lg">Description</h3>
-                    <div className={`${descExpanded ? 'max-h-none' : 'max-h-48'} overflow-y-auto pr-2 text-slate-300 leading-relaxed bg-slate-900/30 p-3 rounded-lg border border-slate-800/50`}>
-                      {car.description.split('\n').map((line, index) => {
+                    ) : (
+                      <div className="text-center text-slate-400 py-8 bg-slate-800/20 rounded-lg border border-slate-700/30">
+                        <ShoppingBag className="h-10 w-10 mx-auto mb-2 opacity-50" />
+                        <p className="text-sm">No products available for this build.</p>
+                      </div>
+                    )}
+                  </TabsContent>
+                </Tabs>
+
+                {/* Mobile Description */}
+                <div className="pt-6 border-t border-slate-700/50">
+                  <h3 className="text-lg font-bold text-white mb-3">Description</h3>
+                  <div className={cn(
+                    "overflow-y-auto pr-2 text-slate-300 text-sm leading-relaxed bg-slate-800/20 p-4 rounded-xl border border-slate-700/30 transition-all duration-300",
+                    descExpanded ? 'max-h-[400px]' : 'max-h-[200px]'
+                  )}>
+                    {car?.description ? (
+                      car.description.split('\n').map((line, index) => {
                         const isListItem = /^\s*[-*•]\s+/.test(line);
                         const isNumberedItem = /^\s*\d+\.\s+/.test(line);
-                        
+
                         if (isListItem) {
                           return (
                             <div key={index} className="flex items-start mb-2">
-                              <span className="mr-2">•</span>
+                              <span className="mr-2 text-blue-400">•</span>
                               <span>{line.replace(/^\s*[-*•]\s+/, '')}</span>
                             </div>
                           );
@@ -554,28 +583,30 @@ const CarDetailsPage = () => {
                           const number = line.match(/^\s*(\d+)\.\s+/)?.[1] || '';
                           return (
                             <div key={index} className="flex items-start mb-2">
-                              <span className="mr-2">{number}.</span>
+                              <span className="mr-2 text-blue-400 font-medium">{number}.</span>
                               <span>{line.replace(/^\s*\d+\.\s+/, '')}</span>
                             </div>
                           );
                         } else {
-                          return <p key={index} className="mb-2">{line}</p>;
+                          return line.trim() ? <p key={index} className="mb-3">{line}</p> : null;
                         }
-                      })}
-                    </div>
-                    {car.description && car.description.length > 260 && (
-                      <button
-                        type="button"
-                        onClick={() => setDescExpanded((v) => !v)}
-                        className="mt-2 text-blue-400 hover:text-blue-300 text-sm"
-                      >
-                        {descExpanded ? 'Show less' : 'Show more'}
-                      </button>
+                      })
+                    ) : (
+                      <p className="text-slate-400 italic">No description available.</p>
                     )}
                   </div>
-                )}
+                  {car?.description && car.description.length > 260 && (
+                    <button
+                      type="button"
+                      onClick={() => setDescExpanded((v) => !v)}
+                      className="mt-3 text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors"
+                    >
+                      {descExpanded ? '← Show less' : 'Show more →'}
+                    </button>
+                  )}
+                </div>
               </div>
-            </>
+            </div>
           )}
         </div>
       </div>

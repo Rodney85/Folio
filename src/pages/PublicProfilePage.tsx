@@ -23,8 +23,23 @@ import { getDeviceType } from "@/lib/utils";
 const PublicProfilePage = () => {
   const { username } = useParams<{ username: string }>();
   const navigate = useNavigate();
-  // Use any type to bypass deep instantiation errors while maintaining runtime functionality
-  const logAnalytics = useMutation<any, AnalyticsEvent>(api.analytics.logEvent as any);
+  // Create a wrapper function to avoid deep type instantiation errors
+  // @ts-ignore - Convex type instantiation issue
+  const logAnalyticsEvent = useMutation(api.analytics.logEvent);
+
+  // Wrapper function to handle analytics logging
+  const logAnalytics = (event: AnalyticsEvent) => {
+    return logAnalyticsEvent({
+      type: event.type,
+      visitorDevice: event.visitorDevice,
+      referrer: event.referrer,
+      utmSource: event.utmSource,
+      utmMedium: event.utmMedium,
+      utmCampaign: event.utmCampaign,
+      country: event.country,
+      city: event.city,
+    });
+  };
 
   // Use the generated API to fetch the public profile by username
   const profileData = useQuery(api.users.getProfileByUsername, { 

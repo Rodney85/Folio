@@ -25,17 +25,20 @@ const Logo: React.FC<LogoProps> = ({
     sm: {
       container: "gap-1",
       text: "text-lg",
-      icon: "h-4 w-4"
+      icon: "h-4 w-4",
+      iconWrapper: "p-0.5"
     },
     md: {
       container: "gap-1.5",
       text: "text-xl",
-      icon: "h-5 w-5"
+      icon: "h-5 w-5",
+      iconWrapper: "p-1"
     },
     lg: {
       container: "gap-2",
       text: "text-2xl",
-      icon: "h-6 w-6"
+      icon: "h-6 w-6",
+      iconWrapper: "p-1.5"
     },
   };
 
@@ -52,9 +55,16 @@ const Logo: React.FC<LogoProps> = ({
         CarFolio
       </span>
       {showIcon && (
-        <SquirrelIcon 
-          className={cn(sizeClasses[size].icon, "ml-0.5", iconClassName)} 
-        />
+        <span
+          className={cn(
+            "flex items-center justify-center ml-0.5",
+            sizeClasses[size].iconWrapper
+          )}
+        >
+          <SquirrelIcon
+            className={cn(sizeClasses[size].icon, "text-white", iconClassName)}
+          />
+        </span>
       )}
     </div>
   );

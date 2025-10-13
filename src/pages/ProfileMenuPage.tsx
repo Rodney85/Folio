@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth, useUser, useClerk } from "@clerk/clerk-react";
-import { ChevronLeft, ChevronRight, Shield, CreditCard, Monitor, Flag, LogOut, Car, Key, UserCircle, BarChart } from "lucide-react";
+import { ChevronLeft, ChevronRight, Shield, Monitor, Flag, LogOut } from "lucide-react";
 
 const ProfileMenuPage = () => {
   const navigate = useNavigate();
@@ -9,11 +9,6 @@ const ProfileMenuPage = () => {
   const clerk = useClerk();
 
   const menuItems = [
-    {
-      title: "Analytics",
-      icon: <BarChart className="h-5 w-5" />,
-      onClick: () => navigate("/analytics")
-    },
     {
       title: "Security & Password",
       icon: <Shield className="h-5 w-5" />,
@@ -30,13 +25,6 @@ const ProfileMenuPage = () => {
             }
           },
         });
-      }
-    },
-    {
-      title: "Subscription",
-      icon: <CreditCard className="h-5 w-5" />,
-      onClick: () => {
-        // Navigate to subscription page
       }
     },
     {

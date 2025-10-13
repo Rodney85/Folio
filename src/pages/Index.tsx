@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { CheckCircle, Star, DollarSign, BarChart3, Share2, Settings, Car, Trophy, ArrowRight, Menu, X, Squirrel } from "lucide-react";
 import { useState, useEffect } from "react";
+import { NavBar } from '@/components/ui/navbar-from-md'
 
 const Index = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -168,10 +169,11 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <NavBar />
       <HeroSection />
       
       {/* Combined Section: Pain Point, How it Works, and Solution */}
-      <section className="py-12 sm:py-16 lg:py-20 bg-slate-900 dark:bg-slate-950 text-white">
+      <section id="solution" className="py-12 sm:py-16 lg:py-20 bg-slate-900 dark:bg-slate-950 text-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Pain Point */}
           <div className="text-center mb-8 md:mb-16">
@@ -275,7 +277,9 @@ const Index = () => {
       </section>
 
       {/* Features Section */}
-      <Features />
+      <section id="feature">
+        <Features />
+      </section>
 
       {/* Gallery Section */}
       <section className="py-16 md:py-32 relative overflow-hidden">
@@ -301,7 +305,7 @@ const Index = () => {
       <Testimonials />
 
       {/* Pricing Section */}
-      <section className="py-32">
+      <section id="pricing" className="py-32">
         <div className="container max-w-5xl mx-auto px-4 md:px-6">
           <div className="mx-auto flex flex-col items-center gap-6 text-center">
             <h2 className="text-4xl font-semibold text-pretty lg:text-6xl">

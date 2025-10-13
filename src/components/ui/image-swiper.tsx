@@ -5,13 +5,15 @@ interface ImageSwiperProps {
   cardWidth?: number;
   cardHeight?: number;
   className?: string;
+  renderImage?: (imageSrc: string, index: number) => React.ReactNode;
 }
 
 export const ImageSwiper: React.FC<ImageSwiperProps> = ({
   images,
   cardWidth = 256,
   cardHeight = 352,
-  className = ''
+  className = '',
+  renderImage
 }) => {
   const cardStackRef = useRef<HTMLDivElement>(null);
   const isSwiping = useRef(false);
@@ -168,7 +170,7 @@ export const ImageSwiper: React.FC<ImageSwiperProps> = ({
   // Don't render if no images
   if (!imageList.length) {
     return (
-      <div className="flex items-center justify-center bg-slate-800 rounded-lg" 
+      <div className="flex items-center justify-center bg-slate-800 rounded-lg"
            style={{ width: cardWidth, height: cardHeight }}>
         <p className="text-slate-400">No images available</p>
       </div>
@@ -209,12 +211,16 @@ export const ImageSwiper: React.FC<ImageSwiperProps> = ({
                        rotateY(var(--swipe-rotate, 0deg))`
           } as React.CSSProperties}
         >
-          <img
-            src={imageList[originalIndex]}
-            alt={`Car image ${originalIndex + 1}`}
-            className="w-full h-full object-contain select-none pointer-events-none"
-            draggable={false}
-          />
+          {renderImage ? (
+            renderImage(imageList[originalIndex], originalIndex)
+          ) : (
+            <img
+              src={imageList[originalIndex]}
+              alt={`Car image ${originalIndex + 1}`}
+              className="w-full h-full object-contain select-none pointer-events-none"
+              draggable={false}
+            />
+          )}
         </article>
       ))}
     </section>

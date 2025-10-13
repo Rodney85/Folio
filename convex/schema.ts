@@ -2,37 +2,6 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 export default defineSchema({
-  // Orders table for subscription payments
-  orders: defineTable({
-    userId: v.string(),                     // Clerk user ID
-    orderId: v.string(),                    // External order ID from payment provider
-    orderNumber: v.string(),                // Human-readable order number
-    total: v.number(),                      // Order amount
-    currency: v.string(),                   // Currency code (e.g., 'USD')
-    createdAt: v.number(),                 // Timestamp when order was created
-    recordedAt: v.number(),                // Timestamp when order was recorded in our system
-  }).index("by_user", ["userId"])
-    .index("by_orderId", ["orderId"]),
-    
-  // Subscription management table
-  subscriptions: defineTable({
-    userId: v.string(),                           // Clerk user ID
-    status: v.string(),                          // 'trial', 'active', 'expired', 'canceled'
-    plan: v.string(),                           // 'monthly', 'yearly'
-    trialStartDate: v.number(),                 // Timestamp when trial started
-    trialEndDate: v.number(),                   // Timestamp when trial ends
-    subscriptionId: v.optional(v.string()),     // Lemon Squeezy subscription ID
-    customerId: v.optional(v.string()),         // Lemon Squeezy customer ID
-    currentPeriodEnd: v.optional(v.number()),   // Timestamp when current billing period ends
-    cancelAtPeriodEnd: v.optional(v.boolean()), // Whether subscription cancels at period end
-    canceledAt: v.optional(v.number()),         // Timestamp when subscription was canceled
-    createdAt: v.number(),                      // Timestamp when record was created
-    updatedAt: v.number(),                      // Timestamp when record was last updated
-  }).index("by_userId", ["userId"])
-    .index("by_status", ["status"])
-    .index("by_trial_end", ["trialEndDate"])
-    .index("by_subscriptionId", ["subscriptionId"]),
-
   users: defineTable({
     name: v.string(),
     email: v.string(),
@@ -45,18 +14,14 @@ export default defineSchema({
     tiktok: v.optional(v.string()),
     youtube: v.optional(v.string()),
     profileCompleted: v.optional(v.boolean()), // Flag to track if profile setup is complete
-    // Making these fields flexible to handle existing records with different formats
-    createdAt: v.optional(v.union(v.string(), v.number())),
-    updatedAt: v.optional(v.union(v.string(), v.number())),
-    // Subscription information
-    subscriptionPlan: v.optional(v.string()), // 'free', 'starter', 'pro'
-    subscriptionEndDate: v.optional(v.number()), // Timestamp when subscription expires
-    paymentProvider: v.optional(v.string()), // 'paystack'
-    paymentCustomerId: v.optional(v.string()), // ID from payment provider
-    role: v.optional(v.string()), // User role, e.g., 'admin'
+    // Timestamps (can be number or string for legacy data)
+    createdAt: v.optional(v.union(v.number(), v.string())),
+    updatedAt: v.optional(v.union(v.number(), v.string())),
+    // Admin role
+    role: v.optional(v.string()),
+    publicMetadata: v.optional(v.any()),
   }).index("by_token", ["tokenIdentifier"])
-  .index("by_username", ["username"])
-  .index("by_created_date", ["createdAt"]),
+  .index("by_username", ["username"]),
   
   cars: defineTable({
     userId: v.string(),
@@ -110,47 +75,38 @@ export default defineSchema({
   }).index("by_car_and_image", ["carId", "imageId"])
   .index("by_imageId", ["imageId"]),
 
-  // Analytics events table for user-facing metrics
+  subscriptions: defineTable({
+    userId: v.string(), // Clerk user ID
+    status: v.string(), // trial, active, expired, canceled, on_hold, failed
+    plan: v.string(), // monthly, yearly, or empty for trial
+    trialStartDate: v.number(), // Timestamp in milliseconds
+    trialEndDate: v.number(), // Timestamp in milliseconds
+    subscriptionId: v.union(v.string(), v.null()), // Dodo Payments subscription ID
+    customerId: v.union(v.string(), v.null()), // Dodo Payments customer ID
+    currentPeriodEnd: v.union(v.number(), v.null()), // Timestamp in milliseconds
+    canceledAt: v.union(v.number(), v.null()), // Timestamp in milliseconds
+    createdAt: v.number(), // Timestamp in milliseconds
+    updatedAt: v.number(), // Timestamp in milliseconds
+  }).index("by_user", ["userId"])
+    .index("by_subscription_id", ["subscriptionId"])
+    .index("by_customer_id", ["customerId"])
+    .index("by_status", ["status"]),
+
   analytics: defineTable({
-    // Who owns this event (profile/car owner)
-    userId: v.string(),
-    
-    // Event type and targets
-    type: v.string(), // 'profile_view', 'car_view', 'product_click'
-    carId: v.optional(v.id("cars")),
-    partId: v.optional(v.id("parts")),
-    
-    // Visitor info (for unique visitor counting)
-    visitorId: v.optional(v.string()),
-    visitorDevice: v.optional(v.string()), // 'mobile', 'desktop', 'tablet'
-    
-    // Traffic source
+    userId: v.string(), // User ID or "anonymous" for unauthenticated users
+    type: v.string(), // Event type: profile_view, car_view, product_click, trial_started, etc.
+    carId: v.optional(v.id("cars")), // Associated car ID if applicable
+    partId: v.optional(v.id("parts")), // Associated part ID if applicable
+    metadata: v.optional(v.any()), // Additional event data (device type, referrer, etc.)
+    createdAt: v.number(), // Timestamp in milliseconds
+    // Legacy fields from existing analytics data
     referrer: v.optional(v.string()),
-    utmSource: v.optional(v.string()),
-    utmMedium: v.optional(v.string()),
-    utmCampaign: v.optional(v.string()),
-    
-    // Geolocation (for pro users)
-    country: v.optional(v.string()),
-    city: v.optional(v.string()),
-    
-    // Admin and system fields
-    partsAffected: v.optional(v.number()), // Number of parts affected by an action
-    updatedFields: v.optional(v.array(v.string())), // List of fields that were updated
-    migrationName: v.optional(v.string()), // Name of migration that generated this event
-    updatedCount: v.optional(v.number()), // Count of items updated in a migration
-    
-    // Additional metadata for any event-specific data
-    metadata: v.optional(v.any()),         // Flexible field for event-specific data
-    
-    // Timestamps
-    createdAt: v.number(), // Date.now()
-  })
-  .index("by_user", ["userId"])
-  .index("by_user_and_type", ["userId", "type"])
-  .index("by_car", ["carId"])
-  .index("by_part", ["partId"])
-  .index("recent_by_user", ["userId", "createdAt"])
-  .index("recent_by_car", ["carId", "createdAt"]),
+    visitorDevice: v.optional(v.string()),
+    visitorId: v.optional(v.string()),
+  }).index("by_user", ["userId"])
+    .index("by_type", ["type"])
+    .index("by_car", ["carId"])
+    .index("by_created_at", ["createdAt"])
+    .index("by_user_and_type", ["userId", "type"]),
 });
 

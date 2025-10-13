@@ -1,111 +1,234 @@
 import { httpAction } from "../_generated/server";
+import DodoPayments from "dodopayments";
 
-// Lemon Squeezy configuration
-const LEMON_SQUEEZY_API_KEY = process.env.LEMON_SQUEEZY_API_KEY!;
-const LEMON_SQUEEZY_STORE_ID = process.env.LEMON_SQUEEZY_STORE_ID!;
-const LEMON_SQUEEZY_MONTHLY_VARIANT_ID = process.env.LEMON_SQUEEZY_MONTHLY_VARIANT_ID!;
-const LEMON_SQUEEZY_YEARLY_VARIANT_ID = process.env.LEMON_SQUEEZY_YEARLY_VARIANT_ID!;
-const APP_URL = process.env.APP_URL || "http://localhost:5173";
+// Dodo Payments configuration
+const DODO_API_KEY = process.env.DODO_API_KEY!;
+const APP_URL = process.env.VITE_APP_URL || "https://carfolio.cc";
+
+// Determine if we're in test or live mode based on API key prefix
+const isTestMode = DODO_API_KEY?.startsWith('test_') || false;
+
+// Dodo Payments product IDs from environment variables
+const DODO_MONTHLY_PRODUCT_ID = process.env.DODO_MONTHLY_PRODUCT_ID!;
+const DODO_YEARLY_PRODUCT_ID = process.env.DODO_YEARLY_PRODUCT_ID!; 
+
+// Initialize Dodo Payments client
+const dodoClient = new DodoPayments({
+  bearerToken: DODO_API_KEY,
+});
+
+// Log initialization mode (only in development)
+if (isTestMode) {
+  console.log("🧪 Dodo Payments initialized in TEST mode");
+}
 
 /**
- * Create a checkout session for the user
+ * Create a Dodo Payments checkout session for subscriptions
+ * Uses the new Checkout Sessions API
  * 
  * @param plan - The plan type (monthly or yearly)
- * @param userId - The user ID to associate with this checkout
- * @returns Redirect to Lemon Squeezy checkout URL
+ * @param userId - The user ID to associate with this subscription
+ * @param email - User's email address
+ * @param name - User's name (optional)
+ * @returns Redirect to Dodo Payments checkout URL
  */
-export const createCheckout = httpAction(async (ctx, request) => {
-  // Parse query parameters
-  const url = new URL(request.url);
-  const plan = url.searchParams.get("plan");
-  const userId = url.searchParams.get("userId");
+export const createCheckoutSession = httpAction(async (ctx, request) => {
+  // Parse request body for POST or query parameters for GET
+  let plan: string | null = null;
+  let userId: string | null = null;
+  let email: string | null = null;
+  let name: string | null = null;
+  let discountCode: string | null = null;
+
+  if (request.method === "POST") {
+    const body = await request.json();
+    plan = body.plan;
+    userId = body.userId;
+    email = body.email;
+    name = body.name || null;
+    discountCode = body.discount_code || body.discount || null;
+  } else {
+    const url = new URL(request.url);
+    plan = url.searchParams.get("plan");
+    userId = url.searchParams.get("userId");
+    email = url.searchParams.get("email");
+    name = url.searchParams.get("name");
+    discountCode = url.searchParams.get("discount_code") || url.searchParams.get("discount");
+  }
   
-  if (!plan || !userId) {
-    return new Response(JSON.stringify({ error: "Missing required parameters" }), {
+  // Validate required parameters
+  if (!plan || !userId || !email) {
+    console.error("Missing required parameters:", { plan, userId, email });
+    return new Response(JSON.stringify({
+      error: "Missing required parameters",
+      required: ["plan", "userId", "email"]
+    }), {
       status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  // Validate environment configuration
+  if (!DODO_API_KEY || !DODO_MONTHLY_PRODUCT_ID || !DODO_YEARLY_PRODUCT_ID) {
+    console.error("Missing Dodo Payments configuration in environment variables");
+    return new Response(JSON.stringify({
+      error: "Server configuration error - missing payment provider credentials"
+    }), {
+      status: 500,
       headers: { "Content-Type": "application/json" },
     });
   }
   
   // Validate plan type
   if (plan !== "monthly" && plan !== "yearly") {
-    return new Response(JSON.stringify({ error: "Invalid plan type" }), {
+    return new Response(JSON.stringify({ error: "Invalid plan type. Must be 'monthly' or 'yearly'" }), {
       status: 400,
       headers: { "Content-Type": "application/json" },
     });
   }
   
   try {
-    // Get variant ID based on plan
-    const variantId = plan === "monthly" 
-      ? LEMON_SQUEEZY_MONTHLY_VARIANT_ID 
-      : LEMON_SQUEEZY_YEARLY_VARIANT_ID;
-    
-    // Create checkout URL with Lemon Squeezy API
-    const response = await fetch("https://api.lemonsqueezy.com/v1/checkouts", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-        "Authorization": `Bearer ${LEMON_SQUEEZY_API_KEY}`,
+    // Get product ID based on plan
+    const productId = plan === "monthly"
+      ? DODO_MONTHLY_PRODUCT_ID
+      : DODO_YEARLY_PRODUCT_ID;
+
+    console.log(`Creating checkout session for user ${userId} - Plan: ${plan}, Product: ${productId}`);
+
+    // Create a checkout session using the Checkout Sessions API
+    const session = await dodoClient.checkoutSessions.create({
+      // Products to sell
+      product_cart: [
+        {
+          product_id: productId,
+          quantity: 1
+        }
+      ],
+  
+      // Customer information
+      customer: {
+        email: email,
+        name: name ?? email.split("@")[0],
       },
-      body: JSON.stringify({
-        data: {
-          type: "checkouts",
-          attributes: {
-            checkout_data: {
-              custom: {
-                userId: userId,
-              },
-            },
-            product_options: {
-              redirect_url: `${APP_URL}/subscription/success`,
-              receipt_button_text: "Return to Dashboard",
-              receipt_link_url: `${APP_URL}/dashboard`,
-            },
-          },
-          relationships: {
-            store: {
-              data: {
-                type: "stores",
-                id: LEMON_SQUEEZY_STORE_ID,
-              },
-            },
-            variant: {
-              data: {
-                type: "variants",
-                id: variantId,
-              },
-            },
-          },
-        },
-      }),
+  
+      // Where to redirect after successful payment
+      return_url: `${APP_URL}/subscription/success`,
+  
+      // Apply discount code for early-bird campaigns (optional)
+      discount_code: discountCode || undefined,
+  
+      // Custom metadata for tracking
+      metadata: {
+        userId: userId, // Our internal user ID
+        plan: plan,
+        source: "web_app"
+      },
+  
+      // Feature flags for better UX
+      feature_flags: {
+        allow_phone_number_collection: true,
+        always_create_new_customer: false
+      }
     });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error("Lemon Squeezy checkout creation failed:", errorData);
-      return new Response(JSON.stringify({ error: "Failed to create checkout" }), {
+    if (!session.checkout_url) {
+      console.error("❌ Dodo Payments checkout session creation failed: No checkout URL returned");
+      return new Response(JSON.stringify({ error: "Failed to create checkout session" }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
       });
     }
 
-    const data = await response.json();
-    const checkoutUrl = data.data.attributes.url;
-    
-    // Redirect the user to the checkout URL
-    return new Response(null, {
-      status: 302,
-      headers: {
-        Location: checkoutUrl,
-      },
+    console.log(`✅ Checkout session created successfully: ${session.session_id}`);
+
+    // Return the checkout URL for the frontend to redirect to
+    return new Response(JSON.stringify({
+      success: true,
+      checkout_url: session.checkout_url,
+      checkoutUrl: session.checkout_url, // Alias for compatibility
+      session_id: session.session_id
+    }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("Error creating checkout:", error);
-    return new Response(JSON.stringify({ error: "Internal server error" }), {
+    console.error("❌ Error creating Dodo Payments checkout session:", error);
+
+    // Provide more detailed error information
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorDetails = error instanceof Error ? error.stack : undefined;
+
+    if (errorDetails && isTestMode) {
+      console.error("Error stack:", errorDetails);
+    }
+
+    return new Response(JSON.stringify({
+      error: "Internal server error",
+      message: errorMessage
+    }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });
   }
 });
+
+/**
+ * Create a customer portal session for managing subscriptions
+ * 
+ * @param customerId - The Dodo Payments customer ID
+ * @returns Customer portal URL
+ */
+export const createCustomerPortal = httpAction(async (ctx, request) => {
+  let customerId: string | null = null;
+  
+  if (request.method === "POST") {
+    const body = await request.json();
+    customerId = body.customerId;
+  } else {
+    const url = new URL(request.url);
+    customerId = url.searchParams.get("customerId");
+  }
+  
+  if (!customerId) {
+    return new Response(JSON.stringify({ 
+      error: "Missing required parameter: customerId" 
+    }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+  
+  try {
+    // Create a customer portal session
+    const session = await dodoClient.customers.customerPortal.create(customerId, {
+      send_email: false
+    });
+
+    const portalUrl = (session as any)?.url || (session as any)?.link;
+
+    if (!portalUrl) {
+      console.error("Failed to create customer portal session: No URL/Link returned");
+      return new Response(JSON.stringify({ error: "Failed to create portal session" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    return new Response(JSON.stringify({
+      portal_url: portalUrl
+    }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (error) {
+    console.error("Error creating customer portal session:", error);
+    return new Response(JSON.stringify({ 
+      error: "Internal server error",
+      message: error instanceof Error ? error.message : "Unknown error"
+    }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+});
+

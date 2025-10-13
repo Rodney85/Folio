@@ -3,7 +3,6 @@ import { useUser } from "@clerk/clerk-react";
 import ShareModal from "../ShareModal";
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
-import { PageTransition } from "@/components/ui/page-transition";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -20,14 +19,12 @@ const AppLayout = ({ children }: AppLayoutProps) => {
   // Define the profile URL for QR code
   const baseUrl = window.location.origin;
   const profileUrl = `${baseUrl}/u/${profile?.username || user?.firstName?.toLowerCase() || "itsrod"}`;
-  
+
   return (
-    <div className="flex h-[100svh] w-full overflow-hidden bg-slate-900 text-white">
-      {/* Main content area with page transitions */}
+    <div className="flex h-[100dvh] w-full overflow-hidden bg-slate-900 text-white">
+      {/* Main content area - transitions handled at route level */}
       <main className="flex-1 overflow-y-auto relative">
-        <PageTransition>
-          {children}
-        </PageTransition>
+        {children}
       </main>
 
       {/* Share Modal - used consistently across all device sizes */}

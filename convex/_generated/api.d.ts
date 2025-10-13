@@ -30,6 +30,8 @@ import type * as http_customerPortal from "../http/customerPortal.js";
 import type * as http_webhooks from "../http/webhooks.js";
 import type * as http from "../http.js";
 import type * as internal_subscriptions from "../internal/subscriptions.js";
+import type * as lib_userHelpers from "../lib/userHelpers.js";
+import type * as migrations_fixUserIds from "../migrations/fixUserIds.js";
 import type * as migrations_publishPartsForPublishedCars from "../migrations/publishPartsForPublishedCars.js";
 import type * as modHotspots from "../modHotspots.js";
 import type * as mutations_admin from "../mutations/admin.js";
@@ -66,6 +68,8 @@ declare const fullApi: ApiFromModules<{
   "http/webhooks": typeof http_webhooks;
   http: typeof http;
   "internal/subscriptions": typeof internal_subscriptions;
+  "lib/userHelpers": typeof lib_userHelpers;
+  "migrations/fixUserIds": typeof migrations_fixUserIds;
   "migrations/publishPartsForPublishedCars": typeof migrations_publishPartsForPublishedCars;
   modHotspots: typeof modHotspots;
   "mutations/admin": typeof mutations_admin;
