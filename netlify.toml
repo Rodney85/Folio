@@ -1,5 +1,5 @@
 [build]
-  command = "npm install && npm run build"
+  command = "npm install && npx convex deploy --cmd 'npm run build' --cmd-url-env-var-name VITE_CONVEX_URL"
   publish = "dist"
 
 # Redirects for client-side routing with React Router
