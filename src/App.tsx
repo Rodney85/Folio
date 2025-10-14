@@ -11,7 +11,6 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import { useUser } from "@clerk/clerk-react";
 import { useEffect, Suspense, lazy } from "react";
 import WelcomeScreen from "@/components/WelcomeScreen";
-import ProfileOnboardingWizard from "@/components/ProfileOnboardingWizard";
 import { Loader2 } from "lucide-react";
 import { PageTransition } from "@/components/ui/page-transition";
 import { AnimatePresence } from "framer-motion";
@@ -160,9 +159,6 @@ const AppContent = () => {
 
   return (
     <BrowserRouter>
-      {/* Onboarding Wizard - Shows automatically for signed-in users without complete profile */}
-      {isSignedIn && <ProfileOnboardingWizard />}
-
       <Routes>
         {/* Show profile page if user is signed in, otherwise show landing page */}
         <Route path="/" element={

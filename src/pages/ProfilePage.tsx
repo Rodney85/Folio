@@ -22,7 +22,6 @@ import ShareModal from "@/components/ShareModal";
 import DraggableCarGrid from "@/components/cars/DraggableCarGrid";
 import { motion } from "framer-motion";
 import { SectionTransition, AnimatedItem } from "@/components/ui/page-transition";
-import ProfileSetupBanner from "@/components/ProfileSetupBanner";
 
 const ProfilePage = () => {
   const { user } = useUser();
@@ -76,11 +75,6 @@ const ProfilePage = () => {
           }} />
         </div>
       )}
-
-      {/* Profile Setup Banner */}
-      <div className="px-4 pt-4">
-        <ProfileSetupBanner />
-      </div>
 
       {/* Profile header */}
       <div className="flex flex-col items-center px-6 pb-4">

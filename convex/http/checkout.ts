@@ -1,25 +1,33 @@
 import { httpAction } from "../_generated/server";
 import DodoPayments from "dodopayments";
 
-// Dodo Payments configuration
-const DODO_API_KEY = process.env.DODO_API_KEY!;
-const APP_URL = process.env.VITE_APP_URL || "https://carfolio.cc";
+// Helper function to get Dodo Payments configuration
+// Only initializes when actually needed
+function getDodoConfig() {
+  const DODO_API_KEY = process.env.DODO_API_KEY;
+  const DODO_MONTHLY_PRODUCT_ID = process.env.DODO_MONTHLY_PRODUCT_ID;
+  const DODO_YEARLY_PRODUCT_ID = process.env.DODO_YEARLY_PRODUCT_ID;
+  const APP_URL = process.env.VITE_APP_URL || process.env.APP_URL || "https://carfolio.cc";
 
-// Determine if we're in test or live mode based on API key prefix
-const isTestMode = DODO_API_KEY?.startsWith('test_') || false;
+  // Check if Dodo Payments is configured
+  if (!DODO_API_KEY || !DODO_MONTHLY_PRODUCT_ID || !DODO_YEARLY_PRODUCT_ID) {
+    return null;
+  }
 
-// Dodo Payments product IDs from environment variables
-const DODO_MONTHLY_PRODUCT_ID = process.env.DODO_MONTHLY_PRODUCT_ID!;
-const DODO_YEARLY_PRODUCT_ID = process.env.DODO_YEARLY_PRODUCT_ID!; 
+  const isTestMode = DODO_API_KEY.startsWith('test_') || false;
 
-// Initialize Dodo Payments client
-const dodoClient = new DodoPayments({
-  bearerToken: DODO_API_KEY,
-});
+  // Log initialization mode (only in development)
+  if (isTestMode) {
+    console.log("🧪 Dodo Payments initialized in TEST mode");
+  }
 
-// Log initialization mode (only in development)
-if (isTestMode) {
-  console.log("🧪 Dodo Payments initialized in TEST mode");
+  return {
+    client: new DodoPayments({ bearerToken: DODO_API_KEY }),
+    monthlyProductId: DODO_MONTHLY_PRODUCT_ID,
+    yearlyProductId: DODO_YEARLY_PRODUCT_ID,
+    appUrl: APP_URL,
+    isTestMode,
+  };
 }
 
 /**
@@ -33,6 +41,18 @@ if (isTestMode) {
  * @returns Redirect to Dodo Payments checkout URL
  */
 export const createCheckoutSession = httpAction(async (ctx, request) => {
+  // Check if Dodo Payments is configured
+  const dodoConfig = getDodoConfig();
+  if (!dodoConfig) {
+    console.error("Dodo Payments is not configured");
+    return new Response(JSON.stringify({
+      error: "Payment provider not configured. Please contact support."
+    }), {
+      status: 503,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
   // Parse request body for POST or query parameters for GET
   let plan: string | null = null;
   let userId: string | null = null;
@@ -55,7 +75,7 @@ export const createCheckoutSession = httpAction(async (ctx, request) => {
     name = url.searchParams.get("name");
     discountCode = url.searchParams.get("discount_code") || url.searchParams.get("discount");
   }
-  
+
   // Validate required parameters
   if (!plan || !userId || !email) {
     console.error("Missing required parameters:", { plan, userId, email });
@@ -64,17 +84,6 @@ export const createCheckoutSession = httpAction(async (ctx, request) => {
       required: ["plan", "userId", "email"]
     }), {
       status: 400,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
-
-  // Validate environment configuration
-  if (!DODO_API_KEY || !DODO_MONTHLY_PRODUCT_ID || !DODO_YEARLY_PRODUCT_ID) {
-    console.error("Missing Dodo Payments configuration in environment variables");
-    return new Response(JSON.stringify({
-      error: "Server configuration error - missing payment provider credentials"
-    }), {
-      status: 500,
       headers: { "Content-Type": "application/json" },
     });
   }
@@ -90,13 +99,13 @@ export const createCheckoutSession = httpAction(async (ctx, request) => {
   try {
     // Get product ID based on plan
     const productId = plan === "monthly"
-      ? DODO_MONTHLY_PRODUCT_ID
-      : DODO_YEARLY_PRODUCT_ID;
+      ? dodoConfig.monthlyProductId
+      : dodoConfig.yearlyProductId;
 
     console.log(`Creating checkout session for user ${userId} - Plan: ${plan}, Product: ${productId}`);
 
     // Create a checkout session using the Checkout Sessions API
-    const session = await dodoClient.checkoutSessions.create({
+    const session = await dodoConfig.client.checkoutSessions.create({
       // Products to sell
       product_cart: [
         {
@@ -112,7 +121,7 @@ export const createCheckoutSession = httpAction(async (ctx, request) => {
       },
   
       // Where to redirect after successful payment
-      return_url: `${APP_URL}/subscription/success`,
+      return_url: `${dodoConfig.appUrl}/subscription/success`,
   
       // Apply discount code for early-bird campaigns (optional)
       discount_code: discountCode || undefined,
@@ -158,7 +167,7 @@ export const createCheckoutSession = httpAction(async (ctx, request) => {
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     const errorDetails = error instanceof Error ? error.stack : undefined;
 
-    if (errorDetails && isTestMode) {
+    if (errorDetails && dodoConfig.isTestMode) {
       console.error("Error stack:", errorDetails);
     }
 
@@ -179,8 +188,20 @@ export const createCheckoutSession = httpAction(async (ctx, request) => {
  * @returns Customer portal URL
  */
 export const createCustomerPortal = httpAction(async (ctx, request) => {
+  // Check if Dodo Payments is configured
+  const dodoConfig = getDodoConfig();
+  if (!dodoConfig) {
+    console.error("Dodo Payments is not configured");
+    return new Response(JSON.stringify({
+      error: "Payment provider not configured. Please contact support."
+    }), {
+      status: 503,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
   let customerId: string | null = null;
-  
+
   if (request.method === "POST") {
     const body = await request.json();
     customerId = body.customerId;
@@ -188,19 +209,19 @@ export const createCustomerPortal = httpAction(async (ctx, request) => {
     const url = new URL(request.url);
     customerId = url.searchParams.get("customerId");
   }
-  
+
   if (!customerId) {
-    return new Response(JSON.stringify({ 
-      error: "Missing required parameter: customerId" 
+    return new Response(JSON.stringify({
+      error: "Missing required parameter: customerId"
     }), {
       status: 400,
       headers: { "Content-Type": "application/json" },
     });
   }
-  
+
   try {
     // Create a customer portal session
-    const session = await dodoClient.customers.customerPortal.create(customerId, {
+    const session = await dodoConfig.client.customers.customerPortal.create(customerId, {
       send_email: false
     });
 

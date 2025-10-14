@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useMutation, useQuery } from "convex/react";
+import { useMutation, useQuery, useConvexAuth } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,9 +17,10 @@ type ProfileSetupFormProps = {
 
 const ProfileSetupForm = ({ isOnboarding = false, onComplete }: ProfileSetupFormProps) => {
   const { user } = useUser();
+  const { isAuthenticated } = useConvexAuth();
   const navigate = useNavigate();
   const updateProfile = useMutation(api.users.updateProfile);
-  
+
   // Get current profile data
   const profileData = useQuery(api.users.getProfile);
   
@@ -68,14 +69,20 @@ const ProfileSetupForm = ({ isOnboarding = false, onComplete }: ProfileSetupForm
   };
 
   const handleSave = async () => {
+    // Check if Convex is authenticated
+    if (!isAuthenticated) {
+      toast.error("Please wait while we connect to the server...");
+      return;
+    }
+
     // Only require username during initial onboarding
     if (isOnboarding && !username.trim()) {
       toast.error("Please enter a username for your profile.");
       return;
     }
-    
+
     setLoading(true);
-    
+
     try {
       // Clean up social media URLs to extract usernames
       const instagramUsername = instagram ? extractSocialUsername(instagram, 'instagram.com/') : undefined;
@@ -197,13 +204,14 @@ const ProfileSetupForm = ({ isOnboarding = false, onComplete }: ProfileSetupForm
       </CardContent>
       <CardFooter className="flex justify-end space-x-2">
         {!isOnboarding && (
-          <Button variant="outline" onClick={() => navigate('/profile')} disabled={loading}>
+          <Button variant="outline" onClick={() => navigate('/profile')} disabled={loading || !isAuthenticated}>
             Cancel
           </Button>
         )}
-        <Button onClick={handleSave} disabled={loading}>
+        <Button onClick={handleSave} disabled={loading || !isAuthenticated}>
           {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {isOnboarding ? "Complete Setup" : "Save Changes"}
+          {!isAuthenticated && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {!isAuthenticated ? "Connecting..." : (isOnboarding ? "Complete Setup" : "Save Changes")}
         </Button>
       </CardFooter>
     </Card>

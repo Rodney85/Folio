@@ -1,8 +1,8 @@
 export default {
   providers: [
     {
-      // Production domain for Carfolio
-      "domain": "https://carfolio.cc",
+      // Production Clerk issuer domain - must match JWT iss claim
+      "domain": "https://carfolio.clerk.com",
       "applicationID": "convex"
     }
   ],

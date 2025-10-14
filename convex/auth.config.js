@@ -1,24 +1,21 @@
-// Import environment helper
-import { isDevelopment } from "./env.js";
+// Use CLERK_DOMAIN environment variable set in Convex dashboard
+// This must match the issuer in JWT tokens from Clerk
+// Development: https://united-piglet-38.clerk.accounts.dev
+// Production: https://carfolio.clerk.com
 
-// Get the domain based on environment
-const getClerkDomain = () => {
-  const isDev = isDevelopment();
-  const domain = isDev ? "https://united-piglet-38.clerk.accounts.dev" : "https://carfolio.cc";
-  
-  // Log for debugging (will appear in Convex logs)
-  console.log(`[AUTH CONFIG] Environment: ${isDev ? 'development' : 'production'}`);
-  console.log(`[AUTH CONFIG] Using Clerk domain: ${domain}`);
-  console.log(`[AUTH CONFIG] CONVEX_URL: ${process.env.CONVEX_URL}`);
-  console.log(`[AUTH CONFIG] NODE_ENV: ${process.env.NODE_ENV}`);
-  
-  return domain;
-};
+const clerkDomain = process.env.CLERK_DOMAIN;
+
+if (!clerkDomain) {
+  throw new Error("CLERK_DOMAIN environment variable is required. Set it in the Convex dashboard.");
+}
+
+// Log for debugging
+console.log(`[AUTH CONFIG] Using Clerk domain: ${clerkDomain}`);
 
 export default {
   providers: [
     {
-      "domain": getClerkDomain(),
+      "domain": clerkDomain,
       "applicationID": "convex"
     }
   ],

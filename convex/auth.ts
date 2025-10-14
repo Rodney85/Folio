@@ -31,45 +31,69 @@ export const storeUser = mutation({
     name: v.optional(v.string()),
     email: v.optional(v.string()),
     pictureUrl: v.optional(v.string()),
+    username: v.optional(v.string()), // Add username parameter to sync from Clerk
     role: v.optional(v.string()), // Add role parameter to accept from Clerk
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
-    
+
     if (!identity) {
       throw new Error("Called storeUser without authentication present");
     }
-    
+
     // Check if user already exists
     const user = await ctx.db
       .query("users")
       .withIndex("by_token", (q) => q.eq("tokenIdentifier", identity.tokenIdentifier))
       .unique();
-    
+
     if (user !== null) {
       // User exists, update their information
-      await ctx.db.patch(user._id, {
+      const updateData: any = {
         name: args.name ?? user.name,
         email: args.email ?? user.email,
         pictureUrl: args.pictureUrl ?? user.pictureUrl,
-        // Only update role if provided, otherwise keep existing
-        ...(args.role !== undefined && { role: args.role }),
         updatedAt: Date.now(),
-      });
+      };
+
+      // Update username if provided and user doesn't have one yet
+      // This allows syncing Clerk username while preserving custom usernames
+      if (args.username && !user.username) {
+        updateData.username = args.username;
+        updateData.profileCompleted = true; // Auto-complete profile if username is set
+      }
+
+      // Only update role if provided, otherwise keep existing
+      if (args.role !== undefined) {
+        updateData.role = args.role;
+      }
+
+      await ctx.db.patch(user._id, updateData);
       return user._id;
     }
-    
+
     // User doesn't exist, create a new user
-    return await ctx.db.insert("users", {
+    const newUserData: any = {
       name: args.name ?? identity.name ?? "",
       email: args.email ?? identity.email ?? "",
       pictureUrl: args.pictureUrl ?? identity.pictureUrl,
       tokenIdentifier: identity.tokenIdentifier,
-      // Include role if provided
-      ...(args.role !== undefined && { role: args.role }),
       createdAt: Date.now(),
       updatedAt: Date.now(),
-    });
+    };
+
+    // Include username if provided
+    if (args.username) {
+      newUserData.username = args.username;
+      newUserData.profileCompleted = true; // Auto-complete profile if username is set
+    }
+
+    // Include role if provided
+    if (args.role !== undefined) {
+      newUserData.role = args.role;
+    }
+
+    return await ctx.db.insert("users", newUserData);
   },
 });
 
