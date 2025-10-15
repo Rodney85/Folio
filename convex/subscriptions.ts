@@ -16,8 +16,8 @@ export enum SubscriptionPlan {
   YEARLY = "yearly"
 }
 
-// Trial duration in milliseconds (14 days)
-const TRIAL_DURATION_MS = 14 * 24 * 60 * 60 * 1000;
+// Trial duration in milliseconds (7 days)
+const TRIAL_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
 
 // Helper to check if a user has an active subscription or is in trial
 export const hasSubscriptionAccess = async (ctx: any, userId: string): Promise<boolean> => {
