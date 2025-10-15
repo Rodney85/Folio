@@ -1,6 +1,13 @@
 import { httpAction } from "../_generated/server";
 import DodoPayments from "dodopayments";
 
+// CORS headers for allowing requests from frontend
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
+
 // Helper function to get Dodo Payments configuration
 // Only initializes when actually needed
 function getDodoConfig() {
@@ -41,6 +48,11 @@ function getDodoConfig() {
  * @returns Redirect to Dodo Payments checkout URL
  */
 export const createCheckoutSession = httpAction(async (ctx, request) => {
+  // Handle OPTIONS request for CORS preflight
+  if (request.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }
+
   // Check if Dodo Payments is configured
   const dodoConfig = getDodoConfig();
   if (!dodoConfig) {
@@ -49,7 +61,7 @@ export const createCheckoutSession = httpAction(async (ctx, request) => {
       error: "Payment provider not configured. Please contact support."
     }), {
       status: 503,
-      headers: { "Content-Type": "application/json" },
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 
@@ -84,15 +96,15 @@ export const createCheckoutSession = httpAction(async (ctx, request) => {
       required: ["plan", "userId", "email"]
     }), {
       status: 400,
-      headers: { "Content-Type": "application/json" },
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
-  
+
   // Validate plan type
   if (plan !== "monthly" && plan !== "yearly") {
     return new Response(JSON.stringify({ error: "Invalid plan type. Must be 'monthly' or 'yearly'" }), {
       status: 400,
-      headers: { "Content-Type": "application/json" },
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
   
@@ -144,7 +156,7 @@ export const createCheckoutSession = httpAction(async (ctx, request) => {
       console.error("❌ Dodo Payments checkout session creation failed: No checkout URL returned");
       return new Response(JSON.stringify({ error: "Failed to create checkout session" }), {
         status: 500,
-        headers: { "Content-Type": "application/json" },
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
@@ -158,7 +170,7 @@ export const createCheckoutSession = httpAction(async (ctx, request) => {
       session_id: session.session_id
     }), {
       status: 200,
-      headers: { "Content-Type": "application/json" },
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
     console.error("❌ Error creating Dodo Payments checkout session:", error);
@@ -176,7 +188,7 @@ export const createCheckoutSession = httpAction(async (ctx, request) => {
       message: errorMessage
     }), {
       status: 500,
-      headers: { "Content-Type": "application/json" },
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });
@@ -188,6 +200,11 @@ export const createCheckoutSession = httpAction(async (ctx, request) => {
  * @returns Customer portal URL
  */
 export const createCustomerPortal = httpAction(async (ctx, request) => {
+  // Handle OPTIONS request for CORS preflight
+  if (request.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: corsHeaders });
+  }
+
   // Check if Dodo Payments is configured
   const dodoConfig = getDodoConfig();
   if (!dodoConfig) {
@@ -196,7 +213,7 @@ export const createCustomerPortal = httpAction(async (ctx, request) => {
       error: "Payment provider not configured. Please contact support."
     }), {
       status: 503,
-      headers: { "Content-Type": "application/json" },
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 
@@ -215,7 +232,7 @@ export const createCustomerPortal = httpAction(async (ctx, request) => {
       error: "Missing required parameter: customerId"
     }), {
       status: 400,
-      headers: { "Content-Type": "application/json" },
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 
@@ -231,7 +248,7 @@ export const createCustomerPortal = httpAction(async (ctx, request) => {
       console.error("Failed to create customer portal session: No URL/Link returned");
       return new Response(JSON.stringify({ error: "Failed to create portal session" }), {
         status: 500,
-        headers: { "Content-Type": "application/json" },
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
@@ -239,16 +256,16 @@ export const createCustomerPortal = httpAction(async (ctx, request) => {
       portal_url: portalUrl
     }), {
       status: 200,
-      headers: { "Content-Type": "application/json" },
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
     console.error("Error creating customer portal session:", error);
-    return new Response(JSON.stringify({ 
+    return new Response(JSON.stringify({
       error: "Internal server error",
       message: error instanceof Error ? error.message : "Unknown error"
     }), {
       status: 500,
-      headers: { "Content-Type": "application/json" },
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });
