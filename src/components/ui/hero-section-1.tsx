@@ -4,6 +4,7 @@ import { ArrowRight, ChevronRight, Car, Squirrel, Home, Star, DollarSign, FileTe
 import { Button } from '@/components/ui/button'
 import { motion } from 'framer-motion'
 import { cn, getDemoProfileUrl } from '@/lib/utils'
+import { BlurText } from '@/components/ui/animated-blur-text'
 
 const transitionVariants = {
     item: {
@@ -88,15 +89,20 @@ export function HeroSection() {
                                         </div>
                                     </Link>
                         
-                                    <h1
-                                        className="mt-8 max-w-4xl mx-auto text-balance text-6xl md:text-7xl lg:mt-16 xl:text-[5.25rem] font-semibold text-slate-900 dark:text-white leading-tight">
-                                        Your Masterpiece.
-                                        <span className="block text-blue-600 dark:text-blue-400">Reimagined.</span>
-                                    </h1>
-                                    <p
-                                        className="mx-auto mt-8 max-w-2xl text-balance text-lg text-slate-600 dark:text-slate-300">
-                                        CarFolio is the definitive platform for the automotive creator. A stunning digital garage designed to showcase your vehicles, share your story, and monetize your passion. All with a single link.
-                                    </p>
+                                    <BlurText
+                                        text="Your Masterpiece. Reimagined."
+                                        delay={100}
+                                        animateBy="words"
+                                        direction="top"
+                                        className="mt-8 max-w-4xl mx-auto text-balance text-6xl md:text-7xl lg:mt-16 xl:text-[5.25rem] font-semibold text-slate-900 dark:text-white leading-tight"
+                                    />
+                                    <BlurText
+                                        text="CarFolio is the definitive platform for the automotive creator. A stunning digital garage designed to showcase your vehicles, share your story, and monetize your passion. All with a single link."
+                                        delay={80}
+                                        animateBy="words"
+                                        direction="top"
+                                        className="mx-auto mt-8 max-w-2xl text-balance text-lg text-slate-600 dark:text-slate-300"
+                                    />
                                 </motion.div>
 
                                 <motion.div
