@@ -4,15 +4,16 @@ import { SubscriptionStatus } from "../subscriptions";
 import { Doc, Id } from "../_generated/dataModel";
 
 /**
- * Create or update a subscription based on webhook data
+ * Create or update a subscription based on webhook data from Dodo Payments
+ * This is called by webhooks when subscription status changes
  */
 export const createOrUpdateSubscription = internalMutation({
   args: {
     userId: v.string(),
     customerId: v.string(),
     subscriptionId: v.string(),
-    status: v.string(),
-    plan: v.string(),
+    status: v.string(), // "active", "trial", "on_hold", "failed", etc.
+    plan: v.string(), // "monthly" or "yearly"
     currentPeriodEnd: v.optional(v.union(v.string(), v.number())),
     cancelAtPeriodEnd: v.optional(v.boolean()),
     createdAt: v.optional(v.union(v.string(), v.number())),
@@ -34,37 +35,41 @@ export const createOrUpdateSubscription = internalMutation({
         : new Date(args.currentPeriodEnd).getTime();
     }
 
+    // Determine trial end date (for trial status, currentPeriodEnd is when trial ends)
+    const trialEndDate = args.status === "trial" ? currentPeriodEnd : now;
+
     if (existingSubscription) {
       // Update existing subscription
       await ctx.db.patch(existingSubscription._id, {
-        status: args.status, // Use the provided status (active, on_hold, failed, etc.)
+        status: args.status,
         plan: args.plan,
         subscriptionId: args.subscriptionId,
         customerId: args.customerId,
         currentPeriodEnd,
+        trialEndDate: args.status === "trial" ? (currentPeriodEnd || now) : existingSubscription.trialEndDate,
         updatedAt: now,
-        // If they had a trial, keep the trial dates for reference
       });
 
-      // Track analytics event for subscription activation
+      // Track analytics event
       await ctx.db.insert("analytics", {
         userId: args.userId,
-        type: "subscription_activated",
+        type: args.status === "active" ? "subscription_activated" : "subscription_updated",
         createdAt: now,
         metadata: {
           plan: args.plan,
+          status: args.status,
           fromTrial: existingSubscription.status === SubscriptionStatus.TRIAL
         }
       });
 
     } else {
-      // Create a new subscription (shouldn't normally happen, but handle it)
+      // Create a new subscription
       await ctx.db.insert("subscriptions", {
         userId: args.userId,
         status: args.status,
         plan: args.plan,
-        trialStartDate: now,
-        trialEndDate: now, // No trial since they're directly subscribing
+        trialStartDate: args.status === "trial" ? now : now,
+        trialEndDate: trialEndDate || now,
         subscriptionId: args.subscriptionId,
         customerId: args.customerId,
         currentPeriodEnd,
@@ -79,7 +84,8 @@ export const createOrUpdateSubscription = internalMutation({
         type: "subscription_created",
         createdAt: now,
         metadata: {
-          plan: args.plan
+          plan: args.plan,
+          status: args.status
         }
       });
     }
@@ -89,7 +95,8 @@ export const createOrUpdateSubscription = internalMutation({
 });
 
 /**
- * Update an existing subscription (for changes in billing period, etc.)
+ * Update an existing subscription (for renewals, status changes, etc.)
+ * Called by webhooks when subscription details change
  */
 export const updateSubscription = internalMutation({
   args: {
@@ -106,6 +113,7 @@ export const updateSubscription = internalMutation({
       .first();
 
     if (!subscription) {
+      console.error(`Subscription not found: ${args.subscriptionId}`);
       throw new ConvexError("Subscription not found");
     }
 
@@ -119,20 +127,27 @@ export const updateSubscription = internalMutation({
         : new Date(args.currentPeriodEnd).getTime();
     }
 
+    // Update trial end date if moving from trial to active
+    const trialEndDate = args.status === "active" && subscription.status === "trial"
+      ? now
+      : subscription.trialEndDate;
+
     // Update subscription
     await ctx.db.patch(subscription._id, {
       status: args.status,
       currentPeriodEnd,
+      trialEndDate,
       updatedAt: now,
     });
 
-    // Track analytics event for subscription update
+    // Track analytics event
     await ctx.db.insert("analytics", {
       userId: subscription.userId,
       type: "subscription_updated",
       createdAt: now,
       metadata: {
         status: args.status,
+        previousStatus: subscription.status,
         cancelAtPeriodEnd: args.cancelAtPeriodEnd
       }
     });

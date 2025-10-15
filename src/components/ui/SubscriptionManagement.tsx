@@ -66,8 +66,8 @@ export const SubscriptionManagement: React.FC = () => {
 
     setIsLoading(true);
     try {
-      const CONVEX_URL = import.meta.env.VITE_CONVEX_URL;
-      const response = await fetch(`${CONVEX_URL}/createCheckoutSession`, {
+      const httpUrl = import.meta.env.VITE_CONVEX_URL.replace('.convex.cloud', '.convex.site');
+      const response = await fetch(`${httpUrl}/checkoutSession`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -228,7 +228,7 @@ export const SubscriptionManagement: React.FC = () => {
             Start Your Carfolio Journey
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mb-8">
-            Get started with a 14-day free trial to unlock all premium features
+            Get started with a 7-day free trial to unlock all premium features
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-2xl mx-auto mb-8">
             <div className="p-4 rounded-lg bg-green-50 dark:bg-green-900/20">
@@ -258,7 +258,7 @@ export const SubscriptionManagement: React.FC = () => {
                 Starting Trial...
               </>
             ) : (
-              "Start 14-Day Free Trial"
+              "Start 7-Day Free Trial"
             )}
           </Button>
         </div>
@@ -337,7 +337,7 @@ export const SubscriptionManagement: React.FC = () => {
                     <span>{subscription.daysRemaining} days left</span>
                   </div>
                   <Progress
-                    value={(14 - subscription.daysRemaining) / 14 * 100}
+                    value={(7 - subscription.daysRemaining) / 7 * 100}
                     className="h-2"
                   />
                 </div>
@@ -504,7 +504,7 @@ export const SubscriptionManagement: React.FC = () => {
               <CardDescription>Best value - 2 months free!</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold mb-4">$29.99<span className="text-lg font-normal text-gray-600 dark:text-gray-400">/year</span></div>
+              <div className="text-3xl font-bold mb-4">$299.99<span className="text-lg font-normal text-gray-600 dark:text-gray-400">/year</span></div>
               <ul className="space-y-2 mb-6">
                 <li className="flex items-center"><CheckCircle className="w-4 h-4 text-green-500 mr-2" />Everything in Monthly</li>
                 <li className="flex items-center"><CheckCircle className="w-4 h-4 text-green-500 mr-2" />2 months free ($60 savings)</li>

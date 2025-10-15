@@ -11,7 +11,17 @@
       "Bash(mkdir:*)",
       "Bash(npm run dev:*)",
       "WebFetch(domain:docs.svix.com)",
-      "Bash(npm run build)"
+      "Bash(npm run build)",
+      "Bash(rm:*)",
+      "Bash(git reflog:*)",
+      "Bash(git gc:*)",
+      "Bash(git push:*)",
+      "Bash(npm run switch:production:*)",
+      "WebFetch(domain:clerk.com)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(npm run env:dev:*)",
+      "Bash(set CONVEX_DEPLOYMENT=prod:cheerful-nightingale-342)"
     ],
     "deny": [],
     "ask": []

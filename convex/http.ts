@@ -6,6 +6,13 @@ import { handleDodoWebhook } from "./http/webhooks";
 
 const http = httpRouter();
 
+// Checkout session routes
+http.route({
+  path: "/checkoutSession",
+  method: "OPTIONS",
+  handler: createCheckoutSession,
+});
+
 http.route({
   path: "/checkoutSession",
   method: "POST",
@@ -16,6 +23,13 @@ http.route({
   path: "/checkoutSession",
   method: "GET",
   handler: createCheckoutSession,
+});
+
+// Customer portal routes
+http.route({
+  path: "/customerPortal",
+  method: "OPTIONS",
+  handler: createCustomerPortal,
 });
 
 http.route({
@@ -30,7 +44,7 @@ http.route({
   handler: httpAction(async ({ runQuery }, request) => {
     const url = new URL(request.url);
     const userId = url.searchParams.get("userId");
-    
+
     if (!userId) {
       return new Response(JSON.stringify({ hasAccess: false }), {
         status: 400,
@@ -39,7 +53,8 @@ http.route({
     }
 
     try {
-      
+      // Check if user has active subscription or trial
+      const hasAccess = await runQuery(api.subscriptions.checkPublicUserAccess, { userId });
 
       return new Response(JSON.stringify({ hasAccess }), {
         headers: { "Content-Type": "application/json" }

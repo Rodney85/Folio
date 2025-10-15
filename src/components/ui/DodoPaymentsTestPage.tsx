@@ -23,8 +23,8 @@ export const DodoPaymentsTestPage: React.FC = () => {
     }
 
     try {
-      const CONVEX_URL = import.meta.env.VITE_CONVEX_URL;
-      const response = await fetch(`${CONVEX_URL}/checkoutSession`, {
+      const httpUrl = import.meta.env.VITE_CONVEX_URL.replace('.convex.cloud', '.convex.site');
+      const response = await fetch(`${httpUrl}/checkoutSession`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ plan: "monthly", userId, email, name }),
@@ -51,8 +51,8 @@ export const DodoPaymentsTestPage: React.FC = () => {
     }
 
     try {
-      const CONVEX_URL = import.meta.env.VITE_CONVEX_URL;
-      const response = await fetch(`${CONVEX_URL}/checkoutSession`, {
+      const httpUrl = import.meta.env.VITE_CONVEX_URL.replace('.convex.cloud', '.convex.site');
+      const response = await fetch(`${httpUrl}/checkoutSession`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ plan: "yearly", userId, email, name }),
@@ -74,8 +74,8 @@ export const DodoPaymentsTestPage: React.FC = () => {
 
   const testWebhook = async () => {
     try {
-      const CONVEX_URL = import.meta.env.VITE_CONVEX_URL;
-      const response = await fetch(`${CONVEX_URL}/dodoWebhooks`, {
+      const httpUrl = import.meta.env.VITE_CONVEX_URL.replace('.convex.cloud', '.convex.site');
+      const response = await fetch(`${httpUrl}/dodoWebhooks`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
