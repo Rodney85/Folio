@@ -14,8 +14,6 @@ import { Separator } from '@/components/ui/separator'
 import { CheckCircle, Star, DollarSign, BarChart3, Share2, Settings, Car, Trophy, ArrowRight, Menu, X, Squirrel } from "lucide-react";
 import { useState, useEffect } from "react";
 import { NavBar } from '@/components/ui/navbar-from-md'
-import { ScrollBlurReveal } from '@/components/ui/scroll-blur-reveal'
-import { BlurTextEffect } from '@/components/ui/blur-text-effect'
 
 const Index = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -179,18 +177,7 @@ const Index = () => {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Pain Point */}
           <div className="text-center mb-8 md:mb-16">
-            <ScrollBlurReveal
-              baseOpacity={0.1}
-              enableBlur={true}
-              baseRotation={5}
-              blurStrength={10}
-              rotationEnd="center center"
-              wordAnimationEnd="bottom bottom"
-              containerClassName="my-0"
-              textClassName="text-4xl font-semibold mb-4 md:mb-8 text-white"
-            >
-              Your build's story is scattered.
-            </ScrollBlurReveal>
+            <h2 className="text-4xl font-semibold mb-4 md:mb-8 text-white">Your build's story is scattered.</h2>
             <p className="text-xl mb-6 md:mb-12 text-slate-300 max-w-4xl mx-auto">
               Across forums. In social feeds. In endless DMs. The details that matter get lost, and the value you create goes unrewarded. Your work deserves more than a temporary post.
             </p>
@@ -219,18 +206,7 @@ const Index = () => {
           {/* Solution - Two Column Layout */}
           <div className="mb-12 md:mb-24">
             <div className="relative z-10 grid items-center gap-3 md:gap-4 md:grid-cols-2 md:gap-12">
-              <ScrollBlurReveal
-                baseOpacity={0.1}
-                enableBlur={true}
-                baseRotation={3}
-                blurStrength={8}
-                rotationEnd="center center"
-                wordAnimationEnd="bottom bottom"
-                containerClassName="my-0"
-                textClassName="text-3xl md:text-4xl font-semibold text-white"
-              >
-                One build. One link. Endless possibilities.
-              </ScrollBlurReveal>
+              <h2 className="text-3xl md:text-4xl font-semibold text-white">One build. One link. Endless possibilities.</h2>
               <p className="max-w-sm sm:ml-auto text-lg md:text-xl text-slate-300">CarFolio brings everything together into a single, shareable link. The definitive home for your automotive identity. When your showcase is this seamless, it doesn't just get seen—it gets recognized.</p>
             </div>
           </div>
@@ -245,7 +221,7 @@ const Index = () => {
                   <Car className="h-2 w-2 text-gray-300" />
                 </div>
                 <h1 className="font-bold text-xl text-white mb-4 relative z-50">
-                  <BlurTextEffect>Build Your Folio</BlurTextEffect>
+                  Build Your Folio
                 </h1>
                 <p className="font-normal text-base text-slate-500 mb-4 relative z-50">
                   Add your vehicles and document every modification with stunning detail. Create a professional showcase for your automotive passion.
@@ -265,7 +241,7 @@ const Index = () => {
                   <Share2 className="h-2 w-2 text-gray-300" />
                 </div>
                 <h1 className="font-bold text-xl text-white mb-4 relative z-50">
-                  <BlurTextEffect>Share Your Link</BlurTextEffect>
+                  Share Your Link
                 </h1>
                 <p className="font-normal text-base text-slate-500 mb-4 relative z-50">
                   Your personalized carfolio.io URL becomes the single source for your entire build. One link, endless possibilities.
@@ -285,7 +261,7 @@ const Index = () => {
                   <DollarSign className="h-2 w-2 text-gray-300" />
                 </div>
                 <h1 className="font-bold text-xl text-white mb-4 relative z-50">
-                  <BlurTextEffect>Monetize Your Influence</BlurTextEffect>
+                  Monetize Your Influence
                 </h1>
                 <p className="font-normal text-base text-slate-500 mb-4 relative z-50">
                   Connect affiliate links to the parts you trust and turn your passion into a paycheck. Earn from every recommendation.
@@ -319,18 +295,7 @@ const Index = () => {
         
         <div className="mx-auto max-w-5xl space-y-12 px-6 relative z-10">
           <div className="relative z-10 grid items-center gap-4 md:grid-cols-2 md:gap-12">
-            <ScrollBlurReveal
-              baseOpacity={0.1}
-              enableBlur={true}
-              baseRotation={4}
-              blurStrength={12}
-              rotationEnd="center center"
-              wordAnimationEnd="bottom bottom"
-              containerClassName="my-0"
-              textClassName="text-4xl font-semibold text-slate-900 dark:text-white"
-            >
-              A Gallery for Your Garage
-            </ScrollBlurReveal>
+            <h2 className="text-4xl font-semibold text-slate-900 dark:text-white">A Gallery for Your Garage</h2>
             <p className="max-w-sm sm:ml-auto text-slate-700 dark:text-slate-300">Every build is a journey. CarFolio gives you the canvas to tell its story with cinematic galleries, detailed modification lists, and complete build histories.</p>
           </div>
         </div>
@@ -343,18 +308,9 @@ const Index = () => {
       <section id="pricing" className="py-32 overflow-x-hidden">
         <div className="container max-w-5xl mx-auto px-4 md:px-6">
           <div className="mx-auto flex flex-col items-center gap-6 text-center">
-            <ScrollBlurReveal
-              baseOpacity={0.1}
-              enableBlur={true}
-              baseRotation={3}
-              blurStrength={8}
-              rotationEnd="center center"
-              wordAnimationEnd="bottom bottom"
-              containerClassName="my-0"
-              textClassName="text-4xl font-semibold text-pretty lg:text-6xl"
-            >
+            <h2 className="text-4xl font-semibold text-pretty lg:text-6xl">
               Simple, powerful pricing
-            </ScrollBlurReveal>
+            </h2>
             <p className="max-w-md text-muted-foreground lg:text-xl">
               No confusing tiers or feature gates. Get everything you need to showcase and monetize your builds.
             </p>
