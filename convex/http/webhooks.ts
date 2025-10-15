@@ -99,8 +99,20 @@ export const handleDodoWebhook = httpAction(async (ctx, request) => {
     const userId = metadata.userId || payload.data.customer_id;
 
     if (!userId) {
-      console.error("No userId found in webhook payload");
-      return new Response(JSON.stringify({ error: "Missing userId in payload" }), {
+      console.error("❌ No userId found in webhook payload");
+      console.error("Metadata:", JSON.stringify(metadata));
+      console.error("Customer ID:", payload.data.customer_id);
+      console.error("This is likely a test webhook from Dodo dashboard. Real webhooks from checkout will include userId in metadata.");
+
+      return new Response(JSON.stringify({
+        error: "Missing userId in payload",
+        note: "Test webhooks from Dodo dashboard don't include metadata. Use a real checkout flow to test webhooks properly.",
+        receivedData: {
+          hasMetadata: !!metadata && Object.keys(metadata).length > 0,
+          customerId: payload.data.customer_id,
+          subscriptionId: payload.data.subscription_id
+        }
+      }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
       });
