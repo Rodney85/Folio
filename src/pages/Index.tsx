@@ -168,12 +168,12 @@ const Index = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       <NavBar />
       <HeroSection />
       
       {/* Combined Section: Pain Point, How it Works, and Solution */}
-      <section id="solution" className="py-12 sm:py-16 lg:py-20 bg-slate-900 dark:bg-slate-950 text-white">
+      <section id="solution" className="py-12 sm:py-16 lg:py-20 bg-slate-900 dark:bg-slate-950 text-white overflow-x-hidden">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Pain Point */}
           <div className="text-center mb-8 md:mb-16">
@@ -282,7 +282,7 @@ const Index = () => {
       </section>
 
       {/* Gallery Section */}
-      <section className="py-16 md:py-32 relative overflow-hidden">
+      <section className="py-16 md:py-32 relative overflow-hidden overflow-x-hidden">
         {/* Background Image with Overlay */}
         <div className="absolute inset-0 z-0">
           <img 
@@ -305,7 +305,7 @@ const Index = () => {
       <Testimonials />
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-32">
+      <section id="pricing" className="py-32 overflow-x-hidden">
         <div className="container max-w-5xl mx-auto px-4 md:px-6">
           <div className="mx-auto flex flex-col items-center gap-6 text-center">
             <h2 className="text-4xl font-semibold text-pretty lg:text-6xl">
@@ -404,7 +404,7 @@ const Index = () => {
       <FAQs />
 
       {/* Final CTA Section */}
-      <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-800 dark:to-blue-900 text-white">
+      <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-800 dark:to-blue-900 text-white overflow-x-hidden">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">
             Ready to Turn Your Car Knowledge Into Income?
