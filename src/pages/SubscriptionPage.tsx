@@ -18,7 +18,9 @@ export default function SubscriptionPage() {
 
     setIsLoading(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_CONVEX_URL}/checkoutSession`, {
+      // Convert .convex.cloud to .convex.site for HTTP routes
+      const httpUrl = import.meta.env.VITE_CONVEX_URL.replace('.convex.cloud', '.convex.site');
+      const response = await fetch(`${httpUrl}/checkoutSession`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -61,7 +63,9 @@ export default function SubscriptionPage() {
       }
 
       // Get the subscription data to find customerId
-      const subscriptionData = await fetch(`${import.meta.env.VITE_CONVEX_URL}/customerPortal`, {
+      // Convert .convex.cloud to .convex.site for HTTP routes
+      const httpUrl = import.meta.env.VITE_CONVEX_URL.replace('.convex.cloud', '.convex.site');
+      const subscriptionData = await fetch(`${httpUrl}/customerPortal`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -383,7 +387,7 @@ export default function SubscriptionPage() {
           <div>
             <h4 className="font-semibold text-sm mb-1">What happens after my trial ends?</h4>
             <p className="text-sm text-muted-foreground">
-              Your trial lasts 14 days. After that, you'll need to subscribe to continue using premium features.
+              Your trial lasts 7 days. After that, you'll need to subscribe to continue using premium features.
             </p>
           </div>
           <div>
