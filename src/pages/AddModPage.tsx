@@ -1,14 +1,16 @@
-import React from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import { Id } from '../../convex/_generated/dataModel';
 import AddModForm from '@/components/mods/AddModForm';
 import ImageHotspotEditor from '@/components/mods/ImageHotspotEditor';
-import { Loader } from 'lucide-react';
+import { Loader, Lock } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const AddModPage = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const car = useQuery(api.cars.getCarById, { carId: id as Id<"cars"> });
 
   if (!car) {

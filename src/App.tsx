@@ -32,9 +32,6 @@ const AddModPage = lazy(() => import("./pages/AddModPage"));
 const ShopBuildPage = lazy(() => import("./pages/ShopBuildPage"));
 const PublicProfilePage = lazy(() => import("./pages/PublicProfilePage"));
 const PublicCarDetailsPage = lazy(() => import("./pages/PublicCarDetailsPage"));
-const SubscriptionPage = lazy(() => import("./pages/SubscriptionPage"));
-const SubscriptionSuccessPage = lazy(() => import("./pages/SubscriptionSuccessPage"));
-const DodoPaymentsTestPage = lazy(() => import("./components/ui/DodoPaymentsTestPage"));
 const AnalyticsPage = lazy(() => import("./pages/AnalyticsPage"));
 
 const queryClient = new QueryClient();
@@ -72,31 +69,10 @@ const AuthenticatedRoutes = () => {
             </Suspense>
           </PageTransition>
         } />
-        <Route path="/subscription" element={
-          <PageTransition>
-            <Suspense fallback={<PageLoader />}>
-              <SubscriptionPage />
-            </Suspense>
-          </PageTransition>
-        } />
         <Route path="/analytics" element={
           <PageTransition>
             <Suspense fallback={<PageLoader />}>
               <AnalyticsPage />
-            </Suspense>
-          </PageTransition>
-        } />
-        <Route path="/subscription/success" element={
-          <PageTransition>
-            <Suspense fallback={<PageLoader />}>
-              <SubscriptionSuccessPage />
-            </Suspense>
-          </PageTransition>
-        } />
-        <Route path="/test-dodo-payments" element={
-          <PageTransition>
-            <Suspense fallback={<PageLoader />}>
-              <DodoPaymentsTestPage />
             </Suspense>
           </PageTransition>
         } />
@@ -192,6 +168,8 @@ const AppContent = () => {
             </Suspense>
           </PageTransition>
         } />
+
+
 
         {/* App feature routes - protected by authentication - wrapped in AppLayout */}
         {isSignedIn && <Route path="/*" element={<AuthenticatedRoutes />} />}

@@ -37,13 +37,13 @@ const CarDetailsPage = () => {
   // Safely cast the ID once and use the typed variable throughout
   const typedCarId = carId ? (carId as Id<"cars">) : null;
   const car = useQuery(api.cars.getCarById, typedCarId ? { carId: typedCarId } : "skip");
-  
-  // Fetch parts/products for this car
+
+  //  Fetch parts/products for this car
   const parts = useQuery(api.parts.getCarParts, typedCarId ? { carId: typedCarId } : "skip");
-  
+
   // Delete car mutation
   const deleteCarMutation = useMutation(api.cars.deleteCar) as any;
-  
+
   // Track car view when data loads
   const logAnalytics: any = useMutation(api.analytics.logEvent);
   useEffect(() => {
@@ -59,7 +59,7 @@ const CarDetailsPage = () => {
       });
     }
   }, [car, typedCarId, logAnalytics, isMobile]);
-  
+
   // Define handlers for image navigation
   const handleImageNavigation = {
     next: (eventData?: any) => {
@@ -84,7 +84,7 @@ const CarDetailsPage = () => {
       setCurrentImageIndex(index);
     }
   };
-  
+
   // Setup swipe handlers
   const swipeHandlers = useSwipeable({
     onSwipedLeft: () => handleImageNavigation.next(),
@@ -119,8 +119,8 @@ const CarDetailsPage = () => {
             <a href="tel:+15551234567" className="text-blue-400 hover:underline">+1 (555) 123-4567</a>
           </p>
         </div>
-        <Button 
-          onClick={() => setShopDialogOpen(false)} 
+        <Button
+          onClick={() => setShopDialogOpen(false)}
           className="mt-4 w-full bg-blue-600 hover:bg-blue-700"
         >
           Close
@@ -128,7 +128,7 @@ const CarDetailsPage = () => {
       </DialogContent>
     </Dialog>
   );
-  
+
   // Delete confirmation dialog
   const deleteDialog = (
     <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
@@ -140,14 +140,14 @@ const CarDetailsPage = () => {
           </DialogDescription>
         </DialogHeader>
         <div className="flex justify-end space-x-4 mt-4">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => setDeleteDialogOpen(false)}
             className="bg-transparent border-slate-700 text-white hover:bg-slate-800"
           >
             Cancel
           </Button>
-          <Button 
+          <Button
             variant="destructive"
             onClick={async () => {
               if (typedCarId) {
@@ -192,15 +192,15 @@ const CarDetailsPage = () => {
             <ArrowLeft className="h-5 w-5 text-white" />
           </button>
           <div className="flex space-x-2">
-            <button 
-              onClick={() => navigate(`/edit-car/${id}`)} 
+            <button
+              onClick={() => navigate(`/edit-car/${id}`)}
               className="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-md text-white text-sm flex items-center gap-1 transition-colors border border-slate-700"
             >
               <Pencil className="h-4 w-4 mr-1" />
               {!isMobile && 'Edit'}
             </button>
-            <button 
-              onClick={() => setDeleteDialogOpen(true)} 
+            <button
+              onClick={() => setDeleteDialogOpen(true)}
               className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-md text-white text-sm flex items-center gap-1 transition-colors"
             >
               <Trash2 className="h-4 w-4 mr-1" />
@@ -219,17 +219,17 @@ const CarDetailsPage = () => {
                 <div className="space-y-4 sticky top-24">
                   {/* Main Image */}
                   <div className="w-full aspect-[4/3] bg-slate-800/30 rounded-2xl overflow-hidden shadow-2xl shadow-black/20 border border-slate-700/50">
-                      {car?.images && car.images.length > 0 ? (
-                        <CarImageWithUrl
-                          storageId={car.images[currentImageIndex]}
-                          alt={`${car.make} ${car.model}`}
-                          className="w-full h-full object-contain transition-opacity duration-300"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <p className="text-slate-400">No image available</p>
-                        </div>
-                      )}
+                    {car?.images && car.images.length > 0 ? (
+                      <CarImageWithUrl
+                        storageId={car.images[currentImageIndex]}
+                        alt={`${car.make} ${car.model}`}
+                        className="w-full h-full object-contain transition-opacity duration-300"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <p className="text-slate-400">No image available</p>
+                      </div>
+                    )}
                   </div>
 
                   {/* Thumbnail Strip */}

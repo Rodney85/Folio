@@ -19,19 +19,19 @@ const Index = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [selectedPricing, setSelectedPricing] = useState("monthly");
-  
+
   useEffect(() => {
     // Check if we're on a mobile device based on viewport width
     const handleResize = () => {
       setIsMobile(window.innerWidth < 640);
     };
-    
+
     // Set initial value
     handleResize();
-    
+
     // Add event listener for window resize
     window.addEventListener('resize', handleResize);
-    
+
     // Cleanup
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -79,7 +79,7 @@ const Index = () => {
     },
     {
       name: "Sarah Rodriguez",
-      location: "Austin, TX", 
+      location: "Austin, TX",
       car: "2021 F-150 Owner",
       followers: "2,300 followers gained",
       quote: "My F-150 build portfolio has been shared over 500 times. The organized parts list saves me hours of answering the same questions in truck groups."
@@ -171,7 +171,7 @@ const Index = () => {
     <div className="min-h-screen bg-background overflow-x-hidden">
       <NavBar />
       <HeroSection />
-      
+
       {/* Combined Section: Pain Point, How it Works, and Solution */}
       <section id="solution" className="py-12 sm:py-16 lg:py-20 bg-slate-900 dark:bg-slate-950 text-white overflow-x-hidden">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -285,14 +285,14 @@ const Index = () => {
       <section className="py-16 md:py-32 relative overflow-hidden overflow-x-hidden">
         {/* Background Image with Overlay */}
         <div className="absolute inset-0 z-0">
-          <img 
-            src="/4s/Group 13.png" 
-            alt="Background" 
+          <img
+            src="/4s/Group 13.png"
+            alt="Background"
             className="w-full h-full object-cover opacity-40"
           />
           <div className="absolute inset-0 bg-gradient-to-br from-slate-50/60 to-blue-50/60 dark:from-slate-900/60 dark:to-blue-950/60"></div>
         </div>
-        
+
         <div className="mx-auto max-w-5xl space-y-12 px-6 relative z-10">
           <div className="relative z-10 grid items-center gap-4 md:grid-cols-2 md:gap-12">
             <h2 className="text-4xl font-semibold text-slate-900 dark:text-white">A Gallery for Your Garage</h2>
@@ -304,8 +304,8 @@ const Index = () => {
       {/* Testimonials Section */}
       <Testimonials />
 
-      {/* Pricing Section */}
-      <section id="pricing" className="py-32 overflow-x-hidden">
+      {/* Pricing Section - HIDDEN */}
+      {/* <section id="pricing" className="py-32 overflow-x-hidden">
         <div className="container max-w-5xl mx-auto px-4 md:px-6">
           <div className="mx-auto flex flex-col items-center gap-6 text-center">
             <h2 className="text-4xl font-semibold text-pretty lg:text-6xl">
@@ -315,7 +315,7 @@ const Index = () => {
               No confusing tiers or feature gates. Get everything you need to showcase and monetize your builds.
             </p>
             
-            {/* Pricing Tabs */}
+            {/* Pricing Tabs *\/}
             <div className="flex w-fit rounded-full bg-muted p-1 mb-6">
               <Tab
                 text="monthly"
@@ -398,7 +398,7 @@ const Index = () => {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* FAQ Section */}
       <FAQs />
@@ -409,7 +409,7 @@ const Index = () => {
           <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">
             Ready to Turn Your Car Knowledge Into Income?
           </h2>
-          
+
           <div className="bg-white/10 dark:bg-white/5 rounded-lg p-6 mb-8 text-left max-w-md mx-auto border border-white/20">
             <h3 className="font-semibold mb-4 text-white">What happens next:</h3>
             <div className="space-y-2">
@@ -427,12 +427,12 @@ const Index = () => {
               </div>
             </div>
           </div>
-          
+
           <Button size="lg" className="bg-white text-blue-600 hover:bg-slate-50 dark:bg-white dark:text-blue-600 dark:hover:bg-slate-100 text-base sm:text-lg px-4 sm:px-8 py-2 sm:py-4 mb-6 whitespace-normal h-auto">
             Start Building Your Portfolio - Free
             <ArrowRight className="ml-2 h-5 w-5 flex-shrink-0" />
           </Button>
-          
+
           <p className="text-sm opacity-75 text-white">
             14-day free trial • No setup fees • Cancel anytime
           </p>

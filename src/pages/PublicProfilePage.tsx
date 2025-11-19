@@ -42,8 +42,8 @@ const PublicProfilePage = () => {
   };
 
   // Use the generated API to fetch the public profile by username
-  const profileData = useQuery(api.users.getProfileByUsername, { 
-    username: username || "" 
+  const profileData = useQuery(api.users.getProfileByUsername, {
+    username: username || ""
   });
 
   // Track profile view when data loads
@@ -88,15 +88,15 @@ const PublicProfilePage = () => {
   }
 
   const { user, cars } = profileData;
-  
+
 
   return (
     <div className="flex flex-col bg-slate-900 text-white min-h-screen p-4">
       {/* Profile header */}
       <div className="flex flex-col items-center px-6 pb-4">
         <div className="relative">
-          <img 
-            src={user.pictureUrl || "https://via.placeholder.com/100"} 
+          <img
+            src={user.pictureUrl || "https://via.placeholder.com/100"}
             alt="Profile"
             className="w-24 h-24 rounded-full object-cover border-2 border-white/20"
           />
@@ -112,14 +112,14 @@ const PublicProfilePage = () => {
         </p>
 
         {/* Social media links */}
-        <SocialLinks 
-          instagram={user.instagram} 
-          tiktok={user.tiktok} 
-          youtube={user.youtube} 
-          disableEdit={true} 
+        <SocialLinks
+          instagram={user.instagram}
+          tiktok={user.tiktok}
+          youtube={user.youtube}
+          disableEdit={true}
         />
       </div>
-      
+
       {/* Divider line */}
       <div className="w-full h-[1px] bg-gray-300/20 dark:bg-gray-700/20 my-5"></div>
 
@@ -128,11 +128,36 @@ const PublicProfilePage = () => {
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-bold text-lg">Cars</h2>
         </div>
-        
-        {cars && cars.length > 0 ? (
+
+        {/* Blur content if user is not subscribed */}
+        {!user.isSubscribed ? (
+          <div className="relative min-h-[300px] w-full rounded-lg overflow-hidden">
+            {/* Blurry Background Layer */}
+            <div className="absolute inset-0 backdrop-blur-md bg-slate-900/50 z-10 flex flex-col items-center justify-center text-center p-6">
+              <div className="bg-slate-900/90 p-6 rounded-xl border border-slate-700 shadow-2xl max-w-md">
+                <h3 className="text-xl font-bold text-white mb-2">Restricted Profile</h3>
+                <p className="text-slate-300 mb-4">
+                  This user is not a premium subscriber, so their full profile and car collection are not visible to the public.
+                </p>
+                <p className="text-sm text-slate-500">
+                  Upgrade to Carfolio Premium to showcase your build to the world.
+                </p>
+              </div>
+            </div>
+
+            {/* Blurred Content (Fake placeholders to look like content) */}
+            <div className="grid grid-cols-3 gap-[2px] opacity-20 filter blur-sm pointer-events-none select-none">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="aspect-square bg-slate-800 rounded-[5px] flex items-center justify-center">
+                  <Car className="h-8 w-8 text-slate-600" />
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : cars && cars.length > 0 ? (
           <div className="grid grid-cols-3 gap-[2px]">
             {cars.map((car) => (
-              <div 
+              <div
                 key={car._id}
                 className="relative pb-[100%] w-full overflow-hidden cursor-pointer rounded-[5px]"
                 onClick={() => navigate(`/u/${username}/car/${car._id}`)}

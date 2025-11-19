@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { UserCircle2, Plus, BarChart3, Menu } from 'lucide-react';
+import { UserCircle2, Plus, Menu } from 'lucide-react';
 
 interface BottomNavigationProps {
   onMenuClick: () => void;
@@ -17,9 +17,8 @@ const NavItem = ({ to, icon, label, active, comingSoon }: NavItemProps) => {
   return (
     <Link
       to={to}
-      className={`flex flex-col items-center justify-center flex-1 py-2 relative transition-colors ${
-        active ? 'text-primary' : 'text-slate-400 hover:text-white'
-      }`}
+      className={`flex flex-col items-center justify-center flex-1 py-2 relative transition-colors ${active ? 'text-primary' : 'text-slate-400 hover:text-white'
+        }`}
     >
       <div className="mb-1">{icon}</div>
       <span className="text-xs font-medium">{label}</span>
@@ -47,13 +46,6 @@ export const BottomNavigation = ({ onMenuClick }: BottomNavigationProps) => {
       icon: <Plus size={24} />,
       label: "Add Car",
       active: location.pathname.startsWith('/add-car'),
-    },
-    {
-      to: "/analytics",
-      icon: <BarChart3 size={24} />,
-      label: "Analytics",
-      active: location.pathname.startsWith('/analytics'),
-      comingSoon: true,
     },
   ];
 

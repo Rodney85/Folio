@@ -21,8 +21,8 @@ export default defineSchema({
     role: v.optional(v.string()),
     publicMetadata: v.optional(v.any()),
   }).index("by_token", ["tokenIdentifier"])
-  .index("by_username", ["username"]),
-  
+    .index("by_username", ["username"]),
+
   cars: defineTable({
     userId: v.string(),
     make: v.string(),
@@ -50,7 +50,7 @@ export default defineSchema({
     updatedAt: v.optional(v.string()),
     order: v.optional(v.number()),
   }).index("by_user", ["userId"]),
-  
+
   parts: defineTable({
     carId: v.id("cars"),
     userId: v.string(),
@@ -73,24 +73,7 @@ export default defineSchema({
     y: v.number(), // Y-coordinate as a percentage (0-100)
     description: v.optional(v.string()), // Optional custom description for the hotspot
   }).index("by_car_and_image", ["carId", "imageId"])
-  .index("by_imageId", ["imageId"]),
-
-  subscriptions: defineTable({
-    userId: v.string(), // Clerk user ID
-    status: v.string(), // trial, active, expired, canceled, on_hold, failed
-    plan: v.string(), // monthly, yearly, or empty for trial
-    trialStartDate: v.number(), // Timestamp in milliseconds
-    trialEndDate: v.number(), // Timestamp in milliseconds
-    subscriptionId: v.union(v.string(), v.null()), // Dodo Payments subscription ID
-    customerId: v.union(v.string(), v.null()), // Dodo Payments customer ID
-    currentPeriodEnd: v.union(v.number(), v.null()), // Timestamp in milliseconds
-    canceledAt: v.union(v.number(), v.null()), // Timestamp in milliseconds
-    createdAt: v.number(), // Timestamp in milliseconds
-    updatedAt: v.number(), // Timestamp in milliseconds
-  }).index("by_user", ["userId"])
-    .index("by_subscription_id", ["subscriptionId"])
-    .index("by_customer_id", ["customerId"])
-    .index("by_status", ["status"]),
+    .index("by_imageId", ["imageId"]),
 
   analytics: defineTable({
     userId: v.string(), // User ID or "anonymous" for unauthenticated users

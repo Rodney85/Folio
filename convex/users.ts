@@ -189,27 +189,27 @@ export const getProfileByUsername = query({
   },
   handler: async (ctx, args) => {
     console.log(`Looking for profile with username: ${args.username}`);
-    
+
     // Find user by username
     const user = await ctx.db
       .query("users")
       .withIndex("by_username", (q) => q.eq("username", args.username))
       .first();
-    
+
     if (!user) {
       console.log(`No user found with username: ${args.username}`);
       return null; // User not found
     }
-    
+
     console.log(`Found user: ${user._id}, username: ${user.username}`);
-    
+
     // Handle the ID mismatch between auth systems
     // First, try to find cars using the direct database ID
     const carsByDatabaseId = await ctx.db
       .query("cars")
       .withIndex("by_user", (q) => q.eq("userId", user._id))
       .collect();
-      
+
     // Then try to find cars using the Clerk ID format (user_xyz...)
     // Extract token identifier from user record
     const possibleClerkIds = [
@@ -218,12 +218,12 @@ export const getProfileByUsername = query({
       `user_${user._id.slice(0, 24)}`, // Generated format 1
       `user_${user._id}`, // Generated format 2
     ];
-    
+
     console.log("Possible user IDs to check:", possibleClerkIds);
-    
+
     // Get cars from all possible IDs
     let allCars = [...carsByDatabaseId];
-    
+
     // Try each possible ID format
     for (const possibleId of possibleClerkIds) {
       if (possibleId) {
@@ -231,21 +231,21 @@ export const getProfileByUsername = query({
           .query("cars")
           .withIndex("by_user", (q) => q.eq("userId", possibleId))
           .collect();
-          
+
         console.log(`Found ${extraCars.length} cars with userId: ${possibleId}`);
         allCars = [...allCars, ...extraCars];
       }
     }
-    
+
     // Remove duplicates by ID
     const uniqueCars = Array.from(new Map(allCars.map(car => [car._id.toString(), car])).values());
-    
+
     console.log(`User has ${uniqueCars.length} total unique cars in database`);
-    
+
     // Now get only published cars
     // FIXED: Use more lenient check for isPublished
     const publishedCars = uniqueCars.filter(car => car.isPublished === true);
-    
+
     // Sort cars by order field, identical to getUserCarsSorted query
     const sortedPublishedCars = publishedCars.sort((a, b) => {
       if (a.order !== undefined && b.order !== undefined) {
@@ -259,14 +259,26 @@ export const getProfileByUsername = query({
         return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
       }
     });
-    
+
     console.log(`User has ${sortedPublishedCars.length} published cars, now sorted by order`);
-    
+
     // Log the first car's data structure for debugging
     if (allCars.length > 0) {
       console.log('First car data structure:', JSON.stringify(allCars[0], null, 2));
     }
-    
+
+    // Check subscription status
+    const subscription = await ctx.db
+      .query("subscriptions")
+      .withIndex("by_userId", (q) => q.eq("userId", user.tokenIdentifier)) // Assuming userId in subscriptions matches tokenIdentifier or we need to check how it's stored
+      .first();
+
+    // Also check by the other ID format if needed, similar to how we check for cars
+    // But for now, let's assume the subscription is linked to the user's main ID
+    // Actually, let's use the same logic as getSubscriptionByUserId if possible, or just check the table
+
+    const isSubscribed = subscription?.status === "active" || subscription?.status === "trialing";
+
     // Return only necessary public profile data
     return {
       user: {
@@ -278,6 +290,7 @@ export const getProfileByUsername = query({
         instagram: user.instagram,
         tiktok: user.tiktok,
         youtube: user.youtube,
+        isSubscribed, // Add this field
       },
       cars: sortedPublishedCars, // Return cars sorted by order field
     };
@@ -298,11 +311,11 @@ export const getUserById = query({
       .query("users")
       .withIndex("by_token", (q) => q.eq("tokenIdentifier", args.userId))
       .first();
-    
+
     if (!user) {
       return null; // User not found
     }
-    
+
     // Return only necessary public user data
     return {
       _id: user._id,

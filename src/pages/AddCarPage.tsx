@@ -76,19 +76,19 @@ const BODY_STYLES = [
 ];
 
 const COLORS = [
-  "Black", 
-  "White", 
-  "Silver", 
-  "Gray", 
-  "Blue", 
-  "Red", 
-  "Green", 
-  "Yellow", 
-  "Orange", 
-  "Brown", 
-  "Purple", 
-  "Gold", 
-  "Bronze", 
+  "Black",
+  "White",
+  "Silver",
+  "Gray",
+  "Blue",
+  "Red",
+  "Green",
+  "Yellow",
+  "Orange",
+  "Brown",
+  "Purple",
+  "Gold",
+  "Bronze",
   "Beige",
   "Champagne",
   "Burgundy"
@@ -159,17 +159,17 @@ const MODELS_BY_MAKE: Record<string, string[]> = {
 
 // Fallback common models for makes not in MODELS_BY_MAKE
 const COMMON_MODELS = [
-  "Coupe", 
-  "Sedan", 
-  "Hatchback", 
-  "SUV", 
-  "Convertible", 
-  "Wagon", 
-  "Crossover", 
-  "Sport", 
-  "GT", 
-  "RS", 
-  "Type-R", 
+  "Coupe",
+  "Sedan",
+  "Hatchback",
+  "SUV",
+  "Convertible",
+  "Wagon",
+  "Crossover",
+  "Sport",
+  "GT",
+  "RS",
+  "Type-R",
   "STI"
 ];
 
@@ -204,8 +204,8 @@ interface ComboboxProps {
 const Combobox = ({ options, value, onChange, placeholder, emptyMessage }: ComboboxProps) => {
   const [open, setOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
-  
-  const filteredOptions = options.filter((option) => 
+
+  const filteredOptions = options.filter((option) =>
     option.toLowerCase().includes(searchValue.toLowerCase())
   );
 
@@ -224,8 +224,8 @@ const Combobox = ({ options, value, onChange, placeholder, emptyMessage }: Combo
       </PopoverTrigger>
       <PopoverContent className="w-full p-0">
         <Command>
-          <CommandInput 
-            placeholder={`Search ${placeholder.toLowerCase()}...`} 
+          <CommandInput
+            placeholder={`Search ${placeholder.toLowerCase()}...`}
             value={searchValue}
             onValueChange={setSearchValue}
           />
@@ -266,19 +266,10 @@ export default function AddCarPage() {
   const createCar = useMutation(api.cars.createCar);
   const createPart = useMutation(api.parts.createPart);
 
-  const subscriptionAccess = useQuery(
-    userId ? api.subscriptions.checkUserAccess : undefined,
-    userId ? {} : undefined
-  ) as boolean | undefined;
-
   const isAdmin = Boolean(
     user?.publicMetadata?.role === "admin" ||
-      user?.primaryEmailAddress?.emailAddress?.toLowerCase().endsWith("@carfolio.cc")
+    user?.primaryEmailAddress?.emailAddress?.toLowerCase().endsWith("@carfolio.cc")
   );
-
-  const isLoadingAccess = Boolean(userId) && subscriptionAccess === undefined;
-  const hasSubscription = subscriptionAccess ?? false;
-  const hasAccess = isAdmin || hasSubscription;
 
   const [carData, setCarData] = useState(initialCarData);
   const [mods, setMods] = useState<(typeof initialModData)[]>([]);
@@ -360,19 +351,11 @@ export default function AddCarPage() {
     setImagePreviewUrls(updatedUrls);
   };
 
+
   const triggerFileInput = () => fileInputRef.current?.click();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!hasAccess) {
-      toast({
-        title: "Subscription Required",
-        description: "You need an active subscription to add cars. Upgrade your plan to continue.",
-        variant: "destructive",
-      });
-        navigate("/subscription");
-      return;
-    }
     if (images.length === 0) {
       toast({ title: "No images", description: "Please upload at least one image.", variant: "destructive" });
       return;
@@ -437,38 +420,6 @@ export default function AddCarPage() {
 
   const formGridClass = "grid grid-cols-1 md:grid-cols-2 gap-4";
 
-  if (isLoadingAccess) {
-    return (
-      <ResponsiveLayout>
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <Loader2 className="h-8 w-8 animate-spin" />
-        </div>
-      </ResponsiveLayout>
-    );
-  }
-
-  if (!hasAccess) {
-    return (
-      <ResponsiveLayout>
-        <div className="max-w-3xl mx-auto py-16 px-4 text-center">
-          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-slate-800">
-            <Lock className="h-8 w-8 text-slate-300" />
-          </div>
-          <h1 className="text-3xl font-bold mb-3">Subscription Required</h1>
-          <p className="text-muted-foreground mb-8">
-            You need an active Carfolio subscription to add cars to your garage. Upgrade your plan to unlock the full experience.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Button onClick={() => navigate("/subscription")} size="lg" className="bg-blue-600 hover:bg-blue-700 text-white">
-              <Crown className="h-4 w-4 mr-2" />
-              View Subscription Plans
-            </Button>
-          </div>
-        </div>
-      </ResponsiveLayout>
-    );
-  }
-
   return (
     <ResponsiveLayout>
       <div className="bg-background text-foreground">
@@ -495,12 +446,12 @@ export default function AddCarPage() {
                   </div>
                 ))}
                 {images.length < 8 && (
-                  <div 
+                  <div
                     className="relative aspect-[4/3] border-2 border-dashed border-slate-700 rounded-md flex items-center justify-center cursor-pointer hover:border-slate-500 transition-colors"
                     onClick={triggerFileInput}
                   >
                     <div className="text-center text-slate-500">
-                      <Camera size={24} className="mx-auto"/>
+                      <Camera size={24} className="mx-auto" />
                       <p className="text-xs mt-1">Add Image</p>
                     </div>
                   </div>
@@ -772,7 +723,7 @@ export default function AddCarPage() {
                   {/* Mod Image Upload */}
                   <div className="space-y-2">
                     <Label htmlFor="modImage">Image</Label>
-                    <div 
+                    <div
                       className="relative aspect-square w-[100px] bg-slate-800 border-2 border-dashed border-slate-700 rounded-md flex items-center justify-center cursor-pointer hover:border-slate-500 transition-colors"
                       onClick={triggerModFileInput}
                     >
@@ -780,7 +731,7 @@ export default function AddCarPage() {
                         <img src={URL.createObjectURL(currentMod.image)} alt="Mod preview" className="w-full h-full object-cover rounded-md" />
                       ) : (
                         <div className="text-center text-slate-500 p-2">
-                          <Camera size={20} className="mx-auto"/>
+                          <Camera size={20} className="mx-auto" />
                           <p className="text-xs mt-1">Add</p>
                         </div>
                       )}
@@ -797,18 +748,18 @@ export default function AddCarPage() {
                   {/* Mod Details */}
                   <div className="space-y-3">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <Label htmlFor="modName">Mod Name</Label>
-                            <Input id="modName" name="name" value={currentMod.name} onChange={handleModChange} placeholder="e.g., Performance Air Filter" />
-                        </div>
-                        <div>
-                            <Label htmlFor="modCategory">Category</Label>
-                            <Input id="modCategory" name="category" value={currentMod.category} onChange={handleModChange} placeholder="e.g., Engine, Suspension" />
-                        </div>
+                      <div>
+                        <Label htmlFor="modName">Mod Name</Label>
+                        <Input id="modName" name="name" value={currentMod.name} onChange={handleModChange} placeholder="e.g., Performance Air Filter" />
+                      </div>
+                      <div>
+                        <Label htmlFor="modCategory">Category</Label>
+                        <Input id="modCategory" name="category" value={currentMod.category} onChange={handleModChange} placeholder="e.g., Engine, Suspension" />
+                      </div>
                     </div>
                     <div>
-                        <Label htmlFor="modUrl">Purchase URL</Label>
-                        <Input id="modUrl" name="purchaseUrl" value={currentMod.purchaseUrl} onChange={handleModChange} placeholder="https://example.com/product" />
+                      <Label htmlFor="modUrl">Purchase URL</Label>
+                      <Input id="modUrl" name="purchaseUrl" value={currentMod.purchaseUrl} onChange={handleModChange} placeholder="https://example.com/product" />
                     </div>
                   </div>
                 </div>
@@ -851,13 +802,13 @@ export default function AddCarPage() {
             <Button
               type="submit"
               className="w-full bg-blue-600 hover:bg-blue-700 text-white py-6 rounded-md font-semibold text-center tracking-wide"
-              disabled={loading || !hasAccess}
+              disabled={loading}
             >
               {loading ? (
                 <>
                   <Loader2 size={20} className="mr-2 animate-spin" />
                   {uploading ? `Uploading (${Math.round(uploadProgress)}%)` : "Adding Car..."}
-                </>              ) : "Add Car"}
+                </>) : "Add Car"}
             </Button>
           </form>
         </div>
