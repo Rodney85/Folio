@@ -21,7 +21,11 @@ export default defineSchema({
     role: v.optional(v.string()),
     publicMetadata: v.optional(v.any()),
   }).index("by_token", ["tokenIdentifier"])
-    .index("by_username", ["username"]),
+    .index("by_username", ["username"])
+    .searchIndex("search_users", {
+      searchField: "name",
+      filterFields: ["email"]
+    }),
 
   cars: defineTable({
     userId: v.string(),
@@ -92,4 +96,3 @@ export default defineSchema({
     .index("by_created_at", ["createdAt"])
     .index("by_user_and_type", ["userId", "type"]),
 });
-

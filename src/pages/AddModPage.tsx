@@ -7,16 +7,56 @@ import AddModForm from '@/components/mods/AddModForm';
 import ImageHotspotEditor from '@/components/mods/ImageHotspotEditor';
 import { Loader, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useUser } from "@clerk/clerk-react";
+import { Crown } from "lucide-react";
 
 const AddModPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const car = useQuery(api.cars.getCarById, { carId: id as Id<"cars"> });
+  // @ts-ignore - Convex type instantiation issue
+  const userProfile = useQuery(api.users.getProfile);
+  const { user } = useUser();
+
+  const isAdmin = Boolean(
+    user?.publicMetadata?.role === "admin" ||
+    user?.primaryEmailAddress?.emailAddress?.toLowerCase().endsWith("@carfolio.cc")
+  );
 
   if (!car) {
     return (
       <div className="flex items-center justify-center h-full">
         <Loader className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (userProfile === undefined) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <Loader className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!userProfile?.isSubscribed && !isAdmin) {
+    return (
+      <div className="container mx-auto px-4 py-12 max-w-2xl text-center">
+        <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-8 shadow-2xl">
+          <Crown className="h-16 w-16 text-yellow-500 mx-auto mb-6" />
+          <h1 className="text-3xl font-bold mb-4">Premium Feature</h1>
+          <p className="text-xl text-slate-300 mb-8">
+            Adding mods to your build is available exclusively to Premium subscribers.
+            Track every detail of your project with unlimited mod listings.
+          </p>
+          <Button
+            size="lg"
+            onClick={() => navigate("/subscription")}
+            className="w-full sm:w-auto text-lg px-8"
+          >
+            Upgrade to Premium
+          </Button>
+        </div>
       </div>
     );
   }

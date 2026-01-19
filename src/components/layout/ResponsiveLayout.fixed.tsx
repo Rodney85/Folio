@@ -4,7 +4,7 @@ import { useUser, useAuth, useClerk } from '@clerk/clerk-react';
 import { BarChart3, Plus, UserCircle2, Menu, X, Home, Shield, CreditCard, Monitor, Flag, LogOut, ChevronRight, Share, Eye } from 'lucide-react';
 import { Logo } from '@/components/ui/logo';
 import ShareModal from '@/components/ShareModal';
-import SubscriptionStatusBadge from '@/components/subscription/SubscriptionStatusBadge';
+import ShareModal from '@/components/ShareModal';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { useQuery } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
@@ -22,8 +22,8 @@ interface NavItemProps {
 
 const NavItem = ({ to, icon, label, active }: NavItemProps) => {
   return (
-    <Link 
-      to={to} 
+    <Link
+      to={to}
       className={`flex flex-col items-center justify-center px-2 py-1 ${active ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
     >
       <div className="mb-0.5">{icon}</div>
@@ -42,11 +42,11 @@ export const ResponsiveLayout = ({ children }: ResponsiveLayoutProps) => {
   const isMobile = useMediaQuery("(max-width: 767px)");
   const isTablet = useMediaQuery("(min-width: 768px) and (max-width: 1023px)");
   const isDesktop = useMediaQuery("(min-width: 1024px)");
-  
+
   // Get user profile data for share modal
   // @ts-ignore - Suppressing TypeScript error for deep instantiation
   const profile = useQuery(api.users.getProfile)!;
-  
+
   // Handle share action
   const handleShare = () => {
     if (user) {
@@ -98,15 +98,8 @@ export const ResponsiveLayout = ({ children }: ResponsiveLayoutProps) => {
       title: "Share Profile",
       icon: <Share className="h-5 w-5" />,
       onClick: handleShare
-    },
-    {
-      title: "Subscription",
-      icon: <CreditCard className="h-5 w-5" />,
-      onClick: () => {
-        navigate('/subscription');
-      }
-    },
-    {
+
+  {
       title: "Report an Issue",
       icon: <Flag className="h-5 w-5" />,
       onClick: () => {
@@ -126,15 +119,15 @@ export const ResponsiveLayout = ({ children }: ResponsiveLayoutProps) => {
               <div className="flex items-center p-4 mb-10">
                 <Logo size="md" />
               </div>
-              
+
               {/* Main content area with flex to push items to top and bottom */}
               <div className="flex flex-col flex-1">
                 {/* Main navigation - adjusted spacing and padding */}
                 <div className="space-y-1 mt-2 mb-auto">
                   {navItems.map((item, index) => (
-                    <Link 
+                    <Link
                       key={index}
-                      to={item.to} 
+                      to={item.to}
                       className="flex items-center px-4 py-4 text-white hover:bg-slate-800/50 rounded-md"
                     >
                       <span className="mr-3">{item.icon}</span>
@@ -142,7 +135,7 @@ export const ResponsiveLayout = ({ children }: ResponsiveLayoutProps) => {
                     </Link>
                   ))}
                 </div>
-                
+
                 {/* Settings menu items moved to bottom, just above profile */}
                 {!isMobile && (
                   <div className="mt-auto mb-5">
@@ -161,11 +154,11 @@ export const ResponsiveLayout = ({ children }: ResponsiveLayoutProps) => {
                     ))}
                   </div>
                 )}
-                
+
                 {/* Profile section at the bottom */}
                 <div className="border-t border-slate-800 pt-4">
                   <div className="flex items-center justify-between">
-                    <button 
+                    <button
                       onClick={() => {
                         clerk.openUserProfile({
                           appearance: {
@@ -181,10 +174,10 @@ export const ResponsiveLayout = ({ children }: ResponsiveLayoutProps) => {
                       className="flex items-center space-x-3 hover:bg-slate-800/50 rounded-md p-2 flex-grow"
                       title={user?.primaryEmailAddress?.emailAddress || "email@example.com"}
                     >
-                      <img 
-                        src={user?.imageUrl || "https://via.placeholder.com/40"} 
-                        alt="Profile" 
-                        className="w-10 h-10 rounded-full" 
+                      <img
+                        src={user?.imageUrl || "https://via.placeholder.com/40"}
+                        alt="Profile"
+                        className="w-10 h-10 rounded-full"
                       />
                       <div className="flex flex-col text-left min-w-0 flex-shrink">
                         <span className="font-medium text-sm truncate max-w-[140px]">
@@ -193,12 +186,9 @@ export const ResponsiveLayout = ({ children }: ResponsiveLayoutProps) => {
                         <span className="text-xs text-slate-400 truncate max-w-[140px]">
                           {user?.primaryEmailAddress?.emailAddress || "email@example.com"}
                         </span>
-                        <div className="mt-1">
-                          <SubscriptionStatusBadge />
-                        </div>
                       </div>
                     </button>
-                    <button 
+                    <button
                       onClick={async () => {
                         await signOut();
                         navigate("/");
@@ -214,45 +204,45 @@ export const ResponsiveLayout = ({ children }: ResponsiveLayoutProps) => {
             </div>
           </div>
         )}
-        
+
         <div className={`flex-1 flex flex-col overflow-hidden ${(isTablet || isDesktop) ? 'ml-0' : ''}`}>
           <main className={`flex-1 overflow-y-auto ${isMobile ? 'pb-[70px]' : 'p-4 md:p-6 lg:p-8'}`}>
             {children}
           </main>
         </div>
       </div>
-      
+
       {/* Mobile bottom navigation - only show on mobile, positioned outside flow */}
       {isMobile && (
-        <div 
-          style={{ 
-            position: 'fixed', 
-            bottom: 0, 
-            left: 0, 
+        <div
+          style={{
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
             right: 0,
             zIndex: 9999,
-            transform: 'translate3d(0,0,0)', 
+            transform: 'translate3d(0,0,0)',
             backfaceVisibility: 'hidden',
             transition: 'none',
             willChange: 'transform',
             width: '100%',
             height: '50px',
             pointerEvents: 'auto'
-          }} 
+          }}
           className="border-t bg-background shadow-md flex items-center"
         >
           <div className="flex justify-around w-full py-1">
             {/* Profile navigation item */}
-            <NavItem 
+            <NavItem
               key="profile"
               to="/profile"
               icon={<UserCircle2 size={24} />}
               label="Profile"
               active={location.pathname.startsWith('/profile')}
             />
-            
+
             {/* Preview button */}
-            <button 
+            <button
               onClick={openPublicProfile}
               className="flex flex-col items-center justify-center px-2 py-1 text-muted-foreground hover:text-foreground"
               disabled={!profile?.username}
@@ -260,18 +250,18 @@ export const ResponsiveLayout = ({ children }: ResponsiveLayoutProps) => {
               <div className="mb-0.5"><Eye size={24} /></div>
               <span className="text-xs">Preview</span>
             </button>
-            
+
             {/* Add Car navigation item */}
-            <NavItem 
+            <NavItem
               key="add-car"
               to="/add-car"
               icon={<Plus size={24} />}
               label="Add Car"
               active={location.pathname.startsWith('/add-car')}
             />
-            
+
             {/* Analytics navigation item */}
-            <NavItem 
+            <NavItem
               key="analytics"
               to="/analytics"
               icon={<BarChart3 size={24} />}

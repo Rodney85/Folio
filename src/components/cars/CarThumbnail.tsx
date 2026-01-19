@@ -26,9 +26,9 @@ interface CarThumbnailProps {
   size?: 'sm' | 'md' | 'lg';
 }
 
-const CarThumbnail: React.FC<CarThumbnailProps> = ({ 
-  car, 
-  onClick, 
+const CarThumbnail: React.FC<CarThumbnailProps> = ({
+  car,
+  onClick,
   className,
   showDetails = true,
   size = 'md'
@@ -40,12 +40,12 @@ const CarThumbnail: React.FC<CarThumbnailProps> = ({
     lg: 'aspect-video',
   };
 
-  const imageUrl = car.images && car.images.length > 0 
-    ? car.images[0] 
+  const imageUrl = car.images && car.images.length > 0
+    ? car.images[0]
     : null;
 
   return (
-    <div 
+    <div
       className={cn(
         "relative overflow-hidden cursor-pointer group",
         "rounded-[5px] shadow-sm hover:shadow-md transition-shadow duration-300",
@@ -55,8 +55,8 @@ const CarThumbnail: React.FC<CarThumbnailProps> = ({
       onClick={onClick}
     >
       {imageUrl ? (
-        <CarImageWithUrl 
-          storageId={imageUrl} 
+        <CarImageWithUrl
+          storageId={imageUrl}
           alt={`${car.make} ${car.model}`}
           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
@@ -65,8 +65,8 @@ const CarThumbnail: React.FC<CarThumbnailProps> = ({
           <p className="text-muted-foreground text-sm">No image</p>
         </div>
       )}
-      
-      
+
+
       {/* Overlay with car info */}
       {showDetails && (
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
@@ -74,7 +74,6 @@ const CarThumbnail: React.FC<CarThumbnailProps> = ({
             <h3 className="text-white font-semibold text-lg leading-tight">
               {car.make} {car.model}
             </h3>
-            <p className="text-white/80 text-sm">{car.year}</p>
             {!isMobile && car.power && (
               <p className="text-white/70 text-xs mt-1">{car.power}</p>
             )}

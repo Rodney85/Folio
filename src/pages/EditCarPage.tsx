@@ -75,19 +75,19 @@ const BODY_STYLES = [
 ];
 
 const COLORS = [
-  "Black", 
-  "White", 
-  "Silver", 
-  "Gray", 
-  "Blue", 
-  "Red", 
-  "Green", 
-  "Yellow", 
-  "Orange", 
-  "Brown", 
-  "Purple", 
-  "Gold", 
-  "Bronze", 
+  "Black",
+  "White",
+  "Silver",
+  "Gray",
+  "Blue",
+  "Red",
+  "Green",
+  "Yellow",
+  "Orange",
+  "Brown",
+  "Purple",
+  "Gold",
+  "Bronze",
   "Beige",
   "Champagne",
   "Burgundy"
@@ -157,19 +157,16 @@ const MODELS_BY_MAKE: Record<string, string[]> = {
 };
 
 // Fallback common models for makes not in MODELS_BY_MAKE
+// These are generic model designations that can apply to various brands
 const COMMON_MODELS = [
-  "Coupe", 
-  "Sedan", 
-  "Hatchback", 
-  "SUV", 
-  "Convertible", 
-  "Wagon", 
-  "Crossover", 
-  "Sport", 
-  "GT", 
-  "RS", 
-  "Type-R", 
-  "STI"
+  "Base Model",
+  "Sport",
+  "Luxury",
+  "Performance",
+  "GT",
+  "S",
+  "R",
+  "Custom"
 ];
 
 const initialCarData = {
@@ -183,7 +180,6 @@ const initialCarData = {
   bodyStyle: "",
   exteriorColor: "",
   interiorColor: "",
-  generation: "",
   powerHp: "",
   torqueLbFt: "",
   description: "",
@@ -203,73 +199,73 @@ const EditCarPage = () => {
   const modFileInputRef = useRef<HTMLInputElement>(null);
 
   // Reusable Combobox component
-interface ComboboxProps {
-  options: string[];
-  value: string;
-  onChange: (value: string) => void;
-  placeholder: string;
-  emptyMessage: string;
-}
+  interface ComboboxProps {
+    options: string[];
+    value: string;
+    onChange: (value: string) => void;
+    placeholder: string;
+    emptyMessage: string;
+  }
 
-const Combobox = ({ options, value, onChange, placeholder, emptyMessage }: ComboboxProps) => {
-  const [open, setOpen] = useState(false);
-  const [searchValue, setSearchValue] = useState("");
-  
-  const filteredOptions = options.filter((option) => 
-    option.toLowerCase().includes(searchValue.toLowerCase())
-  );
+  const Combobox = ({ options, value, onChange, placeholder, emptyMessage }: ComboboxProps) => {
+    const [open, setOpen] = useState(false);
+    const [searchValue, setSearchValue] = useState("");
 
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className="w-full justify-between bg-transparent text-white hover:bg-slate-800 hover:text-white"
-        >
-          {value || placeholder}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-full p-0">
-        <Command>
-          <CommandInput 
-            placeholder={`Search ${placeholder.toLowerCase()}...`} 
-            value={searchValue}
-            onValueChange={setSearchValue}
-          />
-          <CommandEmpty>{emptyMessage}</CommandEmpty>
-          <CommandList>
-            <CommandGroup>
-              {filteredOptions.map((option) => (
-                <CommandItem
-                  key={option}
-                  value={option}
-                  onSelect={(currentValue) => {
-                    onChange(currentValue);
-                    setOpen(false);
-                    setSearchValue("");
-                  }}
-                >
-                  <Check
-                    className={`mr-2 h-4 w-4 ${value === option ? "opacity-100" : "opacity-0"}`}
-                  />
-                  {option}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
-  );
-};
+    const filteredOptions = options.filter((option) =>
+      option.toLowerCase().includes(searchValue.toLowerCase())
+    );
 
-// Query car data
+    return (
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            className="w-full justify-between bg-transparent text-white hover:bg-slate-800 hover:text-white"
+          >
+            {value || placeholder}
+            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-full p-0">
+          <Command>
+            <CommandInput
+              placeholder={`Search ${placeholder.toLowerCase()}...`}
+              value={searchValue}
+              onValueChange={setSearchValue}
+            />
+            <CommandEmpty>{emptyMessage}</CommandEmpty>
+            <CommandList>
+              <CommandGroup>
+                {filteredOptions.map((option) => (
+                  <CommandItem
+                    key={option}
+                    value={option}
+                    onSelect={(currentValue) => {
+                      onChange(currentValue);
+                      setOpen(false);
+                      setSearchValue("");
+                    }}
+                  >
+                    <Check
+                      className={`mr-2 h-4 w-4 ${value === option ? "opacity-100" : "opacity-0"}`}
+                    />
+                    {option}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+    );
+  };
+
+  // Query car data
   const car = useQuery(api.cars.getCarById, id ? { carId: id as any } : "skip");
   const parts = useQuery(api.parts.getCarParts, id ? { carId: id as any } : "skip");
-  
+
   // Form state
   const [carData, setCarData] = useState(initialCarData);
   const [mods, setMods] = useState<(typeof initialModData)[]>([]);
@@ -313,17 +309,16 @@ const Combobox = ({ options, value, onChange, placeholder, emptyMessage }: Combo
         bodyStyle: car.bodyStyle || "",
         exteriorColor: car.exteriorColor || "",
         interiorColor: car.interiorColor || "",
-        generation: car.generation || "",
         powerHp: car.powerHp || "",
         torqueLbFt: car.torqueLbFt || "",
         description: car.description || ""
       });
-      
+
       if (car.images && car.images.length > 0) {
         setExistingImages(car.images);
       }
     }
-    
+
     // Populate mods when parts data is loaded
     if (parts && parts.length > 0) {
       setMods(parts.map(part => ({
@@ -340,7 +335,7 @@ const Combobox = ({ options, value, onChange, placeholder, emptyMessage }: Combo
     if (e.target.files) {
       const newFiles = Array.from(e.target.files);
       const totalImages = images.length + existingImages.length;
-      
+
       if (totalImages + newFiles.length > 8) {
         toast({
           title: "Too many images",
@@ -349,11 +344,11 @@ const Combobox = ({ options, value, onChange, placeholder, emptyMessage }: Combo
         });
         return;
       }
-      
+
       // Reverse the order so first selected appears first in the array
       const newImages = [...newFiles.reverse(), ...images];
       setImages(newImages);
-      
+
       // Create preview URLs
       const newPreviews = newFiles.map(file => URL.createObjectURL(file));
       setImagePreviewUrls([...imagePreviewUrls, ...newPreviews]);
@@ -370,7 +365,7 @@ const Combobox = ({ options, value, onChange, placeholder, emptyMessage }: Combo
     } else {
       // Release object URL to avoid memory leaks
       URL.revokeObjectURL(imagePreviewUrls[index]);
-      
+
       setImages(images.filter((_, i) => i !== index));
       setImagePreviewUrls(imagePreviewUrls.filter((_, i) => i !== index));
     }
@@ -418,36 +413,36 @@ const Combobox = ({ options, value, onChange, placeholder, emptyMessage }: Combo
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-    
+
     try {
       // Upload new car images if any
       let uploadedImages: string[] = [];
-      
+
       if (images.length > 0) {
         setUploading(true);
-        
+
         // Upload new images
         for (let i = 0; i < images.length; i++) {
           const file = images[i];
           const progress = (i / images.length) * 100;
           setUploadProgress(progress);
-          
+
           // Generate a unique file name using timestamp and original name
           const timestamp = Date.now();
           const originalName = file.name.replace(/[^a-zA-Z0-9.]/g, "-");
           const fileName = `car-images/${id}/${timestamp}-${originalName}`;
-          
+
           const storageId = await uploadToBackblaze(file, fileName, convex);
           uploadedImages.push(storageId);
         }
-        
+
         setUploading(false);
         setUploadProgress(100);
       }
-      
+
       // Combine existing and new images
       const allImages = [...existingImages, ...uploadedImages];
-      
+
       // Update car data with comprehensive fields
       await updateCar({
         carId: id as any,
@@ -461,20 +456,19 @@ const Combobox = ({ options, value, onChange, placeholder, emptyMessage }: Combo
         bodyStyle: carData.bodyStyle,
         exteriorColor: carData.exteriorColor,
         interiorColor: carData.interiorColor,
-        generation: carData.generation,
         powerHp: carData.powerHp,
         torqueLbFt: carData.torqueLbFt,
         description: carData.description,
         images: allImages
       });
-      
+
       // Delete existing parts and add new ones
       if (parts && parts.length > 0) {
         for (const part of parts) {
           await deletePart({ partId: part._id });
         }
       }
-      
+
       // Create new parts with mod images
       for (const mod of mods) {
         let imageId: string | undefined = undefined;
@@ -493,12 +487,12 @@ const Combobox = ({ options, value, onChange, placeholder, emptyMessage }: Combo
           image: imageId,
         });
       }
-      
+
       toast({
         title: "Car updated successfully",
         description: "Your car has been updated with the new details.",
       });
-      
+
       // Navigate to car details page
       navigate(`/car/${id}`);
     } catch (error) {
@@ -560,8 +554,8 @@ const Combobox = ({ options, value, onChange, placeholder, emptyMessage }: Combo
               {uploadProgress > 0 && (
                 <div className="w-full mt-2">
                   <div className="w-full bg-slate-700 h-2 rounded-full overflow-hidden">
-                    <div 
-                      className="bg-gradient-to-r from-blue-500 to-blue-600 h-full rounded-full transition-all duration-300 ease-out" 
+                    <div
+                      className="bg-gradient-to-r from-blue-500 to-blue-600 h-full rounded-full transition-all duration-300 ease-out"
                       style={{ width: `${uploadProgress}%` }}
                     ></div>
                   </div>
@@ -574,7 +568,7 @@ const Combobox = ({ options, value, onChange, placeholder, emptyMessage }: Combo
           </div>
         </div>
       )}
-      
+
       <div className="bg-background text-foreground min-h-screen">
         <div className="container mx-auto px-4 py-8 max-w-4xl">
           <form onSubmit={handleSubmit} className="space-y-8">
@@ -587,10 +581,10 @@ const Combobox = ({ options, value, onChange, placeholder, emptyMessage }: Combo
                 {/* Existing image previews */}
                 {existingImages.map((storageId, index) => (
                   <div key={`existing-${index}`} className="relative aspect-[4/3]">
-                    <CarImageWithUrl 
-                      storageId={storageId} 
-                      alt={`Existing ${index + 1}`} 
-                      className="w-full h-full object-cover rounded-md" 
+                    <CarImageWithUrl
+                      storageId={storageId}
+                      alt={`Existing ${index + 1}`}
+                      className="w-full h-full object-cover rounded-md"
                     />
                     <Button
                       type="button"
@@ -603,14 +597,14 @@ const Combobox = ({ options, value, onChange, placeholder, emptyMessage }: Combo
                     </Button>
                   </div>
                 ))}
-                
+
                 {/* New image previews */}
                 {imagePreviewUrls.map((url, index) => (
                   <div key={`new-${index}`} className="relative aspect-[4/3]">
-                    <img 
-                      src={url} 
-                      alt={`Preview ${index + 1}`} 
-                      className="w-full h-full object-cover rounded-md" 
+                    <img
+                      src={url}
+                      alt={`Preview ${index + 1}`}
+                      className="w-full h-full object-cover rounded-md"
                     />
                     <Button
                       type="button"
@@ -623,15 +617,15 @@ const Combobox = ({ options, value, onChange, placeholder, emptyMessage }: Combo
                     </Button>
                   </div>
                 ))}
-                
+
                 {/* Add image button - only show if less than 8 images */}
                 {existingImages.length + images.length < 8 && (
-                  <div 
+                  <div
                     className="relative aspect-[4/3] border-2 border-dashed border-slate-700 rounded-md flex items-center justify-center cursor-pointer hover:border-slate-500 transition-colors"
                     onClick={triggerFileInput}
                   >
                     <div className="text-center text-slate-500">
-                      <Camera size={24} className="mx-auto"/>
+                      <Camera size={24} className="mx-auto" />
                       <p className="text-xs mt-1">Add Image</p>
                     </div>
                   </div>
@@ -812,56 +806,25 @@ const Combobox = ({ options, value, onChange, placeholder, emptyMessage }: Combo
                 </div>
                 <div>
                   <Label htmlFor="exteriorColor">Exterior Color</Label>
-                  <Select
+                  <Input
+                    id="exteriorColor"
+                    name="exteriorColor"
                     value={carData.exteriorColor}
-                    onValueChange={(value) => handleSelectChange("exteriorColor", value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select exterior color" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {COLORS.map((color) => (
-                        <SelectItem key={color} value={color}>
-                          <div className="flex items-center gap-2">
-                            <div
-                              className="w-4 h-4 rounded-full border border-slate-600"
-                              style={{ backgroundColor: color.toLowerCase() }}
-                            />
-                            {color}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    onChange={handleChange}
+                    placeholder="e.g., Matte Black, Pearl White"
+                  />
                 </div>
                 <div>
                   <Label htmlFor="interiorColor">Interior Color</Label>
-                  <Select
+                  <Input
+                    id="interiorColor"
+                    name="interiorColor"
                     value={carData.interiorColor}
-                    onValueChange={(value) => handleSelectChange("interiorColor", value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select interior color" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {COLORS.map((color) => (
-                        <SelectItem key={color} value={color}>
-                          <div className="flex items-center gap-2">
-                            <div
-                              className="w-4 h-4 rounded-full border border-slate-600"
-                              style={{ backgroundColor: color.toLowerCase() }}
-                            />
-                            {color}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    onChange={handleChange}
+                    placeholder="e.g., Black Leather, Tan"
+                  />
                 </div>
-                <div>
-                  <Label htmlFor="generation">Generation</Label>
-                  <Input id="generation" name="generation" value={carData.generation} onChange={handleChange} placeholder="e.g., MK4" />
-                </div>
+
                 <div>
                   <Label htmlFor="powerHp">Power (HP)</Label>
                   <Input id="powerHp" name="powerHp" value={carData.powerHp} onChange={handleChange} placeholder="e.g., 326" />
@@ -903,7 +866,7 @@ const Combobox = ({ options, value, onChange, placeholder, emptyMessage }: Combo
                   {/* Mod Image Upload */}
                   <div className="space-y-2">
                     <Label htmlFor="modImage">Image</Label>
-                    <div 
+                    <div
                       className="relative aspect-square w-[100px] bg-slate-800 border-2 border-dashed border-slate-700 rounded-md flex items-center justify-center cursor-pointer hover:border-slate-500 transition-colors"
                       onClick={triggerModFileInput}
                     >
@@ -911,7 +874,7 @@ const Combobox = ({ options, value, onChange, placeholder, emptyMessage }: Combo
                         <img src={URL.createObjectURL(currentMod.image)} alt="Mod preview" className="w-full h-full object-cover rounded-md" />
                       ) : (
                         <div className="text-center text-slate-500 p-2">
-                          <Camera size={20} className="mx-auto"/>
+                          <Camera size={20} className="mx-auto" />
                           <p className="text-xs mt-1">Add</p>
                         </div>
                       )}
@@ -928,18 +891,18 @@ const Combobox = ({ options, value, onChange, placeholder, emptyMessage }: Combo
                   {/* Mod Details */}
                   <div className="space-y-3">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <Label htmlFor="modName">Mod Name</Label>
-                            <Input id="modName" name="name" value={currentMod.name} onChange={handleModChange} placeholder="e.g., Performance Air Filter" />
-                        </div>
-                        <div>
-                            <Label htmlFor="modCategory">Category</Label>
-                            <Input id="modCategory" name="category" value={currentMod.category} onChange={handleModChange} placeholder="e.g., Engine, Suspension" />
-                        </div>
+                      <div>
+                        <Label htmlFor="modName">Mod Name</Label>
+                        <Input id="modName" name="name" value={currentMod.name} onChange={handleModChange} placeholder="e.g., Performance Air Filter" />
+                      </div>
+                      <div>
+                        <Label htmlFor="modCategory">Category</Label>
+                        <Input id="modCategory" name="category" value={currentMod.category} onChange={handleModChange} placeholder="e.g., Engine, Suspension" />
+                      </div>
                     </div>
                     <div>
-                        <Label htmlFor="modUrl">Purchase URL</Label>
-                        <Input id="modUrl" name="purchaseUrl" value={currentMod.purchaseUrl} onChange={handleModChange} placeholder="https://example.com/product" />
+                      <Label htmlFor="modUrl">Purchase URL</Label>
+                      <Input id="modUrl" name="purchaseUrl" value={currentMod.purchaseUrl} onChange={handleModChange} placeholder="https://example.com/product" />
                     </div>
                   </div>
                 </div>
@@ -979,16 +942,16 @@ const Combobox = ({ options, value, onChange, placeholder, emptyMessage }: Combo
               )}
             </div>
 
-            <Button 
-              type="submit" 
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-6 rounded-md font-semibold text-center tracking-wide" 
+            <Button
+              type="submit"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-6 rounded-md font-semibold text-center tracking-wide"
               disabled={loading}
             >
               {loading ? (
                 <>
                   <Loader2 size={20} className="mr-2 animate-spin" />
                   {uploading ? `Uploading (${Math.round(uploadProgress)}%)` : "Updating Car..."}
-                </>              ) : "Save Changes"}
+                </>) : "Save Changes"}
             </Button>
           </form>
         </div>

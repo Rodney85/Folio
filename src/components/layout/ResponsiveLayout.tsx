@@ -1,7 +1,7 @@
 import React, { ReactNode, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useUser, useAuth, useClerk } from '@clerk/clerk-react';
-import { Plus, UserCircle2, LogOut, ChevronRight, Share, Eye, Flag } from 'lucide-react';
+import { Plus, UserCircle2, LogOut, ChevronRight, Share, Eye, Flag, CreditCard, Compass } from 'lucide-react';
 import { Logo } from '@/components/ui/logo';
 import ShareModal from '@/components/ShareModal';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
@@ -51,6 +51,13 @@ export const ResponsiveLayout = ({ children }: ResponsiveLayoutProps) => {
       comingSoon: false
     },
     {
+      to: "/explore",
+      icon: <Compass size={24} />,
+      label: "Explore",
+      active: location.pathname.startsWith('/explore'),
+      comingSoon: false
+    },
+    {
       to: "/add-car",
       icon: <Plus size={24} />,
       label: "Add Car",
@@ -89,10 +96,10 @@ export const ResponsiveLayout = ({ children }: ResponsiveLayoutProps) => {
 
   return (
     <>
-      <div className="flex h-[100dvh] bg-slate-900 text-white overflow-hidden">
+      <div className="flex h-[100dvh] bg-transparent text-white overflow-hidden">
         {/* Sidebar for tablet and desktop only */}
         {(isTablet || isDesktop) && (
-          <div className="w-64 md:w-72 lg:w-80 border-r border-slate-800 flex-shrink-0">
+          <div className="w-64 md:w-72 lg:w-80 border-r border-white/10 bg-black/20 backdrop-blur-xl flex-shrink-0 z-50 relative">
             <div className="p-4 flex flex-col h-full">
               {/* Logo */}
               <div className="flex items-center p-4 mb-10">
@@ -107,7 +114,7 @@ export const ResponsiveLayout = ({ children }: ResponsiveLayoutProps) => {
                     <Link
                       key={index}
                       to={item.to}
-                      className="flex items-center justify-between px-4 py-4 text-white hover:bg-slate-800/50 rounded-md relative"
+                      className="flex items-center justify-between px-4 py-4 text-white hover:bg-white/5 hover:backdrop-blur-lg rounded-md relative transition-all duration-200"
                     >
                       <div className="flex items-center">
                         <span className="mr-3">{item.icon}</span>

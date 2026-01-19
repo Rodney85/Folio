@@ -35,6 +35,8 @@ import { useMutation, useConvex, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { uploadToBackblaze } from "@/utils/storageService";
 import { trackCarAdded } from "@/utils/analytics";
+import * as carDB from "@/services/carDatabaseService";
+import { Switch } from "@/components/ui/switch";
 
 // Form constants for select options
 const CURRENT_YEAR = new Date().getFullYear();
@@ -260,6 +262,8 @@ export default function AddCarPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { userId } = useAuth();
+  // @ts-ignore - Convex type instantiation issue
+  const userProfile = useQuery(api.users.getProfile);
   const { user } = useUser();
   const [loading, setLoading] = useState(false);
   const convex = useConvex();
@@ -282,6 +286,7 @@ export default function AddCarPage() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [modelOptions, setModelOptions] = useState<string[]>(COMMON_MODELS);
+  const [useCustomEntry, setUseCustomEntry] = useState(false); // Toggle between API and manual entry
 
   // Update model options when make changes
   useEffect(() => {
@@ -335,13 +340,40 @@ export default function AddCarPage() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      const newFiles = Array.from(e.target.files);
+      const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+      const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+
+      const newFiles = Array.from(e.target.files).filter(file => {
+        // Check file size
+        if (file.size > MAX_FILE_SIZE) {
+          toast({
+            title: "File too large",
+            description: `"${file.name}" exceeds 10MB limit. Please compress or resize the image.`,
+            variant: "destructive"
+          });
+          return false;
+        }
+        // Check file type
+        if (!ALLOWED_TYPES.includes(file.type)) {
+          toast({
+            title: "Invalid file type",
+            description: `"${file.name}" is not a valid image. Please use JPEG, PNG, WebP, or GIF.`,
+            variant: "destructive"
+          });
+          return false;
+        }
+        return true;
+      });
+
+      if (newFiles.length === 0) return;
+
       const totalImages = [...images, ...newFiles].slice(0, 8);
       setImages(totalImages);
       const newPreviewUrls = totalImages.map(file => URL.createObjectURL(file));
       setImagePreviewUrls(newPreviewUrls);
     }
   };
+
 
   const handleRemoveImage = (index: number) => {
     const updatedImages = images.filter((_, i) => i !== index);
@@ -420,12 +452,58 @@ export default function AddCarPage() {
 
   const formGridClass = "grid grid-cols-1 md:grid-cols-2 gap-4";
 
+  if (userProfile === undefined) {
+    return (
+      <ResponsiveLayout>
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </ResponsiveLayout>
+    );
+  }
+
+  if (!userProfile?.isSubscribed && !isAdmin) {
+    return (
+      <ResponsiveLayout>
+        <div className="container mx-auto px-4 py-12 max-w-2xl text-center">
+          <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-8 shadow-2xl">
+            <Crown className="h-16 w-16 text-yellow-500 mx-auto mb-6" />
+            <h1 className="text-3xl font-bold mb-4">Premium Feature</h1>
+            <p className="text-xl text-slate-300 mb-8">
+              Adding cars to your garage is available exclusively to Premium subscribers.
+              Showcase your builds to the world with unlimited car profiles.
+            </p>
+            <Button
+              size="lg"
+              onClick={() => navigate("/subscription")}
+              className="w-full sm:w-auto text-lg px-8"
+            >
+              Upgrade to Premium
+            </Button>
+          </div>
+        </div>
+      </ResponsiveLayout>
+    );
+  }
+
   return (
     <ResponsiveLayout>
-      <div className="bg-background text-foreground">
+      <div className="min-h-screen bg-transparent text-white">
         <div className="container mx-auto px-0 md:px-4 py-0 md:py-8 max-w-4xl">
           <form onSubmit={handleSubmit} className="space-y-6 md:space-y-8">
-            <h1 className="text-2xl font-bold mb-6">Add a New Car</h1>
+            <div className="flex items-center justify-between mb-6">
+              <h1 className="text-2xl font-bold">Add a New Car</h1>
+              <div className="flex items-center gap-2">
+                <Label htmlFor="custom-mode" className="text-sm text-muted-foreground cursor-pointer">
+                  Custom Entry
+                </Label>
+                <Switch
+                  id="custom-mode"
+                  checked={useCustomEntry}
+                  onCheckedChange={setUseCustomEntry}
+                />
+              </div>
+            </div>
 
             {/* Image Upload Section */}
             <div className="space-y-4">

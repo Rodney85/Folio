@@ -14,6 +14,8 @@ import WelcomeScreen from "@/components/WelcomeScreen";
 import { Loader2 } from "lucide-react";
 import { PageTransition } from "@/components/ui/page-transition";
 import { AnimatePresence } from "framer-motion";
+import { useSmoothScroll } from "./hooks/use-smooth-scroll";
+import { GrainOverlay } from "./components/ui/effects/GrainOverlay";
 
 // Lazy load pages for code splitting
 const Index = lazy(() => import("./pages/Index"));
@@ -34,6 +36,18 @@ const PublicProfilePage = lazy(() => import("./pages/PublicProfilePage"));
 const PublicCarDetailsPage = lazy(() => import("./pages/PublicCarDetailsPage"));
 const AnalyticsPage = lazy(() => import("./pages/AnalyticsPage"));
 
+const ExplorePage = lazy(() => import("./pages/ExplorePage"));
+const AccountSettingsPage = lazy(() => import("./pages/AccountSettingsPage"));
+import ProfileOnboarding from "./components/ProfileOnboarding";
+
+// Admin Pages
+const AdminLayout = lazy(() => import("./components/admin/AdminLayout"));
+const AdminDashboard = lazy(() => import("./components/admin/AdminDashboard"));
+const AdminUsersPage = lazy(() => import("./components/admin/AdminUsersPage"));
+const AdminUserDetails = lazy(() => import("./components/admin/AdminUserDetails"));
+const AdminContentPage = lazy(() => import("./components/admin/AdminContentPage"));
+const AdminSettingsPage = lazy(() => import("./components/admin/AdminSettingsPage"));
+
 const queryClient = new QueryClient();
 
 // Loading component for Suspense fallback
@@ -47,6 +61,7 @@ const PageLoader = () => (
 const AuthenticatedRoutes = () => {
   return (
     <AppLayout>
+      <ProfileOnboarding />
       <Routes>
         <Route path="/profile" element={
           <PageTransition>
@@ -69,6 +84,13 @@ const AuthenticatedRoutes = () => {
             </Suspense>
           </PageTransition>
         } />
+        <Route path="/account-settings" element={
+          <PageTransition>
+            <Suspense fallback={<PageLoader />}>
+              <AccountSettingsPage />
+            </Suspense>
+          </PageTransition>
+        } />
         <Route path="/analytics" element={
           <PageTransition>
             <Suspense fallback={<PageLoader />}>
@@ -76,6 +98,7 @@ const AuthenticatedRoutes = () => {
             </Suspense>
           </PageTransition>
         } />
+
         <Route path="/add-car" element={
           <PageTransition>
             <Suspense fallback={<PageLoader />}>
@@ -133,6 +156,10 @@ const AuthenticatedRoutes = () => {
 const AppContent = () => {
   const { isSignedIn } = useUser();
 
+  // Only enable Lenis smooth scroll on landing page (when not signed in)
+  // Lenis conflicts with nested scrollable containers in the app
+  useSmoothScroll(!isSignedIn);
+
   return (
     <BrowserRouter>
       <Routes>
@@ -174,6 +201,15 @@ const AppContent = () => {
         {/* App feature routes - protected by authentication - wrapped in AppLayout */}
         {isSignedIn && <Route path="/*" element={<AuthenticatedRoutes />} />}
 
+        {/* Explore Page - accessible to all users */}
+        <Route path="/explore" element={
+          <PageTransition>
+            <Suspense fallback={<PageLoader />}>
+              <ExplorePage />
+            </Suspense>
+          </PageTransition>
+        } />
+
         {/* Public Profile Pages - accessible to all users */}
         <Route path="/u/:username" element={
           <PageTransition>
@@ -206,6 +242,35 @@ const AppContent = () => {
           </PageTransition>
         } />
 
+        {/* Admin Routes */}
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={
+            <Suspense fallback={<PageLoader />}>
+              <AdminDashboard />
+            </Suspense>
+          } />
+          <Route path="users" element={
+            <Suspense fallback={<PageLoader />}>
+              <AdminUsersPage />
+            </Suspense>
+          } />
+          <Route path="users/:id" element={
+            <Suspense fallback={<PageLoader />}>
+              <AdminUserDetails />
+            </Suspense>
+          } />
+          <Route path="content" element={
+            <Suspense fallback={<PageLoader />}>
+              <AdminContentPage />
+            </Suspense>
+          } />
+          <Route path="settings" element={
+            <Suspense fallback={<PageLoader />}>
+              <AdminSettingsPage />
+            </Suspense>
+          } />
+        </Route>
+
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={
           <PageTransition>
@@ -221,8 +286,11 @@ const AppContent = () => {
 
 // Main App component
 const App = () => {
+  // Note: Lenis smooth scroll is enabled conditionally in AppContent based on auth status
+
   return (
     <ErrorBoundary>
+      <GrainOverlay />
       <QueryClientProvider client={queryClient}>
         <ThemeProvider defaultTheme="system" storageKey="carfolio-ui-theme">
           <TooltipProvider>

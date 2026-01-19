@@ -60,7 +60,7 @@ export const storeUser = mutation({
       // This allows syncing Clerk username while preserving custom usernames
       if (args.username && !user.username) {
         updateData.username = args.username;
-        updateData.profileCompleted = true; // Auto-complete profile if username is set
+        // Don't auto-complete profile, let onboarding flow handle it
       }
 
       // Only update role if provided, otherwise keep existing
@@ -85,7 +85,7 @@ export const storeUser = mutation({
     // Include username if provided
     if (args.username) {
       newUserData.username = args.username;
-      newUserData.profileCompleted = true; // Auto-complete profile if username is set
+      // Don't auto-complete profile, let onboarding flow handle it
     }
 
     // Include role if provided

@@ -1,5 +1,23 @@
-import { mutation, query } from "./_generated/server";
+import { mutation, query, internalQuery } from "./_generated/server";
 import { v, ConvexError } from "convex/values";
+import { sanitizeText, sanitizeUsername, sanitizeSocialHandle, sanitizeUrl, MAX_LENGTHS } from "./lib/sanitize";
+import { checkRateLimit } from "./lib/rateLimit";
+
+/**
+ * Internal query to get user by token identifier
+ */
+export const getUserByToken = internalQuery({
+  args: {
+    tokenIdentifier: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) => q.eq("tokenIdentifier", args.tokenIdentifier))
+      .first();
+    return user;
+  },
+});
 
 /**
  * Create or update a user profile in the Convex database.
@@ -12,12 +30,16 @@ export const updateProfile = mutation({
     instagram: v.optional(v.string()),
     tiktok: v.optional(v.string()),
     youtube: v.optional(v.string()),
+    profileCompleted: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
       throw new ConvexError("Not authenticated");
     }
+
+    // Rate limit profile updates
+    checkRateLimit("updateProfile", identity.subject);
 
     // Extract user information from the token
     const tokenIdentifier = identity.tokenIdentifier;
@@ -29,21 +51,36 @@ export const updateProfile = mutation({
     const currentTimestamp = new Date().toISOString();
 
     if (existingUser) {
-      // Prepare update data
+      // Sanitize and validate username
+      const sanitizedUsername = args.username !== undefined
+        ? sanitizeUsername(args.username)
+        : undefined;
+
+      // Check username uniqueness if changing
+      if (sanitizedUsername && sanitizedUsername !== existingUser.username) {
+        const existingWithUsername = await ctx.db
+          .query("users")
+          .withIndex("by_username", (q) => q.eq("username", sanitizedUsername))
+          .first();
+
+        if (existingWithUsername && existingWithUsername._id !== existingUser._id) {
+          throw new ConvexError("Username is already taken");
+        }
+      }
+
+      // Prepare update data with sanitized inputs
       const updateData: any = {
-        ...(args.username !== undefined ? { username: args.username } : {}),
-        ...(args.bio !== undefined ? { bio: args.bio } : {}),
-        ...(args.instagram !== undefined ? { instagram: args.instagram } : {}),
-        ...(args.tiktok !== undefined ? { tiktok: args.tiktok } : {}),
-        ...(args.youtube !== undefined ? { youtube: args.youtube } : {}),
+        ...(args.username !== undefined ? { username: sanitizedUsername } : {}),
+        ...(args.bio !== undefined ? { bio: sanitizeText(args.bio, MAX_LENGTHS.bio) } : {}),
+        ...(args.instagram !== undefined ? { instagram: sanitizeSocialHandle(args.instagram) } : {}),
+        ...(args.tiktok !== undefined ? { tiktok: sanitizeSocialHandle(args.tiktok) } : {}),
+        ...(args.youtube !== undefined ? { youtube: sanitizeUrl(args.youtube) } : {}),
         updatedAt: currentTimestamp,
       };
 
-      // Only set profileCompleted to true if username is provided
-      // This is the minimum requirement for profile completion
-      const finalUsername = args.username !== undefined ? args.username : existingUser.username;
-      if (finalUsername && finalUsername.trim()) {
-        updateData.profileCompleted = true;
+      // Only set profileCompleted if explicitly provided
+      if (args.profileCompleted !== undefined) {
+        updateData.profileCompleted = args.profileCompleted;
       }
 
       // Update existing user
@@ -54,6 +91,7 @@ export const updateProfile = mutation({
     }
   },
 });
+
 
 /**
  * Get the user's profile data.
@@ -72,7 +110,13 @@ export const getProfile = query({
       .withIndex("by_token", (q) => q.eq("tokenIdentifier", tokenIdentifier))
       .first();
 
-    return user;
+    if (!user) {
+      return null;
+    }
+
+    return {
+      ...user,
+    };
   },
 });
 
@@ -99,7 +143,8 @@ export const isProfileComplete = query({
     }
 
     // Consider profile complete if username is set and profileCompleted flag is true
-    return user.profileCompleted === true && !!user.username;
+    const isComplete = user.profileCompleted === true && !!user.username;
+    return isComplete;
   },
 });
 
@@ -188,7 +233,6 @@ export const getProfileByUsername = query({
     username: v.string(),
   },
   handler: async (ctx, args) => {
-    console.log(`Looking for profile with username: ${args.username}`);
 
     // Find user by username
     const user = await ctx.db
@@ -197,11 +241,10 @@ export const getProfileByUsername = query({
       .first();
 
     if (!user) {
-      console.log(`No user found with username: ${args.username}`);
       return null; // User not found
     }
 
-    console.log(`Found user: ${user._id}, username: ${user.username}`);
+
 
     // Handle the ID mismatch between auth systems
     // First, try to find cars using the direct database ID
@@ -219,7 +262,7 @@ export const getProfileByUsername = query({
       `user_${user._id}`, // Generated format 2
     ];
 
-    console.log("Possible user IDs to check:", possibleClerkIds);
+
 
     // Get cars from all possible IDs
     let allCars = [...carsByDatabaseId];
@@ -232,7 +275,7 @@ export const getProfileByUsername = query({
           .withIndex("by_user", (q) => q.eq("userId", possibleId))
           .collect();
 
-        console.log(`Found ${extraCars.length} cars with userId: ${possibleId}`);
+
         allCars = [...allCars, ...extraCars];
       }
     }
@@ -240,7 +283,7 @@ export const getProfileByUsername = query({
     // Remove duplicates by ID
     const uniqueCars = Array.from(new Map(allCars.map(car => [car._id.toString(), car])).values());
 
-    console.log(`User has ${uniqueCars.length} total unique cars in database`);
+
 
     // Now get only published cars
     // FIXED: Use more lenient check for isPublished
@@ -260,24 +303,7 @@ export const getProfileByUsername = query({
       }
     });
 
-    console.log(`User has ${sortedPublishedCars.length} published cars, now sorted by order`);
 
-    // Log the first car's data structure for debugging
-    if (allCars.length > 0) {
-      console.log('First car data structure:', JSON.stringify(allCars[0], null, 2));
-    }
-
-    // Check subscription status
-    const subscription = await ctx.db
-      .query("subscriptions")
-      .withIndex("by_userId", (q) => q.eq("userId", user.tokenIdentifier)) // Assuming userId in subscriptions matches tokenIdentifier or we need to check how it's stored
-      .first();
-
-    // Also check by the other ID format if needed, similar to how we check for cars
-    // But for now, let's assume the subscription is linked to the user's main ID
-    // Actually, let's use the same logic as getSubscriptionByUserId if possible, or just check the table
-
-    const isSubscribed = subscription?.status === "active" || subscription?.status === "trialing";
 
     // Return only necessary public profile data
     return {
@@ -290,7 +316,6 @@ export const getProfileByUsername = query({
         instagram: user.instagram,
         tiktok: user.tiktok,
         youtube: user.youtube,
-        isSubscribed, // Add this field
       },
       cars: sortedPublishedCars, // Return cars sorted by order field
     };
@@ -327,5 +352,31 @@ export const getUserById = query({
       tiktok: user.tiktok,
       youtube: user.youtube,
     };
+  },
+});
+
+/**
+ * Reset onboarding status for debugging.
+ */
+export const resetOnboarding = mutation({
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new ConvexError("Not authenticated");
+    }
+
+    const tokenIdentifier = identity.tokenIdentifier;
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) => q.eq("tokenIdentifier", tokenIdentifier))
+      .first();
+
+    if (!user) {
+      throw new ConvexError("User not found");
+    }
+
+    await ctx.db.patch(user._id, {
+      profileCompleted: false,
+    });
   },
 });

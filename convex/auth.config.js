@@ -9,9 +9,6 @@ if (!clerkDomain) {
   throw new Error("CLERK_DOMAIN environment variable is required. Set it in the Convex dashboard.");
 }
 
-// Log for debugging
-console.log(`[AUTH CONFIG] Using Clerk domain: ${clerkDomain}`);
-
 export default {
   providers: [
     {

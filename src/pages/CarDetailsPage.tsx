@@ -13,6 +13,7 @@ import MobileLayout from '@/components/layout/MobileLayout';
 import { useSwipeable } from 'react-swipeable';
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { SectionTransition, AnimatedItem } from "@/components/ui/page-transition";
 import {
   Dialog,
   DialogContent,
@@ -182,12 +183,12 @@ const CarDetailsPage = () => {
     ].filter(Boolean) as { label: string; value: string | number }[];
 
     return (
-      <div className="min-h-screen flex flex-col bg-slate-900 text-white">
+      <div className="min-h-screen flex flex-col bg-transparent text-white">
         {/* Header with edit/delete buttons */}
-        <header className="sticky top-0 p-4 flex items-center justify-between bg-slate-900 z-50 border-b border-slate-800 shadow-sm">
+        <header className="sticky top-0 p-4 flex items-center justify-between bg-[#020204] z-50 border-b border-white/5 shadow-sm">
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center justify-center rounded-full bg-slate-700 p-2 hover:bg-slate-600 transition-colors"
+            className="flex items-center justify-center rounded-full bg-white/10 p-2 hover:bg-white/20 transition-colors"
           >
             <ArrowLeft className="h-5 w-5 text-white" />
           </button>
@@ -258,14 +259,14 @@ const CarDetailsPage = () => {
                 </div>
 
                 {/* Right Column - Content */}
-                <div className="space-y-6">
+                <SectionTransition className="space-y-6" delay={200}>
                   {/* Car Title */}
-                  <div>
+                  <AnimatedItem>
                     <h1 className="text-4xl font-bold tracking-tight text-white mb-2">
                       {car?.make} {car?.model}
                     </h1>
                     <p className="text-slate-400 text-lg">{car?.year}</p>
-                  </div>
+                  </AnimatedItem>
 
                   {/* Specifications / Shop Tabs */}
                   <div className="space-y-4">
@@ -403,7 +404,7 @@ const CarDetailsPage = () => {
                       </button>
                     )}
                   </div>
-                </div>
+                </SectionTransition>
               </div>
             </div>
           ) : (
@@ -616,7 +617,7 @@ const CarDetailsPage = () => {
   // Render the page directly without nested layout
   return (
     <>
-      <div className="bg-slate-900 flex flex-col h-full">
+      <div className="bg-[#020204] flex flex-col h-full">
         {renderCarDetails()}
       </div>
       {shopDialog}

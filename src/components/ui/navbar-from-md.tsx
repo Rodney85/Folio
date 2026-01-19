@@ -9,12 +9,12 @@ const menuItems = [
     { name: 'Home', href: '#home', id: 'home' },
     { name: 'Solution', href: '#solution', id: 'solution' },
     { name: 'Feature', href: '#feature', id: 'feature' },
-    { name: 'Pricing', href: '#pricing', id: 'pricing' },
+    { name: 'Subscription', href: '/subscription', id: 'subscription' },
 ]
 
 export const NavBar = () => {
     const [menuState, setMenuState] = React.useState(false)
-    
+
     return (
         <header className="fixed top-0 left-0 right-0 z-[9999] w-full">
             <nav

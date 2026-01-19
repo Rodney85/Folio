@@ -2,8 +2,44 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight, ChevronRight, Car, Squirrel, Home, Star, DollarSign, FileText } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { motion } from 'framer-motion'
+import { motion, useScroll, useTransform } from 'framer-motion' // Added hooks
 import { cn, getDemoProfileUrl } from '@/lib/utils'
+import { BorderBeam } from './effects/BorderBeam'; // Added BorderBeam
+
+const wordVariants = {
+    hidden: { y: "100%" },
+    visible: (i: number) => ({
+        y: 0,
+        transition: {
+            delay: i * 0.1,
+            duration: 0.8,
+            ease: [0.2, 0.65, 0.3, 0.9], // Custom Bezier for "fluid" feel
+        },
+    }),
+};
+
+// Helper for SplitText
+const SplitText = ({ children, className }: { children: React.ReactNode; className?: string }) => {
+    const text = String(children);
+    const words = text.split(" ");
+    return (
+        <span className={cn("inline-block overflow-hidden", className)}>
+            {words.map((word, i) => (
+                <span key={i} className="inline-block overflow-hidden mr-[0.2em] -mb-[0.1em] py-[0.1em]">
+                    <motion.span
+                        custom={i}
+                        variants={wordVariants}
+                        initial="hidden"
+                        animate="visible"
+                        className="inline-block"
+                    >
+                        {word}
+                    </motion.span>
+                </span>
+            ))}
+        </span>
+    );
+};
 
 const transitionVariants = {
     item: {
@@ -87,16 +123,20 @@ export function HeroSection() {
                                             </div>
                                         </div>
                                     </Link>
-                        
-                                    <h1
-                                        className="mt-8 max-w-4xl mx-auto text-balance text-6xl md:text-7xl lg:mt-16 xl:text-[5.25rem] font-semibold text-slate-900 dark:text-white leading-tight">
-                                        Your Masterpiece.
-                                        <span className="block text-blue-600 dark:text-blue-400">Reimagined.</span>
+
+                                    <h1 className="mt-8 max-w-4xl mx-auto text-balance text-6xl md:text-7xl lg:mt-16 xl:text-[5.25rem] font-semibold text-slate-900 dark:text-white leading-tight">
+                                        <SplitText>Your Masterpiece.</SplitText>
+                                        <span className="block text-blue-600 dark:text-blue-400">
+                                            <SplitText>Reimagined.</SplitText>
+                                        </span>
                                     </h1>
-                                    <p
+                                    <motion.p
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: 0.8, duration: 1 }}
                                         className="mx-auto mt-8 max-w-2xl text-balance text-lg text-slate-600 dark:text-slate-300">
                                         CarFolio is the definitive platform for the automotive creator. A stunning digital garage designed to showcase your vehicles, share your story, and monetize your passion. All with a single link.
-                                    </p>
+                                    </motion.p>
                                 </motion.div>
 
                                 <motion.div
@@ -115,16 +155,17 @@ export function HeroSection() {
                                     <motion.div
                                         key={1}
                                         variants={transitionVariants.item}
-                                        className="bg-foreground/10 rounded-[14px] border p-0.5">
+                                        className="relative rounded-[14px] border p-0.5 overflow-hidden">
                                         <Button
                                             asChild
                                             size="lg"
-                                            className="rounded-xl px-5 text-base bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600">
+                                            className="relative z-10 rounded-xl px-5 text-base bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600">
                                             <Link to="/sign-up">
                                                 <span className="text-nowrap">Create Your Showcase</span>
                                                 <ArrowRight className="ml-2 h-5 w-5" />
                                             </Link>
                                         </Button>
+                                        <BorderBeam size={100} duration={8} delay={4} />
                                     </motion.div>
                                     <motion.div
                                         key={2}
@@ -159,7 +200,7 @@ export function HeroSection() {
                                     },
                                 },
                             }}>
-                            <motion.div 
+                            <motion.div
                                 variants={transitionVariants.item}
                                 className="relative mt-8 sm:mt-12 md:mt-20 overflow-visible">
                                 <div className="relative">

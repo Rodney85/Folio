@@ -4,37 +4,18 @@ import DatabaseWithRestApi from '@/components/ui/database-with-rest-api'
 import { Meteors } from '@/components/ui/meteors'
 import Testimonials from '@/components/ui/testimonials'
 import FAQs from '@/components/ui/faq'
-import { Pricing6 } from '@/components/ui/pricing-6'
-import { Tab } from '@/components/ui/pricing-tab'
 import { Footer } from '@/components/ui/footer-section'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { CheckCircle, Star, DollarSign, BarChart3, Share2, Settings, Car, Trophy, ArrowRight, Menu, X, Squirrel } from "lucide-react";
-import { useState, useEffect } from "react";
 import { NavBar } from '@/components/ui/navbar-from-md'
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { ProblemSolutionFlow } from '@/components/landing/ProblemSolutionFlow';
 
 const Index = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-  const [selectedPricing, setSelectedPricing] = useState("monthly");
 
-  useEffect(() => {
-    // Check if we're on a mobile device based on viewport width
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 640);
-    };
-
-    // Set initial value
-    handleResize();
-
-    // Add event listener for window resize
-    window.addEventListener('resize', handleResize);
-
-    // Cleanup
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   const features = [
     {
@@ -93,60 +74,7 @@ const Index = () => {
     }
   ];
 
-  const pricingPlans = [
-    {
-      name: "Starter",
-      price: "$9.99",
-      period: "month",
-      description: "Perfect for getting started",
-      features: [
-        "3 vehicle showcases",
-        "Unlimited affiliate links",
-        "Basic analytics dashboard",
-        "Mobile-optimized sharing",
-        "Standard support",
-        "carfolio.com/yourname URL"
-      ],
-      cta: "Start Free Trial",
-      popular: false
-    },
-    {
-      name: "Pro",
-      price: "$19.99",
-      period: "month",
-      description: "Most Popular - Save 60% annually",
-      features: [
-        "Unlimited vehicle showcases",
-        "Advanced analytics & reporting",
-        "Custom domain support",
-        "Priority customer support",
-        "Remove CarFolio branding",
-        "Exclusive affiliate partnerships",
-        "Professional templates"
-      ],
-      cta: "Start Free Trial",
-      popular: true,
-      yearlyPrice: "$199/year (Save $40)"
-    },
-    {
-      name: "Business",
-      price: "$39.99",
-      period: "month",
-      description: "For automotive professionals",
-      features: [
-        "Everything in Pro Plan",
-        "Team collaboration features",
-        "White-label customization",
-        "Dedicated account manager",
-        "Priority feature requests",
-        "Custom integrations",
-        "Advanced SEO tools"
-      ],
-      cta: "Contact Sales",
-      popular: false,
-      yearlyPrice: "$399/year (Save $80)"
-    }
-  ];
+
 
   const faqs = [
     {
@@ -172,106 +100,50 @@ const Index = () => {
       <NavBar />
       <HeroSection />
 
-      {/* Combined Section: Pain Point, How it Works, and Solution */}
-      <section id="solution" className="py-12 sm:py-16 lg:py-20 bg-slate-900 dark:bg-slate-950 text-white overflow-x-hidden">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Pain Point */}
-          <div className="text-center mb-8 md:mb-16">
-            <h2 className="text-4xl font-semibold mb-4 md:mb-8 text-white">Your build's story is scattered.</h2>
-            <p className="text-xl mb-6 md:mb-12 text-slate-300 max-w-4xl mx-auto">
-              Across forums. In social feeds. In endless DMs. The details that matter get lost, and the value you create goes unrewarded. Your work deserves more than a temporary post.
-            </p>
-          </div>
+      {/* Sticky Scrollytelling Section */}
+      <ProblemSolutionFlow />
 
-          {/* Database Component */}
-          <div className="flex justify-center mb-6 md:mb-24">
-            <DatabaseWithRestApi
-              title="CarFolio - One Link"
-              circleText="API"
-              badgeTexts={{
-                first: "Cars",
-                second: "Parts",
-                third: "Share",
-                fourth: "Earn"
-              }}
-              buttonTexts={{
-                first: "CarFolio",
-                second: "v3_builds"
-              }}
-              lightColor="#3b82f6"
-              className="scale-90 md:scale-125 lg:scale-150"
-            />
-          </div>
-
-          {/* Solution - Two Column Layout */}
-          <div className="mb-12 md:mb-24">
-            <div className="relative z-10 grid items-center gap-3 md:gap-4 md:grid-cols-2 md:gap-12">
-              <h2 className="text-3xl md:text-4xl font-semibold text-white">One build. One link. Endless possibilities.</h2>
-              <p className="max-w-sm sm:ml-auto text-lg md:text-xl text-slate-300">CarFolio brings everything together into a single, shareable link. The definitive home for your automotive identity. When your showcase is this seamless, it doesn't just get seen—it gets recognized.</p>
-            </div>
-          </div>
-
-          {/* CarFolio Meteor Cards */}
+      {/* Meteor Cards Section (Normal Scroll Flow after Sticky) */}
+      <section className="py-24 bg-slate-900 dark:bg-slate-950 overflow-hidden relative z-10">
+        <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
-            {/* Build Your Folio Card */}
-            <div className="w-full relative max-w-xs mx-auto">
-              <div className="absolute inset-0 h-full w-full bg-gradient-to-r from-blue-500 to-teal-500 transform scale-[0.80] rounded-full blur-3xl" />
-              <div className="relative shadow-xl bg-gray-900 border border-gray-800 px-4 py-8 h-full overflow-hidden rounded-2xl flex flex-col justify-end items-start">
-                <div className="h-5 w-5 rounded-full border flex items-center justify-center mb-4 border-gray-500">
-                  <Car className="h-2 w-2 text-gray-300" />
-                </div>
-                <h1 className="font-bold text-xl text-white mb-4 relative z-50">
-                  Build Your Folio
-                </h1>
-                <p className="font-normal text-base text-slate-500 mb-4 relative z-50">
-                  Add your vehicles and document every modification with stunning detail. Create a professional showcase for your automotive passion.
-                </p>
-                <button className="border px-4 py-1 rounded-lg border-gray-500 text-gray-300">
-                  Start Building
-                </button>
-                <Meteors number={20} />
-              </div>
-            </div>
+            {/* Reuse the cards code here with Framer Motion entry */}
+            {[
+              { title: "Build Your Folio", icon: Car, color: "from-blue-500 to-teal-500", iconColor: "text-blue-400", iconBg: "bg-blue-500/10 border-blue-500/20" },
+              { title: "Share Your Link", icon: Share2, color: "from-purple-500 to-pink-500", iconColor: "text-purple-400", iconBg: "bg-purple-500/10 border-purple-500/20" },
+              { title: "Monetize", icon: DollarSign, color: "from-orange-500 to-red-500", iconColor: "text-orange-400", iconBg: "bg-orange-500/10 border-orange-500/20" }
+            ].map((item, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ delay: i * 0.2, duration: 0.6 }}
+                className="w-full relative max-w-xs mx-auto group"
+              >
+                <div className={`absolute inset-0 h-full w-full bg-gradient-to-r ${item.color} transform scale-[0.80] rounded-3xl blur-3xl opacity-20 group-hover:opacity-60 transition-opacity duration-700 ease-in-out`} />
+                <div className="relative h-full overflow-hidden rounded-3xl border border-white/10 bg-gray-950/40 backdrop-blur-xl p-8 flex flex-col justify-end items-start transition-all duration-300 group-hover:border-white/20 group-hover:shadow-2xl group-hover:bg-gray-900/60">
 
-            {/* Share Your Link Card */}
-            <div className="w-full relative max-w-xs mx-auto">
-              <div className="absolute inset-0 h-full w-full bg-gradient-to-r from-purple-500 to-pink-500 transform scale-[0.80] rounded-full blur-3xl" />
-              <div className="relative shadow-xl bg-gray-900 border border-gray-800 px-4 py-8 h-full overflow-hidden rounded-2xl flex flex-col justify-end items-start">
-                <div className="h-5 w-5 rounded-full border flex items-center justify-center mb-4 border-gray-500">
-                  <Share2 className="h-2 w-2 text-gray-300" />
-                </div>
-                <h1 className="font-bold text-xl text-white mb-4 relative z-50">
-                  Share Your Link
-                </h1>
-                <p className="font-normal text-base text-slate-500 mb-4 relative z-50">
-                  Your personalized carfolio.io URL becomes the single source for your entire build. One link, endless possibilities.
-                </p>
-                <button className="border px-4 py-1 rounded-lg border-gray-500 text-gray-300">
-                  Get Your Link
-                </button>
-                <Meteors number={20} />
-              </div>
-            </div>
+                  <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
-            {/* Monetize Your Influence Card */}
-            <div className="w-full relative max-w-xs mx-auto">
-              <div className="absolute inset-0 h-full w-full bg-gradient-to-r from-orange-500 to-red-500 transform scale-[0.80] rounded-full blur-3xl" />
-              <div className="relative shadow-xl bg-gray-900 border border-gray-800 px-4 py-8 h-full overflow-hidden rounded-2xl flex flex-col justify-end items-start">
-                <div className="h-5 w-5 rounded-full border flex items-center justify-center mb-4 border-gray-500">
-                  <DollarSign className="h-2 w-2 text-gray-300" />
+                  <div className={`h-12 w-12 rounded-2xl border flex items-center justify-center mb-6 ${item.iconBg} group-hover:scale-110 transition-transform duration-300 ease-out`}>
+                    <item.icon className={`h-6 w-6 ${item.iconColor}`} />
+                  </div>
+
+                  <h3 className="font-bold text-2xl text-white mb-3 relative z-10 tracking-wide">
+                    {item.title}
+                  </h3>
+
+                  <p className="font-normal text-base text-slate-400 leading-relaxed relative z-10 group-hover:text-slate-300 transition-colors duration-300">
+                    {i === 0 && "Add your vehicles and document every modification with stunning detail."}
+                    {i === 1 && "Your personalized carfolio.io URL becomes the single source for your entire build."}
+                    {i === 2 && "Connect affiliate links to the parts you trust and turn your passion into a paycheck."}
+                  </p>
+
+                  <Meteors number={15} className="opacity-50" />
                 </div>
-                <h1 className="font-bold text-xl text-white mb-4 relative z-50">
-                  Monetize Your Influence
-                </h1>
-                <p className="font-normal text-base text-slate-500 mb-4 relative z-50">
-                  Connect affiliate links to the parts you trust and turn your passion into a paycheck. Earn from every recommendation.
-                </p>
-                <button className="border px-4 py-1 rounded-lg border-gray-500 text-gray-300">
-                  Start Earning
-                </button>
-                <Meteors number={20} />
-              </div>
-            </div>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
@@ -294,111 +166,23 @@ const Index = () => {
         </div>
 
         <div className="mx-auto max-w-5xl space-y-12 px-6 relative z-10">
-          <div className="relative z-10 grid items-center gap-4 md:grid-cols-2 md:gap-12">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="relative z-10 grid items-center gap-4 md:grid-cols-2 md:gap-12"
+          >
             <h2 className="text-4xl font-semibold text-slate-900 dark:text-white">A Gallery for Your Garage</h2>
             <p className="max-w-sm sm:ml-auto text-slate-700 dark:text-slate-300">Every build is a journey. CarFolio gives you the canvas to tell its story with cinematic galleries, detailed modification lists, and complete build histories.</p>
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* Testimonials Section */}
       <Testimonials />
 
-      {/* Pricing Section - HIDDEN */}
-      {/* <section id="pricing" className="py-32 overflow-x-hidden">
-        <div className="container max-w-5xl mx-auto px-4 md:px-6">
-          <div className="mx-auto flex flex-col items-center gap-6 text-center">
-            <h2 className="text-4xl font-semibold text-pretty lg:text-6xl">
-              Simple, powerful pricing
-            </h2>
-            <p className="max-w-md text-muted-foreground lg:text-xl">
-              No confusing tiers or feature gates. Get everything you need to showcase and monetize your builds.
-            </p>
-            
-            {/* Pricing Tabs *\/}
-            <div className="flex w-fit rounded-full bg-muted p-1 mb-6">
-              <Tab
-                text="monthly"
-                selected={selectedPricing === "monthly"}
-                setSelected={setSelectedPricing}
-                discount={false}
-              />
-              <Tab
-                text="yearly"
-                selected={selectedPricing === "yearly"}
-                setSelected={setSelectedPricing}
-                discount={true}
-              />
-            </div>
-            
-            <div className="mx-auto flex w-full flex-col rounded-lg border p-6 sm:w-fit sm:min-w-80">
-              <div className="flex justify-center">
-                <span className="text-lg font-semibold">$</span>
-                <span className="text-6xl font-semibold">
-                  {selectedPricing === "monthly" ? "29.99" : "299.99"}
-                </span>
-                <span className="self-end text-muted-foreground">
-                  {selectedPricing === "monthly" ? "/month" : "/year"}
-                </span>
-              </div>
-              {selectedPricing === "monthly" && (
-                <p className="text-center text-sm text-muted-foreground mt-2">
-                  <span className="line-through">$35.00</span> Regular price
-                </p>
-              )}
-              {selectedPricing === "yearly" && (
-                <p className="text-center text-sm text-muted-foreground mt-2">
-                  <span className="line-through">$359.88</span> Regular price
-                </p>
-              )}
-              <div className="my-6">
-                <div>
-                  <ul className="flex flex-col gap-3">
-                    <li className="flex items-center justify-between gap-2 text-sm font-medium">
-                      Unlimited vehicle showcases <CheckCircle className="inline size-4 shrink-0" />
-                    </li>
-                    <li className="flex items-center justify-between gap-2 text-sm font-medium">
-                      Unlimited affiliate links <CheckCircle className="inline size-4 shrink-0" />
-                    </li>
-                    <li className="flex items-center justify-between gap-2 text-sm font-medium">
-                      Downloadable QR codes <CheckCircle className="inline size-4 shrink-0" />
-                    </li>
-                  </ul>
-                  <Separator className="my-6" />
-                </div>
-                <div>
-                  <ul className="flex flex-col gap-3">
-                    <li className="flex items-center justify-between gap-2 text-sm font-medium">
-                      Advanced analytics dashboard <CheckCircle className="inline size-4 shrink-0" />
-                    </li>
-                    <li className="flex items-center justify-between gap-2 text-sm font-medium">
-                      Custom domain support <CheckCircle className="inline size-4 shrink-0" />
-                    </li>
-                    <li className="flex items-center justify-between gap-2 text-sm font-medium">
-                      Mobile-optimized sharing <CheckCircle className="inline size-4 shrink-0" />
-                    </li>
-                  </ul>
-                  <Separator className="my-6" />
-                </div>
-                <div>
-                  <ul className="flex flex-col gap-3">
-                    <li className="flex items-center justify-between gap-2 text-sm font-medium">
-                      Keep all your affiliate income <CheckCircle className="inline size-4 shrink-0" />
-                    </li>
-                    <li className="flex items-center justify-between gap-2 text-sm font-medium">
-                      Priority support <CheckCircle className="inline size-4 shrink-0" />
-                    </li>
-                    <li className="flex items-center justify-between gap-2 text-sm font-medium">
-                      14-day free trial <CheckCircle className="inline size-4 shrink-0" />
-                    </li>
-                  </ul>
-                </div>
-              </div>
-              <Button>Start Your 14-Day Free Trial</Button>
-            </div>
-          </div>
-        </div>
-      </section> */}
+
 
       {/* FAQ Section */}
       <FAQs />
@@ -406,11 +190,23 @@ const Index = () => {
       {/* Final CTA Section */}
       <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-800 dark:to-blue-900 text-white overflow-x-hidden">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">
+          <motion.h2
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="text-3xl md:text-4xl font-bold mb-6 text-white"
+          >
             Ready to Turn Your Car Knowledge Into Income?
-          </h2>
+          </motion.h2>
 
-          <div className="bg-white/10 dark:bg-white/5 rounded-lg p-6 mb-8 text-left max-w-md mx-auto border border-white/20">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            className="bg-white/10 dark:bg-white/5 rounded-lg p-6 mb-8 text-left max-w-md mx-auto border border-white/20"
+          >
             <h3 className="font-semibold mb-4 text-white">What happens next:</h3>
             <div className="space-y-2">
               <div className="flex items-center">
@@ -426,7 +222,7 @@ const Index = () => {
                 <span className="text-white">Share your professional link - Start earning from day one</span>
               </div>
             </div>
-          </div>
+          </motion.div>
 
           <Button size="lg" className="bg-white text-blue-600 hover:bg-slate-50 dark:bg-white dark:text-blue-600 dark:hover:bg-slate-100 text-base sm:text-lg px-4 sm:px-8 py-2 sm:py-4 mb-6 whitespace-normal h-auto">
             Start Building Your Portfolio - Free

@@ -8,17 +8,20 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
-import { 
-  ArrowLeft, 
-  ShoppingBag, 
-  ExternalLink, 
-  Package, 
+import {
+  ArrowLeft,
+  ShoppingBag,
+  ExternalLink,
+  Package,
   ShoppingBasket,
   DollarSign,
   ImageIcon,
   Car,
-  Loader2
+  Loader2,
+  Copy,
+  Tag
 } from "lucide-react";
 import CarImageWithUrl from "@/components/cars/CarImageWithUrl";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -28,9 +31,10 @@ const ShopBuildPage = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const isMobile = useIsMobile();
+  const { toast } = useToast();
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
-  
+
   // Analytics tracking
   const logAnalytics = useMutation(api.analytics.logEvent);
 
@@ -67,11 +71,29 @@ const ShopBuildPage = () => {
     });
   };
 
+  // Copy coupon code to clipboard
+  const handleCopyCoupon = async () => {
+    const couponCode = "CARFOLIO10";
+    try {
+      await navigator.clipboard.writeText(couponCode);
+      toast({
+        title: "Coupon code copied!",
+        description: `${couponCode} has been copied to your clipboard.`,
+      });
+    } catch (err) {
+      toast({
+        title: "Failed to copy",
+        description: "Please try again or copy manually.",
+        variant: "destructive",
+      });
+    }
+  };
+
   // Loading state
   if (!car) {
     return (
       <ResponsiveLayout>
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="min-h-[300px] flex items-center justify-center"
@@ -91,7 +113,7 @@ const ShopBuildPage = () => {
   if (car === null) {
     return (
       <ResponsiveLayout>
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="min-h-[300px] flex items-center justify-center"
@@ -103,8 +125,8 @@ const ShopBuildPage = () => {
               <p className="text-slate-300 mb-6">
                 The car you're looking for doesn't exist or has been removed.
               </p>
-              <Button 
-                onClick={() => navigate('/cars')} 
+              <Button
+                onClick={() => navigate('/cars')}
                 size="lg"
                 className="bg-blue-600 hover:bg-blue-700"
               >
@@ -180,6 +202,42 @@ const ShopBuildPage = () => {
         </header>
 
         <div className="container mx-auto px-4 py-8 max-w-6xl">
+          {/* Coupon Code Section */}
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8"
+          >
+            <Card className="border-2 border-dashed border-blue-500/50 bg-gradient-to-br from-blue-900/20 to-purple-900/20 backdrop-blur-sm overflow-hidden">
+              <CardContent className="p-6">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="bg-blue-500/20 p-3 rounded-full">
+                      <Tag className="h-6 w-6 text-blue-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-white mb-1">Exclusive Discount Code</h3>
+                      <p className="text-sm text-slate-300">Save 10% on featured parts from this build</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="bg-slate-800/80 px-6 py-3 rounded-lg border border-slate-700">
+                      <code className="text-xl font-mono font-bold text-blue-400 tracking-wider">CARFOLIO10</code>
+                    </div>
+                    <Button
+                      onClick={handleCopyCoupon}
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                      size="lg"
+                    >
+                      <Copy className="h-4 w-4 mr-2" />
+                      Copy Code
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
           {/* Category filters */}
           {categories.length > 1 && (
             <div className="mb-8">
@@ -215,15 +273,15 @@ const ShopBuildPage = () => {
 
           {/* Parts display - Grid layout */}
           {filteredParts && filteredParts.length > 0 ? (
-            <motion.div 
+            <motion.div
               variants={containerVariants}
               initial="hidden"
               animate="show"
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
             >
               {filteredParts.map((part) => (
-                <motion.div 
-                  key={part._id} 
+                <motion.div
+                  key={part._id}
                   variants={itemVariants}
                   onMouseEnter={() => setHoveredCard(part._id)}
                   onMouseLeave={() => setHoveredCard(null)}
@@ -248,7 +306,7 @@ const ShopBuildPage = () => {
                           <ImageIcon className="h-12 w-12 text-slate-500" />
                         </div>
                       )}
-                      
+
                       {/* Price tag */}
                       {part.price && (
                         <div className="absolute top-3 right-3">
@@ -257,25 +315,25 @@ const ShopBuildPage = () => {
                           </Badge>
                         </div>
                       )}
-                      
+
                       {/* Category tag */}
                       <div className="absolute top-3 left-3">
-                        <Badge 
-                          variant="outline" 
+                        <Badge
+                          variant="outline"
                           className="bg-slate-900/70 border-slate-700 text-slate-300 backdrop-blur-sm"
                         >
                           {part.category}
                         </Badge>
                       </div>
                     </div>
-                    
+
                     {/* Content section */}
                     <CardHeader className="pb-2">
                       <CardTitle className="text-xl text-slate-100">
                         {part.name}
                       </CardTitle>
                     </CardHeader>
-                    
+
                     <CardContent className="pb-0">
                       {part.description && (
                         <CardDescription className="text-slate-400 mb-4 line-clamp-2 leading-relaxed">
@@ -283,7 +341,7 @@ const ShopBuildPage = () => {
                         </CardDescription>
                       )}
                     </CardContent>
-                    
+
                     <CardFooter className="pt-2 pb-4">
                       {part.purchaseUrl ? (
                         <Button
@@ -308,7 +366,7 @@ const ShopBuildPage = () => {
               ))}
             </motion.div>
           ) : (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="h-auto"
@@ -320,13 +378,13 @@ const ShopBuildPage = () => {
                   </div>
                   <h3 className="text-xl font-semibold text-slate-100 mb-3">No Parts Available</h3>
                   <p className="text-slate-400 max-w-md mx-auto">
-                    {activeFilter 
-                      ? `No parts found in the "${activeFilter}" category.` 
+                    {activeFilter
+                      ? `No parts found in the "${activeFilter}" category.`
                       : "This build doesn't have any parts listed yet."}
                   </p>
                   {activeFilter && (
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       onClick={() => setActiveFilter(null)}
                       className="mt-6 border-slate-700 text-slate-300 hover:bg-slate-800"
                     >

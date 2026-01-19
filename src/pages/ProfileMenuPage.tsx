@@ -1,6 +1,9 @@
+import { useAction } from "convex/react";
+import { api } from "../../convex/_generated/api";
+import { toast } from "sonner";
+import { ChevronLeft, ChevronRight, Shield, Monitor, Flag, LogOut, CreditCard, Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth, useUser, useClerk } from "@clerk/clerk-react";
-import { ChevronLeft, ChevronRight, Shield, Monitor, Flag, LogOut } from "lucide-react";
 
 const ProfileMenuPage = () => {
   const navigate = useNavigate();
@@ -8,7 +11,30 @@ const ProfileMenuPage = () => {
   const { user } = useUser();
   const clerk = useClerk();
 
+  const getPortal = useAction(api.payments.getCustomerPortal);
+
+  const handlePortal = async () => {
+    try {
+      const { portal_url } = await getPortal({ send_email: false });
+      if (!portal_url) throw new Error("No portal URL returned");
+      window.location.href = portal_url;
+    } catch (error) {
+      console.error("Failed to open portal", error);
+      toast.error("Unable to open subscription settings");
+    }
+  };
+
   const menuItems = [
+    {
+      title: "Manage Subscription",
+      icon: <CreditCard className="h-5 w-5" />,
+      onClick: handlePortal
+    },
+    {
+      title: "Account Settings",
+      icon: <Settings className="h-5 w-5" />,
+      onClick: () => navigate('/account-settings')
+    },
     {
       title: "Security & Password",
       icon: <Shield className="h-5 w-5" />,

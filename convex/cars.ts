@@ -3,6 +3,8 @@ import { mutation, query } from "./_generated/server";
 import { ConvexError } from "convex/values";
 import { Id, Doc } from "./_generated/dataModel";
 import { getUser } from "./auth";
+import { sanitizeText, sanitizeUrl, sanitizeNumber, MAX_LENGTHS } from "./lib/sanitize";
+import { checkRateLimit } from "./lib/rateLimit";
 
 // Create a new car with image URLs
 export const createCar = mutation({
@@ -28,22 +30,32 @@ export const createCar = mutation({
     try {
       const user = await getUser(ctx);
 
+      // Rate limit car creation
+      checkRateLimit("createCar", user.id);
+
+      // Validate year
+      const year = sanitizeNumber(args.year, 1900, new Date().getFullYear() + 2);
+      if (year === undefined) {
+        throw new ConvexError("Invalid year");
+      }
+
+      // Sanitize all text inputs
       const carId = await ctx.db.insert("cars", {
         userId: user.id,
-        make: args.make,
-        model: args.model,
-        year: args.year,
-        package: args.package,
-        engine: args.engine,
-        transmission: args.transmission,
-        drivetrain: args.drivetrain,
-        bodyStyle: args.bodyStyle,
-        exteriorColor: args.exteriorColor,
-        interiorColor: args.interiorColor,
-        generation: args.generation,
-        powerHp: args.powerHp,
-        torqueLbFt: args.torqueLbFt,
-        description: args.description,
+        make: sanitizeText(args.make, MAX_LENGTHS.carField) || args.make,
+        model: sanitizeText(args.model, MAX_LENGTHS.carField) || args.model,
+        year: year,
+        package: sanitizeText(args.package, MAX_LENGTHS.carField),
+        engine: sanitizeText(args.engine, MAX_LENGTHS.carField),
+        transmission: sanitizeText(args.transmission, MAX_LENGTHS.carField),
+        drivetrain: sanitizeText(args.drivetrain, MAX_LENGTHS.carField),
+        bodyStyle: sanitizeText(args.bodyStyle, MAX_LENGTHS.carField),
+        exteriorColor: sanitizeText(args.exteriorColor, MAX_LENGTHS.carField),
+        interiorColor: sanitizeText(args.interiorColor, MAX_LENGTHS.carField),
+        generation: sanitizeText(args.generation, MAX_LENGTHS.carField),
+        powerHp: sanitizeText(args.powerHp, MAX_LENGTHS.carField),
+        torqueLbFt: sanitizeText(args.torqueLbFt, MAX_LENGTHS.carField),
+        description: sanitizeText(args.description, MAX_LENGTHS.description),
         images: args.images ?? [],
         isPublished: args.isPublished ?? true,
         createdAt: new Date().toISOString(),
@@ -59,12 +71,13 @@ export const createCar = mutation({
   },
 });
 
+
 // Get all cars for the current user
 export const getUserCars = query({
   handler: async (ctx) => {
     try {
       const user = await getUser(ctx);
-      
+
       const cars = await ctx.db
         .query("cars")
         .withIndex("by_user", (q) => q.eq("userId", user.id))
@@ -83,7 +96,7 @@ export const getUserFirstCar = query({
   handler: async (ctx) => {
     try {
       const user = await getUser(ctx);
-      
+
       const cars = await ctx.db
         .query("cars")
         .withIndex("by_user", (q) => q.eq("userId", user.id))
@@ -114,7 +127,7 @@ export const getCarById = query({
 
     // For unpublished cars, check for ownership or subscription
     const identity = await ctx.auth.getUserIdentity();
-    
+
     // If there's no authenticated user, they can't see an unpublished car
     if (!identity) {
       return null;
@@ -154,25 +167,48 @@ export const updateCar = mutation({
   handler: async (ctx, args) => {
     try {
       const user = await getUser(ctx);
-      
+
+      // Rate limit car updates
+      checkRateLimit("updateCar", user.id);
+
       const car = await ctx.db.get(args.carId);
-      
+
       if (!car) {
         throw new ConvexError("Car not found");
       }
-      
+
       if (car.userId !== user.id) {
         throw new ConvexError("Not authorized to update this car");
       }
 
-      const { carId, ...rest } = args;
-      const updates: Partial<Omit<Doc<"cars">, "_id" | "_creationTime">> = { ...rest };
-      updates.updatedAt = new Date().toISOString();
+      // Sanitize all text inputs
+      const updates: Partial<Omit<Doc<"cars">, "_id" | "_creationTime">> = {
+        ...(args.make !== undefined && { make: sanitizeText(args.make, MAX_LENGTHS.carField) || args.make }),
+        ...(args.model !== undefined && { model: sanitizeText(args.model, MAX_LENGTHS.carField) || args.model }),
+        ...(args.year !== undefined && { year: sanitizeNumber(args.year, 1900, new Date().getFullYear() + 2) }),
+        ...(args.package !== undefined && { package: sanitizeText(args.package, MAX_LENGTHS.carField) }),
+        ...(args.engine !== undefined && { engine: sanitizeText(args.engine, MAX_LENGTHS.carField) }),
+        ...(args.transmission !== undefined && { transmission: sanitizeText(args.transmission, MAX_LENGTHS.carField) }),
+        ...(args.drivetrain !== undefined && { drivetrain: sanitizeText(args.drivetrain, MAX_LENGTHS.carField) }),
+        ...(args.bodyStyle !== undefined && { bodyStyle: sanitizeText(args.bodyStyle, MAX_LENGTHS.carField) }),
+        ...(args.exteriorColor !== undefined && { exteriorColor: sanitizeText(args.exteriorColor, MAX_LENGTHS.carField) }),
+        ...(args.interiorColor !== undefined && { interiorColor: sanitizeText(args.interiorColor, MAX_LENGTHS.carField) }),
+        ...(args.generation !== undefined && { generation: sanitizeText(args.generation, MAX_LENGTHS.carField) }),
+        ...(args.powerHp !== undefined && { powerHp: sanitizeText(args.powerHp, MAX_LENGTHS.carField) }),
+        ...(args.torqueLbFt !== undefined && { torqueLbFt: sanitizeText(args.torqueLbFt, MAX_LENGTHS.carField) }),
+        ...(args.description !== undefined && { description: sanitizeText(args.description, MAX_LENGTHS.description) }),
+        ...(args.images !== undefined && { images: args.images }),
+        ...(args.isPublished !== undefined && { isPublished: args.isPublished }),
+        updatedAt: new Date().toISOString(),
+      };
 
       await ctx.db.patch(args.carId, updates);
-      
+
       return { success: true };
     } catch (error) {
+      if (error instanceof ConvexError) {
+        throw error;
+      }
       throw new ConvexError("Not authorized");
     }
   },
@@ -184,22 +220,28 @@ export const deleteCar = mutation({
   handler: async (ctx, args) => {
     try {
       const user = await getUser(ctx);
-      
+
+      // Rate limit car deletion
+      checkRateLimit("deleteCar", user.id);
+
       const car = await ctx.db.get(args.carId);
-      
+
       if (!car) {
         throw new ConvexError("Car not found");
       }
-      
+
       if (car.userId !== user.id) {
         throw new ConvexError("Not authorized to delete this car");
       }
 
       // Delete the car record
       await ctx.db.delete(args.carId);
-      
+
       return { success: true };
     } catch (error) {
+      if (error instanceof ConvexError) {
+        throw error;
+      }
       throw new ConvexError("Not authorized");
     }
   },
@@ -211,15 +253,15 @@ export const publishAllCars = mutation({
   handler: async (ctx) => {
     try {
       const user = await getUser(ctx);
-      
+
       // Get all user's cars
       const cars = await ctx.db
         .query("cars")
         .withIndex("by_user", (q) => q.eq("userId", user.id))
         .collect();
-      
-      console.log(`Found ${cars.length} cars for user ${user.id}`);
-      
+
+
+
       // Force update all cars to ensure they're published
       // This addresses potential data inconsistencies
       for (const car of cars) {
@@ -228,8 +270,8 @@ export const publishAllCars = mutation({
           isPublished: true
         });
       }
-      
-      return { 
+
+      return {
         success: true,
         message: `Force-published all ${cars.length} cars. They should now be visible on your public profile.`
       };

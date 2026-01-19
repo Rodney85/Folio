@@ -3,6 +3,11 @@ import { mutation, query, action } from "./_generated/server";
 import { ConvexError } from "convex/values";
 import { Id } from "./_generated/dataModel";
 import { getUser } from "./auth";
+import { isValidFileType } from "./lib/sanitize";
+import { checkRateLimit } from "./lib/rateLimit";
+
+// Allowed image types for uploads
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
 // Generate a URL for file upload to Convex storage
 export const generateUploadUrl = mutation({
@@ -10,9 +15,26 @@ export const generateUploadUrl = mutation({
     contentType: v.string(),
   },
   handler: async (ctx, args) => {
+    // Ensure user is authenticated
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new ConvexError("Authentication required for file uploads");
+    }
+
+    // Rate limit file uploads
+    checkRateLimit("uploadFile", identity.subject);
+
+    // Validate content type
+    if (!isValidFileType(args.contentType, ALLOWED_IMAGE_TYPES)) {
+      throw new ConvexError(
+        `Invalid file type: ${args.contentType}. Allowed types: JPEG, PNG, WebP, GIF`
+      );
+    }
+
     return await ctx.storage.generateUploadUrl();
   },
 });
+
 
 // Get a temporary URL for viewing a stored file
 export const getUrl = query({
@@ -60,13 +82,13 @@ export const uploadFileToBackblaze = action({
     const BACKBLAZE_BUCKET_NAME = process.env.BACKBLAZE_BUCKET_NAME;
     const BACKBLAZE_BUCKET_ID = process.env.BACKBLAZE_BUCKET_ID;
     const BACKBLAZE_S3_ENDPOINT = process.env.BACKBLAZE_S3_ENDPOINT || "https://s3.us-west-004.backblazeb2.com";
-    
+
     // For debugging with master key, use environment variables only
     // You can set both MASTER_KEY_ID and MASTER_APP_KEY in your Convex environment
     // Run: npx convex env set MASTER_KEY_ID "your-master-key-id"
     // Run: npx convex env set MASTER_APP_KEY "your-master-app-key"
     // Never hard-code sensitive credentials
-    
+
     // Use the standard Backblaze API URL for authentication
     // Regional endpoints are only used for S3-compatible API, not the native B2 API
     const BACKBLAZE_API_URL = "https://api.backblazeb2.com";
@@ -78,17 +100,17 @@ export const uploadFileToBackblaze = action({
     try {
       // Get current user for security
       const user = await getUser(ctx);
-      
+
       // Get the file from Convex storage
       const fileData = await ctx.storage.get(args.storageId);
       if (!fileData) {
         throw new Error(`File with ID ${args.storageId} not found in storage`);
       }
-      
+
       // Generate a unique filename with timestamp and user ID for security
       const timestamp = Date.now();
       const uniqueFileName = `cars/${user.id}/${timestamp}_${args.fileName.replace(/\s+/g, '-')}`;
-      
+
       // Helper function for base64 encoding that works in Convex (no Buffer dependency)
       function base64Encode(str: string): string {
         // This function works in browsers and Convex environments
@@ -117,24 +139,24 @@ export const uploadFileToBackblaze = action({
             }
           }
         }
-        
+
         // Convert bytes to string and then use btoa
         // Use apply to avoid TypeScript spread operator type errors
         const byteString = String.fromCharCode.apply(null, bytes);
         return btoa(byteString);
       }
-      
+
       // Step 1: Try to authenticate with Backblaze B2 using multiple methods
       // First try the application key, then try master key if that fails
-      
-      console.log(`Starting Backblaze upload for file: ${args.fileName}`);
-      
+
+
+
       // This is a helper function that will try to authenticate with a given keyId and key
       async function tryAuthenticate(keyId: string, appKey: string): Promise<any> {
         try {
           const authString = `${keyId}:${appKey}`;
           const encoded = base64Encode(authString);
-          
+
           const response = await fetch(`${BACKBLAZE_API_URL}/b2api/v2/b2_authorize_account`, {
             method: 'GET',
             headers: {
@@ -143,7 +165,6 @@ export const uploadFileToBackblaze = action({
           });
 
           if (!response.ok) {
-            console.log(`Authentication failed with status: ${response.status}`);
             return null;
           }
 
@@ -153,16 +174,16 @@ export const uploadFileToBackblaze = action({
           return null;
         }
       }
-      
+
       // Authenticate with application key
       const authData = await tryAuthenticate(BACKBLAZE_KEY_ID!, BACKBLAZE_APP_KEY!);
-      
+
       if (!authData) {
         throw new Error(`Failed to authenticate with Backblaze. Check your credentials and permissions.`);
       }
-      
+
       const { apiUrl, authorizationToken, downloadUrl } = authData;
-      
+
       // Step 2: Get an upload URL and auth token
       const getUploadUrlResponse = await fetch(`${apiUrl}/b2api/v2/b2_get_upload_url`, {
         method: 'POST',
@@ -181,7 +202,7 @@ export const uploadFileToBackblaze = action({
 
       const uploadUrlData = await getUploadUrlResponse.json();
       const { uploadUrl, authorizationToken: uploadAuthToken } = uploadUrlData;
-      
+
       // Step 3: Upload the file to Backblaze B2
       const uploadResponse = await fetch(uploadUrl, {
         method: 'POST',
@@ -199,10 +220,10 @@ export const uploadFileToBackblaze = action({
       }
 
       const uploadResult = await uploadResponse.json();
-      
+
       // The file URL will be in this format: https://f002.backblazeb2.com/file/bucket-name/path/to/file
       const fileUrl = `${downloadUrl}/file/${BACKBLAZE_BUCKET_NAME}/${uniqueFileName}`;
-      
+
       return {
         success: true,
         fileUrl,
@@ -226,7 +247,7 @@ export const getBackblazeUrl = query({
     if (!BACKBLAZE_BUCKET_NAME) {
       throw new Error("Missing Backblaze configuration");
     }
-    
+
     return `https://f002.backblazeb2.com/file/${BACKBLAZE_BUCKET_NAME}/${args.fileName}`;
   }
 });

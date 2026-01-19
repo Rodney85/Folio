@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { UserCircle2, Plus, Menu } from 'lucide-react';
+import { UserCircle2, Plus, Menu, Compass } from 'lucide-react';
 
 interface BottomNavigationProps {
   onMenuClick: () => void;
@@ -42,6 +42,12 @@ export const BottomNavigation = ({ onMenuClick }: BottomNavigationProps) => {
       active: location.pathname.startsWith('/profile'),
     },
     {
+      to: "/explore",
+      icon: <Compass size={24} />,
+      label: "Explore",
+      active: location.pathname.startsWith('/explore'),
+    },
+    {
       to: "/add-car",
       icon: <Plus size={24} />,
       label: "Add Car",
@@ -51,7 +57,7 @@ export const BottomNavigation = ({ onMenuClick }: BottomNavigationProps) => {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 z-50"
+      className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-xl border-t border-white/10 z-50"
       style={{
         paddingBottom: 'env(safe-area-inset-bottom, 0px)',
       }}

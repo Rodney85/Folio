@@ -1,6 +1,7 @@
 'use client'
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
+import { motion } from 'framer-motion';
 
 export default function FAQs() {
     const faqItems = [
@@ -39,12 +40,24 @@ export default function FAQs() {
     return (
         <section className="py-16 md:py-24 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-blue-950" id="faq">
             <div className="mx-auto max-w-5xl px-4 md:px-6">
-                <div className="mx-auto max-w-xl text-center">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5 }}
+                    className="mx-auto max-w-xl text-center"
+                >
                     <h2 className="text-balance text-3xl font-bold md:text-4xl lg:text-5xl">Frequently Asked Questions</h2>
                     <p className="text-muted-foreground mt-4 text-balance">Get answers to common questions about building, sharing, and monetizing your automotive showcase with CarFolio.</p>
-                </div>
+                </motion.div>
 
-                <div className="mx-auto mt-12 max-w-xl">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.2, duration: 0.5 }}
+                    className="mx-auto mt-12 max-w-xl"
+                >
                     <Accordion
                         type="single"
                         collapsible
@@ -61,17 +74,18 @@ export default function FAQs() {
                             </AccordionItem>
                         ))}
                     </Accordion>
+                </motion.div>
 
-                    <p className="text-muted-foreground mt-6 px-4 md:px-8">
-                        Still have questions? Contact our{' '}
-                        <a
-                            href="mailto:support@carfolio.com"
-                            className="text-primary font-medium hover:underline">
-                            support team
-                        </a>
-                    </p>
-                </div>
+                <p className="text-muted-foreground mt-6 px-4 md:px-8">
+                    Still have questions? Contact our{' '}
+                    <a
+                        href="mailto:support@carfolio.com"
+                        className="text-primary font-medium hover:underline">
+                        support team
+                    </a>
+                </p>
             </div>
         </section>
+
     )
 }

@@ -7,26 +7,29 @@ interface PageTransitionProps {
   className?: string;
 }
 
-// Page transition variants - Subtle and smooth
+// Page transition variants - Cinematic
 const pageVariants = {
   initial: {
     opacity: 0,
-    y: 8
+    scale: 0.98,
+    filter: 'blur(4px)'
   },
   in: {
     opacity: 1,
-    y: 0
+    scale: 1,
+    filter: 'blur(0px)'
   },
   out: {
     opacity: 0,
-    y: -8
+    scale: 1.02,
+    filter: 'blur(4px)'
   }
 };
 
 const pageTransition = {
-  type: 'tween' as const,
-  ease: 'easeInOut' as const,
-  duration: 0.2
+  type: 'spring' as const,
+  stiffness: 90,
+  damping: 20
 };
 
 // Staggered children animation for sections
@@ -42,13 +45,13 @@ export const staggerContainer = {
 };
 
 export const staggerItem = {
-  initial: { 
-    opacity: 0, 
+  initial: {
+    opacity: 0,
     y: 20,
     filter: 'blur(4px)'
   },
-  animate: { 
-    opacity: 1, 
+  animate: {
+    opacity: 1,
     y: 0,
     filter: 'blur(0px)',
     transition: {
@@ -77,9 +80,9 @@ export const slideVariants = {
   })
 };
 
-export const PageTransition: React.FC<PageTransitionProps> = ({ 
-  children, 
-  className = "" 
+export const PageTransition: React.FC<PageTransitionProps> = ({
+  children,
+  className = ""
 }) => {
   const location = useLocation();
 

@@ -91,7 +91,7 @@ const PublicProfilePage = () => {
 
 
   return (
-    <div className="flex flex-col bg-slate-900 text-white min-h-screen p-4">
+    <div className="flex flex-col bg-transparent text-white min-h-screen p-4 max-w-2xl mx-auto w-full md:border-x md:border-white/5 md:shadow-2xl">
       {/* Profile header */}
       <div className="flex flex-col items-center px-6 pb-4">
         <div className="relative">
@@ -103,7 +103,7 @@ const PublicProfilePage = () => {
         </div>
 
         <h2 className="font-bold mt-6 text-xl">@{user.username}</h2>
-        <p className="text-center text-sm text-muted-foreground mt-4 mb-6 max-w-xs whitespace-pre-wrap">
+        <p className="text-center text-sm text-slate-400 mt-4 mb-6 max-w-xs whitespace-pre-wrap">
           {user.bio ? (
             <span className="whitespace-pre-wrap">{user.bio}</span>
           ) : (
@@ -121,7 +121,7 @@ const PublicProfilePage = () => {
       </div>
 
       {/* Divider line */}
-      <div className="w-full h-[1px] bg-gray-300/20 dark:bg-gray-700/20 my-5"></div>
+      <div className="w-full h-[1px] bg-white/10 my-5"></div>
 
       {/* Car grid - Instagram-style */}
       <div className="w-full mt-1 px-[10px]">
@@ -133,10 +133,10 @@ const PublicProfilePage = () => {
         {!user.isSubscribed ? (
           <div className="relative min-h-[300px] w-full rounded-lg overflow-hidden">
             {/* Blurry Background Layer */}
-            <div className="absolute inset-0 backdrop-blur-md bg-slate-900/50 z-10 flex flex-col items-center justify-center text-center p-6">
-              <div className="bg-slate-900/90 p-6 rounded-xl border border-slate-700 shadow-2xl max-w-md">
+            <div className="absolute inset-0 backdrop-blur-md bg-black/50 z-10 flex flex-col items-center justify-center text-center p-6">
+              <div className="bg-[#020204] p-6 rounded-xl border border-white/10 shadow-2xl max-w-md">
                 <h3 className="text-xl font-bold text-white mb-2">Restricted Profile</h3>
-                <p className="text-slate-300 mb-4">
+                <p className="text-slate-400 mb-4">
                   This user is not a premium subscriber, so their full profile and car collection are not visible to the public.
                 </p>
                 <p className="text-sm text-slate-500">
@@ -148,8 +148,8 @@ const PublicProfilePage = () => {
             {/* Blurred Content (Fake placeholders to look like content) */}
             <div className="grid grid-cols-3 gap-[2px] opacity-20 filter blur-sm pointer-events-none select-none">
               {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} className="aspect-square bg-slate-800 rounded-[5px] flex items-center justify-center">
-                  <Car className="h-8 w-8 text-slate-600" />
+                <div key={i} className="aspect-square bg-slate-800/30 rounded-[5px] flex items-center justify-center">
+                  <Car className="h-8 w-8 text-slate-700" />
                 </div>
               ))}
             </div>
@@ -169,8 +169,8 @@ const PublicProfilePage = () => {
                     className="absolute inset-0 w-full h-full object-cover rounded-[5px]"
                   />
                 ) : (
-                  <div className="absolute inset-0 flex items-center justify-center bg-slate-800 rounded-[5px]">
-                    <Car className="h-6 w-6 text-muted-foreground" />
+                  <div className="absolute inset-0 flex items-center justify-center bg-slate-800/20 rounded-[5px]">
+                    <Car className="h-6 w-6 text-slate-600" />
                   </div>
                 )}
               </div>
@@ -178,10 +178,10 @@ const PublicProfilePage = () => {
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-10 space-y-4">
-            <Car className="h-12 w-12 text-muted-foreground" />
+            <Car className="h-12 w-12 text-slate-700" />
             <div className="text-center">
-              <p className="text-muted-foreground">No published cars to display</p>
-              <p className="text-sm text-muted-foreground mt-2">
+              <p className="text-slate-500">No published cars to display</p>
+              <p className="text-sm text-slate-600 mt-2">
                 This user hasn't published any cars yet.
               </p>
             </div>

@@ -38,11 +38,6 @@ export const MobileMenu = ({ open, onClose, onShareClick }: MobileMenuProps) => 
     onClose();
   };
 
-  const handleSubscription = () => {
-    navigate('/subscription');
-    onClose();
-  };
-
   const handleSignOut = async () => {
     await signOut();
     navigate('/');
@@ -50,11 +45,6 @@ export const MobileMenu = ({ open, onClose, onShareClick }: MobileMenuProps) => 
   };
 
   const menuItems = [
-    {
-      title: 'Subscription',
-      icon: <Crown className="h-5 w-5" />,
-      onClick: handleSubscription,
-    },
     {
       title: 'Preview Public Profile',
       icon: <Eye className="h-5 w-5" />,
@@ -106,9 +96,8 @@ export const MobileMenu = ({ open, onClose, onShareClick }: MobileMenuProps) => 
                 key={index}
                 onClick={item.onClick}
                 disabled={item.disabled}
-                className={`w-full flex items-center justify-between px-6 py-4 text-white hover:bg-slate-800/50 transition-colors ${
-                  item.disabled ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
+                className={`w-full flex items-center justify-between px-6 py-4 text-white hover:bg-slate-800/50 transition-colors ${item.disabled ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
               >
                 <div className="flex items-center space-x-3">
                   {item.icon}
