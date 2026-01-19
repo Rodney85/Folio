@@ -11,7 +11,7 @@ const SignUp = () => {
     <div className="min-h-screen flex flex-col items-center justify-center bg-white p-4">
       <div className="max-w-md w-full rounded-xl overflow-hidden">
         <div className="mb-4">
-          <Link 
+          <Link
             to="/"
             className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors"
           >
@@ -19,12 +19,12 @@ const SignUp = () => {
             Back to Home
           </Link>
         </div>
-        
+
         <ClerkSignUp
           routing="path"
           path="/sign-up"
           signInUrl="/sign-in"
-          afterSignUpUrl="/welcome"
+          fallbackRedirectUrl="/welcome"
           appearance={{
             elements: {
               rootBox: "w-full mx-auto",
