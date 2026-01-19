@@ -75,7 +75,7 @@
     "react-hook-form": "^7.53.0",
     "react-hot-toast": "^2.5.2",
     "react-resizable-panels": "^2.1.3",
-    "react-router-dom": "^6.26.2",
+    "react-router-dom": "^6.30.3",
     "react-swipeable": "^7.0.2",
     "sonner": "^1.5.0",
     "standardwebhooks": "^1.0.0",
