@@ -23,7 +23,8 @@
     # Permissions policy (restrict features)
     Permissions-Policy = "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()"
     # Content Security Policy - allows images from Backblaze and Clerk, scripts from self
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://clerk.carfolio.cc https://*.clerk.accounts.dev; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.backblazeb2.com https://*.clerk.com https://img.clerk.com https://*.convex.cloud; connect-src 'self' https://*.convex.cloud wss://*.convex.cloud https://clerk.carfolio.cc https://*.clerk.accounts.dev https://*.backblazeb2.com https://api.backblazeb2.com; frame-src https://*.clerk.accounts.dev https://clerk.carfolio.cc;"
+    # Updated to include Cloudflare Turnstile for Clerk CAPTCHA, Unsplash for avatars, and blob workers
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://clerk.carfolio.cc https://*.clerk.accounts.dev https://challenges.cloudflare.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://*.backblazeb2.com https://*.clerk.com https://img.clerk.com https://*.convex.cloud https://images.unsplash.com; connect-src 'self' https://*.convex.cloud wss://*.convex.cloud https://clerk.carfolio.cc https://*.clerk.accounts.dev https://*.backblazeb2.com https://api.backblazeb2.com https://challenges.cloudflare.com; frame-src https://*.clerk.accounts.dev https://clerk.carfolio.cc https://challenges.cloudflare.com; worker-src 'self' blob:;"
 
 # Environment variable definitions can be referenced here, but the actual values
 # should be set in the Netlify dashboard for security reasons
