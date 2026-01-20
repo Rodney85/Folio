@@ -17,14 +17,26 @@ export const getAllIssues = query({
     handler: async (ctx, args) => {
         await verifyAdmin(ctx);
 
+        // Default limit
         const limit = args.limit || 50;
 
-        // Use separate queries based on filter to avoid type issues
+        // If filtering by status, we still want them ordered by time (Recent)
+        // Using by_created_at + filter is often better for "Recent X" than by_status unless status is very rare
         if (args.status) {
             return await ctx.db
                 .query("issues")
-                .withIndex("by_status", (q) => q.eq("status", args.status!))
+                .withIndex("by_created_at")
                 .order("desc")
+                .filter((q) => q.eq(q.field("status"), args.status))
+                .take(limit);
+        }
+
+        // Filter by type if provided (and no status filter - strictly following current logic structure, though we could combine filters)
+        if (args.type) {
+            return await ctx.db
+                .query("issues")
+                .withIndex("by_type", (q) => q.eq("type", args.type!))
+                .order("desc") // Note: This orders by _creationTime implicitly in Convex for simple indexes usually, but explicit index is safer
                 .take(limit);
         }
 

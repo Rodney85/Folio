@@ -1,5 +1,7 @@
 import { useQuery } from "convex/react";
+import { Link } from "react-router-dom";
 import { api } from "../../../convex/_generated/api";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
     Users,
@@ -36,7 +38,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 const AdminDashboard = () => {
     const quickStats = useQuery(api.adminDashboard.getQuickStats);
     const userGrowth = useQuery(api.adminDashboard.getUserGrowthData);
-    const recentIssues = useQuery(api.adminIssues.getAllIssues, { limit: 10 });
+    const recentIssues = useQuery(api.adminIssues.getAllIssues, {
+        limit: 10,
+        status: "open" // Only show open issues as requested
+    });
     const newContent = useQuery(api.adminDashboard.getNewContentCount);
 
     // New Analytics Queries
@@ -284,11 +289,16 @@ const AdminDashboard = () => {
 
                 {/* Recent Issues Feed */}
                 <Card className="col-span-3">
-                    <CardHeader>
-                        <CardTitle>Recent Issues</CardTitle>
-                        <CardDescription>
-                            Latest reported issues
-                        </CardDescription>
+                    <CardHeader className="flex flex-row items-center justify-between">
+                        <div>
+                            <CardTitle>Recent Open Issues</CardTitle>
+                            <CardDescription>
+                                Latest unopened reports & feedback
+                            </CardDescription>
+                        </div>
+                        <Button variant="ghost" size="sm" asChild>
+                            <Link to="/admin/issues">View All</Link>
+                        </Button>
                     </CardHeader>
                     <CardContent>
                         <ScrollArea className="h-[300px] pr-4">
@@ -332,7 +342,7 @@ const AdminDashboard = () => {
                     </CardContent>
                 </Card>
             </div>
-        </div>
+        </div >
     );
 };
 
