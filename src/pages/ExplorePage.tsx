@@ -81,10 +81,10 @@ const ExplorePage = () => {
     const handleSearch = useCallback((query: string) => setSearchQuery(query), []);
 
     return (
-        <ResponsiveLayout>
+        <ResponsiveLayout noPadding={true}>
             <div className="min-h-screen bg-transparent text-white pb-20">
                 {/* Hero / Header Section */}
-                <div className="sticky top-0 z-40 pt-6 pb-6 px-4 md:px-8 bg-[#020204] border-b border-white/5">
+                <div className="sticky top-0 z-40 pt-6 pb-6 px-4 md:px-8 bg-[#020204]/95 backdrop-blur-2xl border-b border-white/5">
                     <div className="max-w-7xl mx-auto space-y-6">
                         {/* Title & Trending Toggle */}
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -242,7 +242,7 @@ const ExplorePage = () => {
                     {/* Main Feed */}
                     <section>
                         {/* Bento Grid Layout - Instagram Style (Images Only) */}
-                        <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 auto-rows-[1fr] gap-1 grid-flow-dense">
+                        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 auto-rows-[1fr] gap-4 grid-flow-dense">
                             {displayCars.map((item, index) => {
                                 // Create a visual pattern: every 7th item is large (2x2)
                                 const isLarge = (index % 10 === 0) || (index % 10 === 7);
@@ -254,7 +254,7 @@ const ExplorePage = () => {
                                         initial={{ opacity: 0 }}
                                         animate={{ opacity: 1 }}
                                         transition={{ delay: index * 0.05 }}
-                                        className={`relative group cursor-pointer overflow-hidden bg-slate-900 aspect-square ${isLarge ? 'col-span-2 row-span-2' : 'col-span-1 row-span-1'}`}
+                                        className={`relative group cursor-pointer overflow-hidden bg-slate-900 rounded-2xl aspect-square ${isLarge ? 'col-span-2 row-span-2' : 'col-span-1 row-span-1'}`}
                                         onClick={() => window.location.href = `/u/${item.owner.username}/car/${item.car._id}`}
                                     >
                                         {item.car.images?.[0] ? (

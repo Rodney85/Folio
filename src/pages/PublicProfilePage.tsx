@@ -129,32 +129,8 @@ const PublicProfilePage = () => {
           <h2 className="font-bold text-lg">Cars</h2>
         </div>
 
-        {/* Blur content if user is not subscribed */}
-        {!user.isSubscribed ? (
-          <div className="relative min-h-[300px] w-full rounded-lg overflow-hidden">
-            {/* Blurry Background Layer */}
-            <div className="absolute inset-0 backdrop-blur-md bg-black/50 z-10 flex flex-col items-center justify-center text-center p-6">
-              <div className="bg-[#020204] p-6 rounded-xl border border-white/10 shadow-2xl max-w-md">
-                <h3 className="text-xl font-bold text-white mb-2">Restricted Profile</h3>
-                <p className="text-slate-400 mb-4">
-                  This user is not a premium subscriber, so their full profile and car collection are not visible to the public.
-                </p>
-                <p className="text-sm text-slate-500">
-                  Upgrade to Carfolio Premium to showcase your build to the world.
-                </p>
-              </div>
-            </div>
-
-            {/* Blurred Content (Fake placeholders to look like content) */}
-            <div className="grid grid-cols-3 gap-[2px] opacity-20 filter blur-sm pointer-events-none select-none">
-              {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} className="aspect-square bg-slate-800/30 rounded-[5px] flex items-center justify-center">
-                  <Car className="h-8 w-8 text-slate-700" />
-                </div>
-              ))}
-            </div>
-          </div>
-        ) : cars && cars.length > 0 ? (
+        {/* BETA MODE: All profiles are public - subscription check removed */}
+        {cars && cars.length > 0 ? (
           <div className="grid grid-cols-3 gap-[2px]">
             {cars.map((car) => (
               <div

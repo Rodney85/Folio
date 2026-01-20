@@ -35,6 +35,7 @@ const ShopBuildPage = lazy(() => import("./pages/ShopBuildPage"));
 const PublicProfilePage = lazy(() => import("./pages/PublicProfilePage"));
 const PublicCarDetailsPage = lazy(() => import("./pages/PublicCarDetailsPage"));
 const AnalyticsPage = lazy(() => import("./pages/AnalyticsPage"));
+const ReportIssuePage = lazy(() => import("./pages/ReportIssuePage"));
 
 const ExplorePage = lazy(() => import("./pages/ExplorePage"));
 const AccountSettingsPage = lazy(() => import("./pages/AccountSettingsPage"));
@@ -47,6 +48,7 @@ const AdminUsersPage = lazy(() => import("./components/admin/AdminUsersPage"));
 const AdminUserDetails = lazy(() => import("./components/admin/AdminUserDetails"));
 const AdminContentPage = lazy(() => import("./components/admin/AdminContentPage"));
 const AdminSettingsPage = lazy(() => import("./components/admin/AdminSettingsPage"));
+const AdminIssuesPage = lazy(() => import("./components/admin/AdminIssuesPage"));
 
 const queryClient = new QueryClient();
 
@@ -148,6 +150,13 @@ const AuthenticatedRoutes = () => {
             </Suspense>
           </PageTransition>
         } />
+        <Route path="/report-issue" element={
+          <PageTransition>
+            <Suspense fallback={<PageLoader />}>
+              <ReportIssuePage />
+            </Suspense>
+          </PageTransition>
+        } />
       </Routes>
     </AppLayout>
   );
@@ -233,11 +242,11 @@ const AppContent = () => {
           </PageTransition>
         } />
 
-        {/* Public Car Access - direct car links without username */}
+        {/* Car Access - show private page with edit/delete for signed-in users, public page for guests */}
         <Route path="/car/:id" element={
           <PageTransition>
             <Suspense fallback={<PageLoader />}>
-              <PublicCarDetailsPage />
+              {isSignedIn ? <CarDetailsPage /> : <PublicCarDetailsPage />}
             </Suspense>
           </PageTransition>
         } />
@@ -262,6 +271,11 @@ const AppContent = () => {
           <Route path="content" element={
             <Suspense fallback={<PageLoader />}>
               <AdminContentPage />
+            </Suspense>
+          } />
+          <Route path="issues" element={
+            <Suspense fallback={<PageLoader />}>
+              <AdminIssuesPage />
             </Suspense>
           } />
           <Route path="settings" element={

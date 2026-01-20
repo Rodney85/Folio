@@ -13,7 +13,7 @@ const wordVariants = {
         transition: {
             delay: i * 0.1,
             duration: 0.8,
-            ease: [0.2, 0.65, 0.3, 0.9], // Custom Bezier for "fluid" feel
+            ease: [0.2, 0.65, 0.3, 0.9] as [number, number, number, number], // Custom Bezier for "fluid" feel
         },
     }),
 };

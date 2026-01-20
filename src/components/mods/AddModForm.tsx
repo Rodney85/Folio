@@ -46,43 +46,43 @@ const AddModForm: React.FC<AddModFormProps> = ({ carId }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 p-4 border rounded-lg bg-slate-800 border-slate-700">
+    <form onSubmit={handleSubmit} className="space-y-4 p-4 border rounded-lg bg-white/5 border-white/10 backdrop-blur-sm">
       <fieldset disabled={isLoading} className="space-y-4">
         <div>
           <Label htmlFor="mod-title">Title*</Label>
-          <Input 
-            id="mod-title" 
+          <Input
+            id="mod-title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="e.g., Performance Exhaust" 
-            className="bg-slate-700 border-slate-600 text-white" 
+            placeholder="e.g., Performance Exhaust"
+            className="bg-white/5 border-white/10 text-white placeholder:text-slate-500"
             required
           />
         </div>
         <div>
           <Label htmlFor="mod-category">Mod Category*</Label>
-          <Input 
-            id="mod-category" 
+          <Input
+            id="mod-category"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            placeholder="e.g., Performance, Exterior, Wheels..." 
-            className="bg-slate-700 border-slate-600 text-white" 
+            placeholder="e.g., Performance, Exterior, Wheels..."
+            className="bg-white/5 border-white/10 text-white placeholder:text-slate-500"
             required
           />
         </div>
         <div>
           <Label htmlFor="mod-url">Product URL</Label>
-          <Input 
-            id="mod-url" 
+          <Input
+            id="mod-url"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            placeholder="Paste product URL" 
-            className="bg-slate-700 border-slate-600 text-white" 
+            placeholder="Paste product URL"
+            className="bg-white/5 border-white/10 text-white placeholder:text-slate-500"
           />
         </div>
         <div className="flex justify-end gap-2">
-          <Button type="button" variant="ghost" className="text-slate-400" onClick={resetForm}>Reset</Button>
-          <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white w-28">
+          <Button type="button" variant="ghost" className="text-slate-400 hover:text-white hover:bg-white/10" onClick={resetForm}>Reset</Button>
+          <Button type="submit" className="bg-blue-600 hover:bg-blue-500 text-white w-28">
             {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Add Mod'}
           </Button>
         </div>

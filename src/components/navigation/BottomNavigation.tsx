@@ -31,7 +31,7 @@ const NavItem = ({ to, icon, label, active, comingSoon }: NavItemProps) => {
   );
 };
 
-export const BottomNavigation = ({ onMenuClick }: BottomNavigationProps) => {
+export const BottomNavigation = () => {
   const location = useLocation();
 
   const navItems = [
@@ -66,17 +66,6 @@ export const BottomNavigation = ({ onMenuClick }: BottomNavigationProps) => {
         {navItems.map((item, index) => (
           <NavItem key={index} {...item} />
         ))}
-
-        {/* Hamburger Menu Button */}
-        <button
-          onClick={onMenuClick}
-          className="flex flex-col items-center justify-center flex-1 py-2 text-slate-400 hover:text-white transition-colors"
-        >
-          <div className="mb-1">
-            <Menu size={24} />
-          </div>
-          <span className="text-xs font-medium">Menu</span>
-        </button>
       </div>
     </nav>
   );

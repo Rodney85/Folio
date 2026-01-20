@@ -12,7 +12,8 @@ import {
     Clock,
     DollarSign,
     UserMinus,
-    MousePointer
+    MousePointer,
+    AlertCircle
 } from "lucide-react";
 import {
     Area,
@@ -35,7 +36,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 const AdminDashboard = () => {
     const quickStats = useQuery(api.adminDashboard.getQuickStats);
     const userGrowth = useQuery(api.adminDashboard.getUserGrowthData);
-    const recentActivity = useQuery(api.adminDashboard.getRecentActivities, { limit: 10 });
+    const recentIssues = useQuery(api.adminIssues.getAllIssues, { limit: 10 });
     const newContent = useQuery(api.adminDashboard.getNewContentCount);
 
     // New Analytics Queries
@@ -43,7 +44,7 @@ const AdminDashboard = () => {
     const churnMetrics = useQuery(api.adminDashboard.getChurnMetrics);
     const usageMetrics = useQuery(api.adminDashboard.getUsageMetrics);
 
-    if (!quickStats || !userGrowth || !recentActivity || !newContent || !financialMetrics || !churnMetrics || !usageMetrics) {
+    if (!quickStats || !userGrowth || !recentIssues || !newContent || !financialMetrics || !churnMetrics || !usageMetrics) {
         return (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 {[1, 2, 3, 4].map((i) => (
@@ -281,41 +282,51 @@ const AdminDashboard = () => {
                     </CardContent>
                 </Card>
 
-                {/* Recent Activity Feed */}
+                {/* Recent Issues Feed */}
                 <Card className="col-span-3">
                     <CardHeader>
-                        <CardTitle>Recent Activity</CardTitle>
+                        <CardTitle>Recent Issues</CardTitle>
                         <CardDescription>
-                            Latest actions across the platform
+                            Latest reported issues
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
                         <ScrollArea className="h-[300px] pr-4">
-                            <div className="space-y-6">
-                                {recentActivity.map((activity) => (
-                                    <div key={activity.id} className="flex items-start gap-4">
-                                        <Avatar className="h-9 w-9 mt-0.5">
-                                            <AvatarImage src={`https://avatar.vercel.sh/${activity.user.email || 'user'}`} />
-                                            <AvatarFallback>{activity.user.name?.[0] || 'U'}</AvatarFallback>
-                                        </Avatar>
-                                        <div className="space-y-1">
-                                            <p className="text-sm font-medium leading-none">
-                                                <span className="font-semibold">{activity.user.name}</span>
-                                                <span className="text-muted-foreground font-normal">
-                                                    {activity.type === 'user_login' && ' logged in'}
-                                                    {activity.type === 'profile_view' && ' viewed a profile'}
-                                                    {activity.type === 'car_view' && ` viewed ${activity.item.title}`}
-                                                    {activity.type === 'part_view' && ` viewed ${activity.item.title}`}
-                                                    {activity.type === 'user_created' && ' joined the platform'}
-                                                </span>
-                                            </p>
-                                            <div className="flex items-center text-xs text-muted-foreground">
-                                                <Clock className="mr-1 h-3 w-3" />
-                                                {formatDistanceToNow(activity.timestamp, { addSuffix: true })}
+                            <div className="space-y-4">
+                                {recentIssues.length === 0 ? (
+                                    <p className="text-sm text-muted-foreground text-center py-8">No issues reported</p>
+                                ) : (
+                                    recentIssues.map((issue) => (
+                                        <div key={issue._id} className="flex items-start gap-3 p-3 rounded-lg border bg-card/50 hover:bg-card/80 transition-colors">
+                                            <div className={`mt-0.5 ${issue.priority === 'critical' ? 'text-red-500' :
+                                                issue.priority === 'high' ? 'text-orange-500' :
+                                                    issue.priority === 'medium' ? 'text-yellow-500' :
+                                                        'text-blue-500'
+                                                }`}>
+                                                <AlertCircle className="h-5 w-5" />
+                                            </div>
+                                            <div className="space-y-1 flex-1">
+                                                <div className="flex items-center justify-between">
+                                                    <p className="text-sm font-medium leading-none line-clamp-1">{issue.title}</p>
+                                                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full uppercase font-bold ${issue.status === 'open' ? 'bg-red-500/10 text-red-500' :
+                                                        issue.status === 'in_progress' ? 'bg-blue-500/10 text-blue-500' :
+                                                            issue.status === 'resolved' ? 'bg-green-500/10 text-green-500' :
+                                                                'bg-gray-500/10 text-gray-500'
+                                                        }`}>
+                                                        {issue.status.replace('_', ' ')}
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center justify-between text-xs text-muted-foreground mt-1">
+                                                    <span>{issue.userName}</span>
+                                                    <span className="flex items-center">
+                                                        <Clock className="mr-1 h-3 w-3" />
+                                                        {formatDistanceToNow(issue.createdAt, { addSuffix: true })}
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    ))
+                                )}
                             </div>
                         </ScrollArea>
                     </CardContent>

@@ -20,6 +20,8 @@ export default defineSchema({
     // Admin role
     role: v.optional(v.string()),
     publicMetadata: v.optional(v.any()),
+    // Legacy subscription field (from previous payment integration)
+    subscriptionStatus: v.optional(v.string()),
   }).index("by_token", ["tokenIdentifier"])
     .index("by_username", ["username"])
     .searchIndex("search_users", {
@@ -95,4 +97,40 @@ export default defineSchema({
     .index("by_car", ["carId"])
     .index("by_created_at", ["createdAt"])
     .index("by_user_and_type", ["userId", "type"]),
+
+  // Issues table for user-reported issues
+  issues: defineTable({
+    // Reporter Info
+    userId: v.string(),                    // Clerk user ID
+    userEmail: v.string(),                 // For easy reference
+    userName: v.string(),                  // For display
+
+    // Issue Details
+    type: v.string(),                      // "bug" | "feature" | "account" | "content" | "other"
+    title: v.string(),
+    description: v.string(),
+    priority: v.string(),                  // "low" | "medium" | "high" | "critical"
+
+    // Context
+    pageUrl: v.optional(v.string()),       // Where issue was reported from
+    deviceInfo: v.optional(v.string()),    // Browser/OS info
+    screenshotId: v.optional(v.string()),  // Storage ID for uploaded screenshot
+
+    // Status Tracking
+    status: v.string(),                    // "open" | "in_progress" | "resolved" | "closed"
+
+    // Admin Response
+    assignedTo: v.optional(v.string()),    // Admin user ID if assigned
+    adminNotes: v.optional(v.string()),    // Internal notes
+    resolution: v.optional(v.string()),    // Resolution summary
+
+    // Timestamps
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    resolvedAt: v.optional(v.number()),
+  }).index("by_user", ["userId"])
+    .index("by_status", ["status"])
+    .index("by_type", ["type"])
+    .index("by_priority", ["priority"])
+    .index("by_created_at", ["createdAt"]),
 });

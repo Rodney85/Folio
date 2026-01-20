@@ -4,12 +4,13 @@ import ResponsiveLayout from "./ResponsiveLayout";
 
 interface MobileLayoutProps {
   children: ReactNode;
+  noPadding?: boolean;
 }
 
 // MobileLayout now just forwards to ResponsiveLayout to maintain backward compatibility
-export const MobileLayout = ({ children }: MobileLayoutProps) => {
+export const MobileLayout = ({ children, noPadding = false }: MobileLayoutProps) => {
   return (
-    <ResponsiveLayout>
+    <ResponsiveLayout noPadding={noPadding}>
       {children}
     </ResponsiveLayout>
   );

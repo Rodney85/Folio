@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useUser, useClerk } from "@clerk/clerk-react";
 import { toast } from "sonner";
-import { Share, Car, Plus, Loader, GripHorizontal, Sparkles, HelpCircle, Instagram, Youtube, Settings } from "lucide-react";
+import { Share, Car, Plus, Loader, GripHorizontal, Sparkles, HelpCircle, Instagram, Youtube, Settings, Menu } from "lucide-react";
 import { useState } from "react";
 import MobileLayout from "@/components/layout/MobileLayout";
 import { ResponsiveLayout } from "@/components/layout/ResponsiveLayout";
@@ -59,20 +59,8 @@ const ProfilePage = () => {
     <div className={`flex flex-col min-h-screen bg-transparent text-white ${!isMobile ? 'p-6' : 'pb-0'}`}>
       {/* Top bar - Only visible on mobile */}
       {isMobile && (
-        <div className="flex justify-between items-center p-4 pb-2">
-          <Share className="text-white cursor-pointer" onClick={() => setShareModalOpen(true)} />
-          <Settings className="text-white cursor-pointer" onClick={() => {
-            clerk.openUserProfile({
-              appearance: {
-                elements: {
-                  rootBox: {
-                    boxShadow: "none",
-                    width: "100%"
-                  },
-                },
-              },
-            });
-          }} />
+        <div className="flex justify-end items-center p-4 pb-2">
+          <Menu className="text-white cursor-pointer" onClick={() => navigate('/profile/menu')} />
         </div>
       )}
 

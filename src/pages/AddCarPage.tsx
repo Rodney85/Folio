@@ -218,7 +218,7 @@ const Combobox = ({ options, value, onChange, placeholder, emptyMessage }: Combo
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between bg-transparent text-white hover:bg-slate-800 hover:text-white"
+          className="w-full justify-between bg-white/5 border-white/10 text-white hover:bg-white/10 hover:text-white"
         >
           {value || placeholder}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -525,7 +525,7 @@ export default function AddCarPage() {
                 ))}
                 {images.length < 8 && (
                   <div
-                    className="relative aspect-[4/3] border-2 border-dashed border-slate-700 rounded-md flex items-center justify-center cursor-pointer hover:border-slate-500 transition-colors"
+                    className="relative aspect-[4/3] border-2 border-dashed border-white/10 bg-white/5 rounded-md flex items-center justify-center cursor-pointer hover:border-white/20 hover:bg-white/10 transition-colors"
                     onClick={triggerFileInput}
                   >
                     <div className="text-center text-slate-500">
@@ -575,7 +575,7 @@ export default function AddCarPage() {
                     value={carData.year}
                     onValueChange={(value) => handleSelectChange("year", value)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-white/5 border-white/10 text-white">
                       <SelectValue placeholder="Select year" />
                     </SelectTrigger>
                     <SelectContent>
@@ -648,11 +648,11 @@ export default function AddCarPage() {
                 </div>
                 <div>
                   <Label htmlFor="package">Package</Label>
-                  <Input id="package" name="package" value={carData.package} onChange={handleChange} placeholder="e.g., Premium" />
+                  <Input id="package" name="package" value={carData.package} onChange={handleChange} placeholder="e.g., Premium" className="bg-white/5 border-white/10 text-white placeholder:text-slate-500" />
                 </div>
                 <div>
                   <Label htmlFor="engine">Engine</Label>
-                  <Input id="engine" name="engine" value={carData.engine} onChange={handleChange} placeholder="e.g., 2JZ-GTE" />
+                  <Input id="engine" name="engine" value={carData.engine} onChange={handleChange} placeholder="e.g., 2JZ-GTE" className="bg-white/5 border-white/10 text-white placeholder:text-slate-500" />
                 </div>
                 <div>
                   <Label htmlFor="transmission">Transmission</Label>
@@ -660,7 +660,7 @@ export default function AddCarPage() {
                     value={carData.transmission}
                     onValueChange={(value) => handleSelectChange("transmission", value)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-white/5 border-white/10 text-white">
                       <SelectValue placeholder="Select transmission" />
                     </SelectTrigger>
                     <SelectContent>
@@ -678,7 +678,7 @@ export default function AddCarPage() {
                     value={carData.drivetrain}
                     onValueChange={(value) => handleSelectChange("drivetrain", value)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-white/5 border-white/10 text-white">
                       <SelectValue placeholder="Select drivetrain" />
                     </SelectTrigger>
                     <SelectContent>
@@ -696,7 +696,7 @@ export default function AddCarPage() {
                     value={carData.bodyStyle}
                     onValueChange={(value) => handleSelectChange("bodyStyle", value)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-white/5 border-white/10 text-white">
                       <SelectValue placeholder="Select body style" />
                     </SelectTrigger>
                     <SelectContent>
@@ -714,7 +714,7 @@ export default function AddCarPage() {
                     value={carData.exteriorColor}
                     onValueChange={(value) => handleSelectChange("exteriorColor", value)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-white/5 border-white/10 text-white">
                       <SelectValue placeholder="Select exterior color" />
                     </SelectTrigger>
                     <SelectContent>
@@ -738,7 +738,7 @@ export default function AddCarPage() {
                     value={carData.interiorColor}
                     onValueChange={(value) => handleSelectChange("interiorColor", value)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-white/5 border-white/10 text-white">
                       <SelectValue placeholder="Select interior color" />
                     </SelectTrigger>
                     <SelectContent>
@@ -758,15 +758,15 @@ export default function AddCarPage() {
                 </div>
                 <div>
                   <Label htmlFor="generation">Generation</Label>
-                  <Input id="generation" name="generation" value={carData.generation} onChange={handleChange} placeholder="e.g., MK4" />
+                  <Input id="generation" name="generation" value={carData.generation} onChange={handleChange} placeholder="e.g., MK4" className="bg-white/5 border-white/10 text-white placeholder:text-slate-500" />
                 </div>
                 <div>
                   <Label htmlFor="powerHp">Power (HP)</Label>
-                  <Input id="powerHp" name="powerHp" value={carData.powerHp} onChange={handleChange} placeholder="e.g., 326" />
+                  <Input id="powerHp" name="powerHp" value={carData.powerHp} onChange={handleChange} placeholder="e.g., 326" className="bg-white/5 border-white/10 text-white placeholder:text-slate-500" />
                 </div>
                 <div>
                   <Label htmlFor="torqueLbFt">Torque (lb-ft)</Label>
-                  <Input id="torqueLbFt" name="torqueLbFt" value={carData.torqueLbFt} onChange={handleChange} placeholder="e.g., 315" />
+                  <Input id="torqueLbFt" name="torqueLbFt" value={carData.torqueLbFt} onChange={handleChange} placeholder="e.g., 315" className="bg-white/5 border-white/10 text-white placeholder:text-slate-500" />
                 </div>
               </div>
             </div>
@@ -781,7 +781,7 @@ export default function AddCarPage() {
                 onChange={handleChange}
                 placeholder="Tell us about your car..."
                 rows={4}
-                className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-400 focus:ring-blue-500 focus:border-blue-500 resize-y min-h-[100px] whitespace-pre-line"
+                className="bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:ring-blue-500 focus:border-blue-500 resize-y min-h-[100px] whitespace-pre-line"
               />
             </div>
 

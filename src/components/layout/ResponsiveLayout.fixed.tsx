@@ -4,7 +4,6 @@ import { useUser, useAuth, useClerk } from '@clerk/clerk-react';
 import { BarChart3, Plus, UserCircle2, Menu, X, Home, Shield, CreditCard, Monitor, Flag, LogOut, ChevronRight, Share, Eye } from 'lucide-react';
 import { Logo } from '@/components/ui/logo';
 import ShareModal from '@/components/ShareModal';
-import ShareModal from '@/components/ShareModal';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { useQuery } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
@@ -98,8 +97,8 @@ export const ResponsiveLayout = ({ children }: ResponsiveLayoutProps) => {
       title: "Share Profile",
       icon: <Share className="h-5 w-5" />,
       onClick: handleShare
-
-  {
+    },
+    {
       title: "Report an Issue",
       icon: <Flag className="h-5 w-5" />,
       onClick: () => {

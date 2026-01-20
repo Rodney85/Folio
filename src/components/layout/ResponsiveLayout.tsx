@@ -8,20 +8,21 @@ import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { useQuery } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import BottomNavigation from '@/components/navigation/BottomNavigation';
-import MobileMenu from '@/components/navigation/MobileMenu';
+// MobileMenu removed as per navigation restructuring
 
 interface ResponsiveLayoutProps {
   children: ReactNode;
+  noPadding?: boolean;
 }
 
-export const ResponsiveLayout = ({ children }: ResponsiveLayoutProps) => {
+export const ResponsiveLayout = ({ children, noPadding = false }: ResponsiveLayoutProps) => {
   const { user } = useUser();
   const { signOut } = useAuth();
   const clerk = useClerk();
   const navigate = useNavigate();
   const location = useLocation();
   const [shareModalOpen, setShareModalOpen] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   const isMobile = useMediaQuery("(max-width: 767px)");
   const isTablet = useMediaQuery("(min-width: 768px) and (max-width: 1023px)");
   const isDesktop = useMediaQuery("(min-width: 1024px)");
@@ -76,23 +77,17 @@ export const ResponsiveLayout = ({ children }: ResponsiveLayoutProps) => {
   // Define menu items for sidebar 
   const menuItems = [
     {
-      title: "Preview Public Profile",
-      icon: <Eye className="h-5 w-5" />,
-      onClick: openPublicProfile
-    },
-    {
-      title: "Share Profile",
-      icon: <Share className="h-5 w-5" />,
-      onClick: handleShare
-    },
-    {
       title: "Report an Issue",
       icon: <Flag className="h-5 w-5" />,
       onClick: () => {
-        // Navigate to report issue page
+        navigate("/report-issue");
       }
     }
   ];
+
+  const paddingClasses = noPadding
+    ? (isMobile ? 'pb-[90px]' : '')
+    : (isMobile ? 'p-4 pb-[90px]' : 'p-4 md:p-6 lg:p-8');
 
   return (
     <>
@@ -199,7 +194,7 @@ export const ResponsiveLayout = ({ children }: ResponsiveLayoutProps) => {
         )}
 
         <div className={`flex-1 flex flex-col overflow-hidden ${(isTablet || isDesktop) ? 'ml-0' : ''}`}>
-          <main className={`flex-1 overflow-y-auto ${isMobile ? 'p-4 pb-[90px]' : 'p-4 md:p-6 lg:p-8'}`}>
+          <main className={`flex-1 overflow-y-auto ${paddingClasses}`}>
             {children}
           </main>
         </div>
@@ -207,18 +202,8 @@ export const ResponsiveLayout = ({ children }: ResponsiveLayoutProps) => {
 
       {/* Mobile bottom navigation */}
       {isMobile && user && (
-        <BottomNavigation onMenuClick={() => setMobileMenuOpen(true)} />
+        <BottomNavigation />
       )}
-
-      {/* Mobile hamburger menu */}
-      {isMobile && user && (
-        <MobileMenu
-          open={mobileMenuOpen}
-          onClose={() => setMobileMenuOpen(false)}
-          onShareClick={() => setShareModalOpen(true)}
-        />
-      )}
-
       {/* Share Modal */}
       {user && (
         <ShareModal

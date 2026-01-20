@@ -7,7 +7,8 @@ import {
     Settings,
     LogOut,
     Menu,
-    X
+    X,
+    Flag
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -50,6 +51,11 @@ const AdminLayout = () => {
             title: "Content",
             href: "/admin/content",
             icon: Car
+        },
+        {
+            title: "Issues",
+            href: "/admin/issues",
+            icon: Flag
         },
         {
             title: "Settings",
