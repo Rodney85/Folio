@@ -56,7 +56,7 @@ const ProfilePage = () => {
 
   // Create profile content for both layouts
   const profileContent = (
-    <div className={`flex flex-col min-h-screen bg-transparent text-white ${!isMobile ? 'p-6' : 'pb-0'}`}>
+    <div className={`flex flex-col bg-transparent text-white ${!isMobile ? 'p-6' : 'pb-0'}`}>
       {/* Top bar - Only visible on mobile */}
       {isMobile && (
         <div className="flex justify-end items-center p-4 pb-2">
