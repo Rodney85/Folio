@@ -1,5 +1,7 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { checkIsPremium } from "./freemium";
+import { ConvexError } from "convex/values";
 
 // Log an analytics event
 export const logEvent = mutation({
@@ -73,24 +75,43 @@ export const getAnalytics = query({
     eventType: v.optional(v.string())
   },
   handler: async (ctx, args) => {
-    let query = ctx.db.query("analytics");
-    
-    if (args.userId) {
-      query = query.filter(q => q.eq(q.field("userId"), args.userId));
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new ConvexError("Not authenticated");
     }
-    
+
+    // Check premium status
+    const isPremium = await checkIsPremium(ctx, identity.tokenIdentifier);
+    if (!isPremium) {
+      throw new ConvexError("Analytics Dashboard is a Pro feature. Upgrade to view insights.");
+    }
+
+    // Enforce data ownership (unless admin - but for now just own data)
+    // If userId is provided, it must match the caller
+    const targetUserId = args.userId || identity.subject;
+
+    if (targetUserId !== identity.subject) {
+      // TODO: Add admin check here if needed
+      throw new ConvexError("Not authorized to view analytics for other users");
+    }
+
+    let query = ctx.db.query("analytics");
+
+    // Always filter by userId
+    query = query.filter(q => q.eq(q.field("userId"), targetUserId));
+
     if (args.eventType) {
       query = query.filter(q => q.eq(q.field("type"), args.eventType));
     }
-    
+
     if (args.startDate !== undefined) {
       query = query.filter(q => q.gte(q.field("createdAt"), args.startDate!));
     }
-    
+
     if (args.endDate !== undefined) {
       query = query.filter(q => q.lte(q.field("createdAt"), args.endDate!));
     }
-    
+
     return await query.collect();
   }
 });

@@ -13,6 +13,7 @@ export const getUser = async (ctx: { auth: any }) => {
     name: identity.name,
     email: identity.email,
     pictureUrl: identity.pictureUrl,
+    tokenIdentifier: identity.tokenIdentifier,
   };
 };
 

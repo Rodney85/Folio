@@ -14,9 +14,9 @@ const ProAnalyticsPageContent = () => {
           <ChevronLeft className="h-5 w-5 mr-1" />
           <span>Back to Analytics</span>
         </button>
-        
+
         <h1 className="text-xl font-semibold text-white">Pro Analytics</h1>
-        
+
         <div className="w-10"></div>
       </div>
 
@@ -36,7 +36,7 @@ const ProAnalyticsPageContent = () => {
 const ProAnalyticsPage = () => {
   return (
     <ResponsiveLayout>
-      <div className="flex flex-col min-h-screen bg-slate-900 text-slate-50">
+      <div className="flex flex-col min-h-screen bg-background text-foreground">
         <ProAnalyticsPageContent />
       </div>
     </ResponsiveLayout>

@@ -5,6 +5,7 @@ import { Id } from "./_generated/dataModel";
 import { getUser } from "./auth";
 import { sanitizeText, sanitizeUrl, sanitizeNumber, MAX_LENGTHS } from "./lib/sanitize";
 import { checkRateLimit } from "./lib/rateLimit";
+import { checkIsPremium } from "./freemium";
 
 // Create a new part with product link for a car
 export const createPart = mutation({
@@ -34,16 +35,29 @@ export const createPart = mutation({
       }
 
       // Create part record with sanitized inputs
-      const partId = await ctx.db.insert("parts", {
+      // Create part record with sanitized inputs
+      const partData: any = {
         carId: args.carId,
         userId: user.id,
         name: sanitizeText(args.name, MAX_LENGTHS.partName) || args.name,
         category: sanitizeText(args.category, MAX_LENGTHS.carField) || args.category,
         price: sanitizeNumber(args.price, 0, 1000000),
-        purchaseUrl: sanitizeUrl(args.purchaseUrl) ?? "",
         description: sanitizeText(args.description, MAX_LENGTHS.partDescription) ?? "",
         image: args.image,
-      });
+      };
+
+      // Check for purchase URL restriction
+      if (args.purchaseUrl) {
+        const isPremium = await checkIsPremium(ctx, user.tokenIdentifier);
+        if (!isPremium) {
+          throw new ConvexError("Purchase links are a Pro feature. Upgrade to make your build shoppable.");
+        }
+        partData.purchaseUrl = sanitizeUrl(args.purchaseUrl) ?? "";
+      } else {
+        partData.purchaseUrl = "";
+      }
+
+      const partId = await ctx.db.insert("parts", partData);
 
       return { partId };
     } catch (error) {

@@ -264,6 +264,8 @@ export default function AddCarPage() {
   const { userId } = useAuth();
   // @ts-ignore - Convex type instantiation issue
   const userProfile = useQuery(api.users.getProfile);
+  // @ts-ignore - Convex type instantiation issue
+  const canAddCar = useQuery(api.freemium.canAddCar);
   const { user } = useUser();
   const [loading, setLoading] = useState(false);
   const convex = useConvex();
@@ -462,16 +464,16 @@ export default function AddCarPage() {
     );
   }
 
-  if (!userProfile?.isSubscribed && !isAdmin) {
+  if (canAddCar === false && !isAdmin) {
     return (
       <ResponsiveLayout>
         <div className="container mx-auto px-4 py-12 max-w-2xl text-center">
           <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-8 shadow-2xl">
             <Crown className="h-16 w-16 text-yellow-500 mx-auto mb-6" />
-            <h1 className="text-3xl font-bold mb-4">Premium Feature</h1>
+            <h1 className="text-3xl font-bold mb-4">Garage Full</h1>
             <p className="text-xl text-slate-300 mb-8">
-              Adding cars to your garage is available exclusively to Premium subscribers.
-              Showcase your builds to the world with unlimited car profiles.
+              You've reached the free tier limit of 3 cars.
+              Upgrade to Pro or OG for unlimited garage slots.
             </p>
             <Button
               size="lg"

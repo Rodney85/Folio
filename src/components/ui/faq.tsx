@@ -2,8 +2,11 @@
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { motion } from 'framer-motion';
+import { Plus, Minus } from 'lucide-react';
+import { useState } from 'react';
 
 export default function FAQs() {
+    // Keep the same FAQ items
     const faqItems = [
         {
             id: 'item-1',
@@ -39,53 +42,71 @@ export default function FAQs() {
 
     return (
         <section className="py-16 md:py-24 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-blue-950" id="faq">
-            <div className="mx-auto max-w-5xl px-4 md:px-6">
+            <div className="mx-auto max-w-4xl px-4 md:px-6">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.5 }}
-                    className="mx-auto max-w-xl text-center"
+                    className="mx-auto max-w-2xl text-center mb-16"
                 >
-                    <h2 className="text-balance text-3xl font-bold md:text-4xl lg:text-5xl">Frequently Asked Questions</h2>
-                    <p className="text-muted-foreground mt-4 text-balance">Get answers to common questions about building, sharing, and monetizing your automotive showcase with CarFolio.</p>
+                    <h2 className="text-balance text-3xl font-bold md:text-4xl lg:text-5xl bg-clip-text text-transparent bg-gradient-to-b from-foreground to-foreground/70">
+                        Frequently Asked Questions
+                    </h2>
+                    <p className="text-muted-foreground mt-4 text-balance text-lg">
+                        Everything you need to know about building your digital garage and monetizing your passion.
+                    </p>
                 </motion.div>
 
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.2, duration: 0.5 }}
-                    className="mx-auto mt-12 max-w-xl"
-                >
+                <div className="mx-auto max-w-3xl">
                     <Accordion
                         type="single"
                         collapsible
-                        className="bg-card ring-muted w-full rounded-2xl border px-4 md:px-8 py-3 shadow-sm ring-4 dark:ring-0">
-                        {faqItems.map((item) => (
-                            <AccordionItem
+                        className="space-y-4"
+                    >
+                        {faqItems.map((item, index) => (
+                            <motion.div
                                 key={item.id}
-                                value={item.id}
-                                className="border-dashed">
-                                <AccordionTrigger className="cursor-pointer text-base hover:no-underline">{item.question}</AccordionTrigger>
-                                <AccordionContent>
-                                    <p className="text-base">{item.answer}</p>
-                                </AccordionContent>
-                            </AccordionItem>
+                                initial={{ opacity: 0, y: 10 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: index * 0.1, duration: 0.4 }}
+                            >
+                                <AccordionItem
+                                    value={item.id}
+                                    className="border rounded-xl bg-card px-2 transition-all duration-200 hover:shadow-md data-[state=open]:shadow-lg dark:hover:shadow-white/5 dark:data-[state=open]:shadow-white/5"
+                                >
+                                    <AccordionTrigger className="px-4 py-4 text-left text-base font-medium hover:no-underline [&[data-state=open]>svg]:rotate-45">
+                                        <span className="flex-1 text-base md:text-lg">{item.question}</span>
+                                        {/* Custom Icon handled by CSS & AccordionTrigger usually has one, 
+                                            but if we want standard look effectively, we rely on default.
+                                            If we want 'boring' gone, maybe we just trust the new card layout. 
+                                            ShadCN AccordionTrigger has a ChevronDown by default. 
+                                        */}
+                                    </AccordionTrigger>
+                                    <AccordionContent className="px-4 pb-4 text-muted-foreground text-base">
+                                        {item.answer}
+                                    </AccordionContent>
+                                </AccordionItem>
+                            </motion.div>
                         ))}
                     </Accordion>
-                </motion.div>
+                </div>
 
-                <p className="text-muted-foreground mt-6 px-4 md:px-8">
+                <motion.p
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    transition={{ delay: 0.6 }}
+                    className="text-muted-foreground mt-12 text-center text-sm"
+                >
                     Still have questions? Contact our{' '}
                     <a
                         href="mailto:support@carfolio.com"
-                        className="text-primary font-medium hover:underline">
+                        className="text-primary font-medium hover:underline underline-offset-4 decoration-primary/50 hover:decoration-primary transition-all">
                         support team
                     </a>
-                </p>
+                </motion.p>
             </div>
         </section>
-
     )
 }

@@ -3,9 +3,12 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { HelmetProvider } from "react-helmet-async";
+import { SEO } from "@/components/SEO";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { ThemeProvider } from "@/components/theme-provider";
 import AppLayout from "@/components/layout/AppLayout";
+import { FloatingNavBar } from "@/components/layout/FloatingNavBar";
 import AuthSyncProvider from "@/components/AuthSyncProvider";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { useUser } from "@clerk/clerk-react";
@@ -39,6 +42,9 @@ const ReportIssuePage = lazy(() => import("./pages/ReportIssuePage"));
 
 const ExplorePage = lazy(() => import("./pages/ExplorePage"));
 const AccountSettingsPage = lazy(() => import("./pages/AccountSettingsPage"));
+const SubscriptionPage = lazy(() => import("./pages/SubscriptionPage"));
+const SubscriptionSuccessPage = lazy(() => import("./pages/SubscriptionSuccessPage"));
+const AffiliatesPage = lazy(() => import("./pages/AffiliatesPage"));
 import ProfileOnboarding from "./components/ProfileOnboarding";
 
 // Admin Pages
@@ -49,6 +55,10 @@ const AdminUserDetails = lazy(() => import("./components/admin/AdminUserDetails"
 const AdminContentPage = lazy(() => import("./components/admin/AdminContentPage"));
 const AdminSettingsPage = lazy(() => import("./components/admin/AdminSettingsPage"));
 const AdminIssuesPage = lazy(() => import("./components/admin/AdminIssuesPage"));
+const AdminAffiliatesPage = lazy(() => import("./components/admin/AdminAffiliatesPage"));
+const AboutPage = lazy(() => import("./pages/AboutPage"));
+const TermsPage = lazy(() => import("./pages/TermsPage"));
+const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
 
 const queryClient = new QueryClient();
 
@@ -171,6 +181,7 @@ const AppContent = () => {
 
   return (
     <BrowserRouter>
+      <FloatingNavBar />
       <Routes>
         {/* Show profile page if user is signed in, otherwise show landing page */}
         <Route path="/" element={
@@ -215,6 +226,22 @@ const AppContent = () => {
           <PageTransition>
             <Suspense fallback={<PageLoader />}>
               <ExplorePage />
+            </Suspense>
+          </PageTransition>
+        } />
+
+        {/* Subscription Pages - accessible to all users */}
+        <Route path="/subscription" element={
+          <PageTransition>
+            <Suspense fallback={<PageLoader />}>
+              <SubscriptionPage />
+            </Suspense>
+          </PageTransition>
+        } />
+        <Route path="/subscription/success" element={
+          <PageTransition>
+            <Suspense fallback={<PageLoader />}>
+              <SubscriptionSuccessPage />
             </Suspense>
           </PageTransition>
         } />
@@ -283,9 +310,37 @@ const AppContent = () => {
               <AdminSettingsPage />
             </Suspense>
           } />
+          <Route path="affiliates" element={
+            <Suspense fallback={<PageLoader />}>
+              <AdminAffiliatesPage />
+            </Suspense>
+          } />
         </Route>
 
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+
+        {/* Public Info Pages */}
+        <Route path="/about" element={
+          <PageTransition>
+            <Suspense fallback={<PageLoader />}>
+              <AboutPage />
+            </Suspense>
+          </PageTransition>
+        } />
+        <Route path="/terms" element={
+          <PageTransition>
+            <Suspense fallback={<PageLoader />}>
+              <TermsPage />
+            </Suspense>
+          </PageTransition>
+        } />
+        <Route path="/privacy" element={
+          <PageTransition>
+            <Suspense fallback={<PageLoader />}>
+              <PrivacyPage />
+            </Suspense>
+          </PageTransition>
+        } />
         <Route path="*" element={
           <PageTransition>
             <Suspense fallback={<PageLoader />}>
@@ -310,9 +365,17 @@ const App = () => {
           <TooltipProvider>
             <Toaster />
             <Sonner />
-            <AuthSyncProvider>
-              <AppContent />
-            </AuthSyncProvider>
+            <HelmetProvider>
+              <SEO
+                title="CarFolio - The Definitive Automotive Portfolio"
+                description="Showcase your builds, manage modifications, and monetize your passion. CarFolio is the ultimate platform for car enthusiasts."
+                image="/og-image.png"
+                url="https://www.carfolio.cc"
+              />
+              <AuthSyncProvider>
+                <AppContent />
+              </AuthSyncProvider>
+            </HelmetProvider>
           </TooltipProvider>
         </ThemeProvider>
       </QueryClientProvider>

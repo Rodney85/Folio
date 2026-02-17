@@ -21,6 +21,8 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import ErrorBoundary from '@/components/ErrorBoundary';
+import { SEO } from "@/components/SEO";
+import { useConvexImage } from "@/hooks/useConvexImage";
 
 const PublicCarDetailsPage = () => {
   const navigate = useNavigate();
@@ -91,6 +93,9 @@ const PublicCarDetailsPage = () => {
   const hp = car?.powerHp;
   const tq = car?.torqueLbFt;
 
+  // Get OG image URL
+  const ogImageUrl = useConvexImage(car?.images?.[0]);
+
   const specItems = [
     { label: "Year", value: car?.year },
     { label: "Horsepower", value: hp },
@@ -119,6 +124,13 @@ const PublicCarDetailsPage = () => {
         </Button>
       </div>
     }>
+      <SEO
+        title={`${car.year} ${car.make} ${car.model} | CarFolio`}
+        description={car.description ? car.description.slice(0, 160) : `Check out this custom ${car.make} ${car.model} build on CarFolio.`}
+        image={ogImageUrl || "/og-image.png"}
+        url={`https://www.carfolio.cc/u/${username}/car/${id}`}
+        type="article"
+      />
       <div className="min-h-screen bg-[#020204] text-white">
         {/* Header */}
         <header className="sticky top-0 bg-[#020204] border-b border-white/5 px-6 py-4 z-50">

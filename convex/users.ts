@@ -1,4 +1,4 @@
-import { mutation, query, internalQuery } from "./_generated/server";
+import { mutation, query, internalQuery, internalMutation } from "./_generated/server";
 import { v, ConvexError } from "convex/values";
 import { sanitizeText, sanitizeUsername, sanitizeSocialHandle, sanitizeUrl, MAX_LENGTHS } from "./lib/sanitize";
 import { checkRateLimit } from "./lib/rateLimit";
@@ -378,5 +378,20 @@ export const resetOnboarding = mutation({
     await ctx.db.patch(user._id, {
       profileCompleted: false,
     });
+  },
+});
+
+export const updateDodoFields = internalMutation({
+  args: {
+    userId: v.id("users"),
+    dodoCustomerId: v.optional(v.string()),
+    dodoSubscriptionId: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const patchData: any = {};
+    if (args.dodoCustomerId) patchData.dodoCustomerId = args.dodoCustomerId;
+    if (args.dodoSubscriptionId) patchData.dodoSubscriptionId = args.dodoSubscriptionId;
+
+    await ctx.db.patch(args.userId, patchData);
   },
 });

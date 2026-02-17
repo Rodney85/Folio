@@ -2,100 +2,113 @@
 import React from 'react';
 import type { ComponentProps, ReactNode } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import { FacebookIcon, InstagramIcon, LinkedinIcon, YoutubeIcon, TwitterIcon } from 'lucide-react';
-import { Logo } from '@/components/ui/logo';
+import { Instagram, Twitter, Youtube } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
-interface FooterLink {
-	title: string;
-	href: string;
-	icon?: React.ComponentType<{ className?: string }>;
-}
-
-interface FooterSection {
-	label: string;
-	links: FooterLink[];
-}
-
-const footerLinks: FooterSection[] = [
+const footerLinks = [
 	{
-		label: 'Product',
+		label: 'Platform',
 		links: [
-			{ title: 'Features', href: '#features' },
-			{ title: 'Gallery', href: '#gallery' },
-			{ title: 'Testimonials', href: '#testimonials' },
-			{ title: 'How It Works', href: '#how-it-works' },
+			{ title: 'Showcase', href: '/#feature', isExternal: false },
+			{ title: 'Pricing', href: '/#pricing', isExternal: false },
+			{ title: 'Affiliates', href: '/affiliates', isExternal: false },
+			{ title: 'Sign In', href: '/sign-in', isExternal: false },
 		],
 	},
 	{
 		label: 'Company',
 		links: [
-			{ title: 'About Us', href: '/about' },
-			{ title: 'Contact', href: '/contact' },
-			{ title: 'Privacy Policy', href: '/privacy' },
-			{ title: 'Terms of Service', href: '/terms' },
+			{ title: 'About', href: '/about', isExternal: false },
 		],
 	},
 	{
-		label: 'Resources',
+		label: 'Legal',
 		links: [
-			{ title: 'Blog', href: '/blog' },
-			{ title: 'Help Center', href: '/help' },
-			{ title: 'Community', href: '/community' },
-			{ title: 'API Docs', href: '/docs' },
-		],
-	},
-	{
-		label: 'Connect',
-		links: [
-			{ title: 'Instagram', href: '#', icon: InstagramIcon },
-			{ title: 'YouTube', href: '#', icon: YoutubeIcon },
-			{ title: 'Twitter', href: '#', icon: TwitterIcon },
-			{ title: 'LinkedIn', href: '#', icon: LinkedinIcon },
+			{ title: 'Terms', href: '/terms', isExternal: false },
+			{ title: 'Privacy', href: '/privacy', isExternal: false },
 		],
 	},
 ];
 
 export function Footer() {
 	return (
-		<footer className="md:rounded-t-6xl relative w-full max-w-6xl mx-auto flex flex-col items-center justify-center rounded-t-4xl border-t bg-[radial-gradient(35%_128px_at_50%_0%,theme(backgroundColor.white/8%),transparent)] px-6 py-12 lg:py-16">
-			<div className="bg-foreground/20 absolute top-0 right-1/2 left-1/2 h-px w-1/3 -translate-x-1/2 -translate-y-1/2 rounded-full blur" />
+		<footer className="bg-background border-t border-white/5 pt-20 pb-10">
+			<div className="mx-auto max-w-7xl px-6">
+				<div className="grid grid-cols-2 md:grid-cols-12 gap-12 mb-20">
+					<div className="col-span-2 md:col-span-5 space-y-6">
+						<AnimatedContainer>
+							<Link to="/" className="block">
+								<span className="font-heading font-bold text-3xl tracking-tight text-white">CarFolio.</span>
+							</Link>
+							<p className="text-slate-400 max-w-sm mt-4 leading-relaxed">
+								The professional standard for automotive documentation.
+								Built for enthusiasts, by enthusiasts.
+							</p>
+							<div className="flex gap-4 mt-8">
+								<SocialLink href="#" icon={<Twitter className="w-5 h-5" />} />
+								<SocialLink href="#" icon={<Instagram className="w-5 h-5" />} />
+								<SocialLink href="#" icon={<Youtube className="w-5 h-5" />} />
+							</div>
+						</AnimatedContainer>
+					</div>
 
-			<div className="grid w-full gap-8 xl:grid-cols-3 xl:gap-8">
-				<AnimatedContainer className="space-y-4">
-					<Logo size="md" />
-					<p className="text-muted-foreground text-sm max-w-sm">
-						Transform your automotive passion into a professional showcase that drives engagement and generates revenue.
-					</p>
-					<p className="text-muted-foreground mt-8 text-sm md:mt-4">
-						© {new Date().getFullYear()} CarFolio. All rights reserved.
-					</p>
-				</AnimatedContainer>
-
-				<div className="mt-10 grid grid-cols-2 gap-8 md:grid-cols-4 xl:col-span-2 xl:mt-0">
-					{footerLinks.map((section, index) => (
-						<AnimatedContainer key={section.label} delay={0.1 + index * 0.1}>
-							<div className="mb-10 md:mb-0">
-								<h3 className="text-xs font-semibold text-foreground">{section.label}</h3>
-								<ul className="text-muted-foreground mt-4 space-y-2 text-sm">
+					<div className="col-span-2 md:col-span-7 grid grid-cols-2 md:grid-cols-3 gap-8 md:gap-4">
+						{footerLinks.map((section) => (
+							<div key={section.label} className="space-y-6">
+								<h4 className="text-sm font-semibold text-white uppercase tracking-wider">{section.label}</h4>
+								<ul className="space-y-4">
 									{section.links.map((link) => (
 										<li key={link.title}>
-											<a
-												href={link.href}
-												className="hover:text-foreground inline-flex items-center transition-all duration-300"
-											>
-												{link.icon && <link.icon className="me-1 size-4" />}
-												{link.title}
-											</a>
+											{link.isExternal || link.href.startsWith('#') ? (
+												<a
+													href={link.href}
+													className="text-slate-400 hover:text-white transition-colors duration-200 text-sm"
+												>
+													{link.title}
+												</a>
+											) : (
+												<Link
+													to={link.href}
+													className="text-slate-400 hover:text-white transition-colors duration-200 text-sm"
+												>
+													{link.title}
+												</Link>
+											)}
 										</li>
 									))}
 								</ul>
 							</div>
-						</AnimatedContainer>
-					))}
+						))}
+					</div>
+				</div>
+
+				<div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
+					<p className="text-slate-500 text-sm">
+						© {new Date().getFullYear()} CarFolio Inc. All rights reserved.
+					</p>
+					<div className="flex gap-8">
+						<div className="w-2 h-2 rounded-full bg-emerald-500/20 flex items-center justify-center">
+							<div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+						</div>
+						<span className="text-xs text-slate-500 font-mono">SYSTEM NORMAL</span>
+					</div>
 				</div>
 			</div>
 		</footer>
 	);
+}
+
+function SocialLink({ href, icon }: { href: string; icon: React.ReactNode }) {
+	return (
+		<a
+			href={href}
+			target="_blank"
+			rel="noopener noreferrer"
+			className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-slate-400 hover:bg-white hover:text-black transition-all duration-300 transform hover:scale-110"
+		>
+			{icon}
+		</a>
+	)
 }
 
 type ViewAnimationProps = {

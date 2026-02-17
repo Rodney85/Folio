@@ -1,9 +1,9 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { cn } from '@/lib/utils'
-import { motion } from 'framer-motion';
+import { motion, type Variants } from 'framer-motion';
 
-const containerVariants = {
+const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
         opacity: 1,
@@ -13,7 +13,7 @@ const containerVariants = {
     },
 };
 
-const cardVariants = {
+const cardVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
         opacity: 1,
@@ -68,7 +68,7 @@ export default function Testimonials() {
                             viewport={{ once: true }}
                             transition={{ duration: 0.5 }}
                         >
-                            <p className="max-w-sm text-slate-900 relative z-10 py-4">CarFolio is transforming how automotive creators showcase their builds and connect with their community. From weekend warriors to professional builders, see what they're saying.</p>
+                            <p className="max-w-sm text-foreground relative z-10 py-4">CarFolio is transforming how automotive creators showcase their builds and connect with their community. From weekend warriors to professional builders, see what they're saying.</p>
                         </motion.div>
                     </div>
                     <motion.h2
@@ -76,7 +76,7 @@ export default function Testimonials() {
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.5 }}
-                        className="text-4xl font-semibold text-slate-900 sm:ml-auto"
+                        className="text-4xl font-semibold text-foreground sm:ml-auto"
                     >
                         Loved by Car Enthusiasts Worldwide
                     </motion.h2>

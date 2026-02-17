@@ -44,7 +44,7 @@
     --input: 220 13% 91%;
     --ring: 217 91% 60%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -58,7 +58,7 @@
 
   .dark {
     /* Premium Obsidian & Glass Theme */
-    --background: 222 47% 4%;
+    --background: 222 47% 3%;
     /* Deep Midnight Black */
     --foreground: 210 20% 98%;
 
@@ -110,10 +110,19 @@
 
   body {
     @apply bg-background text-foreground;
-    background-color: #020204;
+    background-color: hsl(var(--background));
     background-image: none;
     overflow-x: hidden;
     width: 100%;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-heading;
   }
 
   /* Ensure fixed navbar stays fixed regardless of parent transforms */
@@ -403,10 +412,109 @@
   }
 
   .glass-card {
-    @apply bg-black/40 backdrop-blur-md border border-white/5 hover:border-white/10 transition-all duration-300;
+    @apply bg-zinc-950/40 backdrop-blur-xl border border-white/5 hover:border-white/10 hover:bg-zinc-950/60 transition-all duration-300;
   }
 
   .text-gradient {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-white via-white/80 to-white/60;
   }
+
+  /* Dark Neumorphism */
+  .neumorph-card {
+    background-color: #0D0D12;
+    box-shadow: -10px -10px 30px #1a1a24, 10px 10px 30px #000000;
+  }
+
+  .neumorph-button {
+    background-color: #0D0D12;
+    box-shadow: -5px -5px 10px #1a1a24, 5px 5px 10px #000000;
+    @apply border border-white/5 transition-all duration-300;
+  }
+
+  .neumorph-button:hover {
+    color: white;
+  }
+
+  .neumorph-button:active {
+    box-shadow: inset -5px -5px 10px #1a1a24, inset 5px 5px 10px #000000;
+  }
+
+  .neumorph-inset {
+    background-color: #0D0D12;
+    box-shadow: inset -2px -2px 5px #1a1a24, inset 2px 2px 5px #000000;
+  }
+
+  /* Premium Soft UI */
+  .card-premium {
+    @apply bg-[#0D0D12] border border-white/5 rounded-3xl transition-all duration-300;
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+  }
+
+  .card-premium:hover {
+    @apply border-white/10;
+    box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 255, 255, 0.02);
+  }
+
+  .btn-premium-primary {
+    @apply bg-white text-black font-semibold rounded-full px-8 py-4 transition-all duration-300;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+  }
+
+  .btn-premium-primary:hover {
+    @apply bg-slate-200 transform -translate-y-0.5;
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.4);
+  }
+
+  .btn-premium-secondary {
+    @apply bg-transparent border border-white/10 text-white font-medium rounded-full px-8 py-4 backdrop-blur-sm transition-all duration-300;
+  }
+
+  .btn-premium-secondary:hover {
+    @apply bg-white/5 border-white/20 transform -translate-y-0.5;
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   Accessibility: Reduced Motion 
+   Respects user's OS-level preference to reduce animations.
+   ═══════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   Accessibility: Focus Visible 
+   Clear focus ring for keyboard navigation only.
+   ═══════════════════════════════════════════════════ */
+*:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+  border-radius: var(--radius);
+}
+
+/* Skip to content link for screen readers */
+.skip-to-content {
+  position: absolute;
+  top: -100%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  padding: 0.75rem 1.5rem;
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  border-radius: var(--radius);
+  font-weight: 600;
+  transition: top 0.2s ease;
+}
+
+.skip-to-content:focus {
+  top: 1rem;
 }

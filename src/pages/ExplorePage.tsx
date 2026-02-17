@@ -4,6 +4,7 @@ import { api } from "../../convex/_generated/api";
 import { ExploreGrid, ExploreSearch } from "@/components/explore";
 import { Compass, TrendingUp, SlidersHorizontal, ChevronDown, Check } from "lucide-react";
 import ResponsiveLayout from "@/components/layout/ResponsiveLayout";
+import { SEO } from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import {
     DropdownMenu,
@@ -82,6 +83,11 @@ const ExplorePage = () => {
 
     return (
         <ResponsiveLayout noPadding={true}>
+            <SEO
+                title="Explore Custom Car Builds | CarFolio"
+                description="Discover the wildest car builds, modifications, and automotive projects from the CarFolio community."
+                url="https://www.carfolio.cc/explore"
+            />
             <div className="min-h-screen bg-transparent text-white pb-20">
                 {/* Hero / Header Section */}
                 <div className="sticky top-0 z-40 pt-6 pb-6 px-4 md:px-8 bg-[#020204]/95 backdrop-blur-2xl border-b border-white/5">

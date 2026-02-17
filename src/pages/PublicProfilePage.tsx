@@ -2,6 +2,12 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Loader, Car } from "lucide-react";
+import { Car as CarComponent } from '@/components/cars/Car';
+import { SEO } from "@/components/SEO";
+import SocialLinks from "@/components/SocialLinks";
+import NotFound from "@/pages/NotFound";
+import { useEffect } from "react";
+import { getDeviceType } from "@/lib/utils";
 
 // Define a simplified interface for analytics events to avoid deep type instantiation errors
 interface AnalyticsEvent {
@@ -14,11 +20,6 @@ interface AnalyticsEvent {
   country?: string;
   city?: string;
 }
-import CarGrid from "@/components/cars/CarGrid";
-import SocialLinks from "@/components/SocialLinks";
-import NotFound from "@/pages/NotFound";
-import { useEffect } from "react";
-import { getDeviceType } from "@/lib/utils";
 
 const PublicProfilePage = () => {
   const { username } = useParams<{ username: string }>();
@@ -89,9 +90,14 @@ const PublicProfilePage = () => {
 
   const { user, cars } = profileData;
 
-
   return (
     <div className="flex flex-col bg-transparent text-white min-h-screen p-4 max-w-2xl mx-auto w-full md:border-x md:border-white/5 md:shadow-2xl">
+      <SEO
+        title={`${user.username} - CarFolio Profile`}
+        description={user.bio || `Check out ${user.username}'s garage on CarFolio.`}
+        image={user.pictureUrl || "/og-image.png"}
+        url={`https://www.carfolio.cc/u/${username}`}
+      />
       {/* Profile header */}
       <div className="flex flex-col items-center px-6 pb-4">
         <div className="relative">

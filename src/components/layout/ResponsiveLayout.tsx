@@ -77,6 +77,13 @@ export const ResponsiveLayout = ({ children, noPadding = false }: ResponsiveLayo
   // Define menu items for sidebar 
   const menuItems = [
     {
+      title: "Subscription",
+      icon: <CreditCard className="h-5 w-5" />,
+      onClick: () => {
+        navigate("/subscription");
+      }
+    },
+    {
       title: "Report an Issue",
       icon: <Flag className="h-5 w-5" />,
       onClick: () => {
@@ -92,8 +99,8 @@ export const ResponsiveLayout = ({ children, noPadding = false }: ResponsiveLayo
   return (
     <>
       <div className="flex h-[100dvh] bg-transparent text-white overflow-hidden">
-        {/* Sidebar for tablet and desktop only */}
-        {(isTablet || isDesktop) && (
+        {/* Sidebar for tablet and desktop only - Only show if user is logged in */}
+        {(isTablet || isDesktop) && user && (
           <div className="w-64 md:w-72 lg:w-80 border-r border-white/10 bg-black/20 backdrop-blur-xl flex-shrink-0 z-50 relative">
             <div className="p-4 flex flex-col h-full">
               {/* Logo */}

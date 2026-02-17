@@ -8,7 +8,8 @@ import {
     LogOut,
     Menu,
     X,
-    Flag
+    Flag,
+    Handshake
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -56,6 +57,11 @@ const AdminLayout = () => {
             title: "Issues",
             href: "/admin/issues",
             icon: Flag
+        },
+        {
+            title: "Affiliates",
+            href: "/admin/affiliates",
+            icon: Handshake
         },
         {
             title: "Settings",

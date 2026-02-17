@@ -1,6 +1,6 @@
 import * as React from "react"
 import { cn } from '@/lib/utils'
-import { Link } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Menu, X } from 'lucide-react'
 import { Logo } from '@/components/ui/logo'
@@ -8,18 +8,35 @@ import { Logo } from '@/components/ui/logo'
 const menuItems = [
     { name: 'Home', href: '#home', id: 'home' },
     { name: 'Solution', href: '#solution', id: 'solution' },
-    { name: 'Feature', href: '#feature', id: 'feature' },
-    { name: 'Subscription', href: '/subscription', id: 'subscription' },
+    { name: 'Features', href: '#feature', id: 'feature' },
+    { name: 'Pricing', href: '#pricing', id: 'pricing' },
 ]
 
 export const NavBar = () => {
     const [menuState, setMenuState] = React.useState(false)
+    const location = useLocation()
+    const navigate = useNavigate()
+    const isHomePage = location.pathname === '/'
+
+    const handleNavClick = (item: typeof menuItems[0]) => {
+        if (isHomePage) {
+            // On homepage — smooth scroll to section
+            const element = document.getElementById(item.id === 'home' ? 'hero-section' : item.id);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        } else {
+            // On other pages — navigate to homepage with hash
+            navigate(`/#${item.id === 'home' ? 'hero-section' : item.id}`);
+        }
+        setMenuState(false);
+    }
 
     return (
         <header className="fixed top-0 left-0 right-0 z-[9999] w-full">
             <nav
                 data-state={menuState ? 'active' : ''}
-                className="group w-full border-b border-white/30 bg-white/20 backdrop-blur-2xl shadow-lg dark:bg-zinc-900/20 dark:border-white/20">
+                className="group w-full border-b border-white/5 bg-[#0D0D12]/80 backdrop-blur-xl shadow-lg transition-all duration-300">
                 <div className="m-auto max-w-5xl px-6">
                     <div className="flex flex-wrap items-center justify-between gap-6 py-3 lg:gap-0 lg:py-4">
                         <div className="flex w-full justify-between lg:w-auto">
@@ -45,17 +62,8 @@ export const NavBar = () => {
                                     {menuItems.map((item, index) => (
                                         <li key={index}>
                                             <button
-                                                onClick={() => {
-                                                    const element = document.getElementById(item.id === 'home' ? 'hero-section' : item.id);
-                                                    if (element) {
-                                                        element.scrollIntoView({
-                                                            behavior: 'smooth',
-                                                            block: 'start'
-                                                        });
-                                                    }
-                                                    setMenuState(false);
-                                                }}
-                                                className="text-muted-foreground hover:text-accent-foreground block duration-150">
+                                                onClick={() => handleNavClick(item)}
+                                                className="text-slate-400 hover:text-white transition-colors duration-300 hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)] block">
                                                 <span>{item.name}</span>
                                             </button>
                                         </li>
@@ -66,15 +74,17 @@ export const NavBar = () => {
                             <div className="flex w-full flex-col space-y-3 sm:flex-row sm:gap-3 sm:space-y-0 md:w-fit lg:border-l lg:pl-6">
                                 <Button
                                     asChild
-                                    variant="outline"
-                                    size="sm">
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-slate-400 hover:text-white">
                                     <Link to="/sign-in">
                                         <span>Sign In</span>
                                     </Link>
                                 </Button>
                                 <Button
                                     asChild
-                                    size="sm">
+                                    size="sm"
+                                    className="bg-white text-black hover:bg-slate-200 font-semibold shadow-[0_0_15px_rgba(255,255,255,0.3)] hover:shadow-[0_0_25px_rgba(255,255,255,0.5)] transition-all duration-300">
                                     <Link to="/sign-up">
                                         <span>Get Started</span>
                                     </Link>

@@ -22,8 +22,14 @@ export default defineSchema({
     publicMetadata: v.optional(v.any()),
     // Legacy subscription field (from previous payment integration)
     subscriptionStatus: v.optional(v.string()),
+    planId: v.optional(v.string()),
+    // Dodo Payments fields
+    dodoCustomerId: v.optional(v.string()),
+    dodoSubscriptionId: v.optional(v.string()),
+    dodoPaymentId: v.optional(v.string()),
   }).index("by_token", ["tokenIdentifier"])
     .index("by_username", ["username"])
+    .index("by_planId", ["planId"])
     .searchIndex("search_users", {
       searchField: "name",
       filterFields: ["email"]
@@ -133,4 +139,58 @@ export default defineSchema({
     .index("by_type", ["type"])
     .index("by_priority", ["priority"])
     .index("by_created_at", ["createdAt"]),
+
+  // Affiliate applications / waitlist
+  affiliateApplications: defineTable({
+    name: v.string(),
+    email: v.string(),
+    socialHandle: v.optional(v.string()),
+    platform: v.optional(v.string()),       // "instagram" | "tiktok" | "youtube" | "other"
+    audienceSize: v.optional(v.string()),    // "< 1K" | "1K-10K" | "10K-100K" | "100K+"
+    message: v.optional(v.string()),         // Why they want to join
+    status: v.string(),                      // "pending" | "approved" | "rejected"
+    createdAt: v.number(),
+  }).index("by_status", ["status"])
+    .index("by_email", ["email"])
+    .index("by_created_at", ["createdAt"]),
+
+  // Dodo Payments History (Audit Trail)
+  payments: defineTable({
+    paymentId: v.string(),     // pay_... (was dodoPaymentId)
+    userId: v.string(),        // tokenIdentifier
+    amount: v.number(),        // in cents or smallest unit
+    currency: v.string(),      // "USD"
+    status: v.string(),        // "succeeded", "failed"
+    metadata: v.optional(v.any()),
+    billing: v.optional(v.any()),
+    // Legacy fields found in DB
+    businessId: v.optional(v.string()),
+    customerEmail: v.optional(v.string()),
+    webhookPayload: v.optional(v.string()), // stringified JSON
+
+    createdAt: v.number(),
+  }).index("by_user", ["userId"])
+    .index("by_dodo_id", ["paymentId"]),
+
+  // Dodo Subscriptions History (Audit Trail)
+  subscriptions: defineTable({
+    subscriptionId: v.string(),     // sub_... (was dodoSubscriptionId)
+    userId: v.string(),             // tokenIdentifier
+    planId: v.optional(v.string()), // product/price ID (optional for legacy)
+    status: v.string(),             // "active", "cancelled", etc.
+    dodoCustomerId: v.optional(v.string()), // cus_...
+    currentPeriodStart: v.optional(v.number()),
+    currentPeriodEnd: v.optional(v.number()),
+    cancelAtPeriodEnd: v.optional(v.boolean()),
+
+    // Legacy fields found in DB
+    businessId: v.optional(v.string()),
+    customerEmail: v.optional(v.string()),
+    webhookPayload: v.optional(v.string()), // stringified JSON
+
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_user", ["userId"])
+    .index("by_dodo_id", ["subscriptionId"])
+    .index("by_status", ["status"]),
 });

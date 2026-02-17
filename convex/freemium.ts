@@ -1,85 +1,203 @@
 import { query } from "./_generated/server";
 
 /**
- * Freemium access control - BETA MODE
- * All users have full access during beta period.
- * Payment/subscription checks will be re-added after launch.
+ * Freemium Access Control — CarFolio
+ * 
+ * Tiers:
+ * - Free:  3 cars, no affiliate links, CarFolio badge on profile
+ * - Pro:   Unlimited cars, affiliate links, advanced analytics, no badge ($5.99/mo)
+ * - OG:    Everything in Pro, forever. Founding Member badge. ($49 one-time)
+ * 
+ * Toggle BETA_MODE to switch between beta (all access) and production (gated).
  */
 
+// ═══════════════════════════════════════════════════════════════
+// CONFIGURATION — Flip this to false when Dodo Payments are live
+// ═══════════════════════════════════════════════════════════════
+const BETA_MODE = process.env.BETA_MODE === "true";
+
+// Free tier limits
+export const FREE_CAR_LIMIT = 3;
+
+// ═══════════════════════════════════════════════════════════════
+// HELPER
+// ═══════════════════════════════════════════════════════════════
+
+// Helper to get user by token identifier (matches how we store them)
+export async function getUserFromIdentity(ctx: any, tokenIdentifier: string) {
+    return await ctx.db
+        .query("users")
+        .withIndex("by_token", (q: any) => q.eq("tokenIdentifier", tokenIdentifier))
+        .unique();
+}
+
+// Helper to check premium status (reusable in mutations)
+export async function checkIsPremium(ctx: any, tokenIdentifier: string) {
+    if (BETA_MODE) return true;
+    const user = await getUserFromIdentity(ctx, tokenIdentifier);
+    return user?.subscriptionStatus === "active";
+}
+
+// ═══════════════════════════════════════════════════════════════
+// QUERIES
+// ═══════════════════════════════════════════════════════════════
+
 /**
- * Check if the current user has premium access.
- * BETA: Always returns true - all users have full access.
+ * Check if the current user has premium access (Pro or OG).
  */
 export const isPremiumUser = query({
     handler: async (ctx) => {
         const identity = await ctx.auth.getUserIdentity();
-        if (!identity) {
-            return false;
-        }
-        // BETA: All authenticated users have premium access
-        return true;
+        if (!identity) return false;
+
+        if (BETA_MODE) return true;
+
+        const user = await getUserFromIdentity(ctx, identity.tokenIdentifier);
+        if (!user) return false;
+
+        return user.subscriptionStatus === "active";
     },
 });
 
 /**
- * Check if the current user can add cars.
- * BETA: Always returns true for authenticated users.
+ * Check if the current user can add a car.
+ * Free: 3 car limit | Pro/OG: unlimited
  */
 export const canAddCar = query({
     handler: async (ctx) => {
         const identity = await ctx.auth.getUserIdentity();
-        if (!identity) {
-            return false;
-        }
-        // BETA: All authenticated users can add cars
-        return true;
+        if (!identity) return false;
+
+        if (BETA_MODE) return true;
+
+        const user = await getUserFromIdentity(ctx, identity.tokenIdentifier);
+        if (!user) return false;
+
+        // Pro/OG have no limit
+        if (user.subscriptionStatus === "active") return true;
+
+        // Free tier: check car count against limit
+        const userCars = await ctx.db
+            .query("cars")
+            .withIndex("by_user", (q: any) => q.eq("userId", identity.subject))
+            .collect();
+
+        return userCars.length < FREE_CAR_LIMIT;
+    },
+});
+
+/**
+ * Check if the current user can use affiliate links.
+ * Free: NO affiliate links | Pro/OG: full affiliate links
+ */
+export const canUseAffiliateLinks = query({
+    handler: async (ctx) => {
+        const identity = await ctx.auth.getUserIdentity();
+        if (!identity) return false;
+
+        if (BETA_MODE) return true;
+
+        const user = await getUserFromIdentity(ctx, identity.tokenIdentifier);
+        if (!user) return false;
+
+        return user.subscriptionStatus === "active";
     },
 });
 
 /**
  * Check if the current user can add mods/parts.
- * BETA: Always returns true for authenticated users.
+ * Free: Can add mods (but no affiliate links on them)
+ * Pro/OG: Full mod access with affiliate links
  */
 export const canAddMod = query({
     handler: async (ctx) => {
         const identity = await ctx.auth.getUserIdentity();
-        if (!identity) {
-            return false;
-        }
-        // BETA: All authenticated users can add mods
+        if (!identity) return false;
+
+        if (BETA_MODE) return true;
+
+        // All users can add mods — the gate is on affiliate links, not mods themselves
         return true;
     },
 });
 
 /**
  * Check if a user's profile should be publicly visible.
- * BETA: All authenticated users have public profiles.
+ * All tiers get public profiles.
  */
 export const isProfilePublic = query({
     args: {},
     handler: async (ctx) => {
         const identity = await ctx.auth.getUserIdentity();
-        if (!identity) {
-            return false;
-        }
-        // BETA: All authenticated users have public profiles
+        if (!identity) return false;
+
+        if (BETA_MODE) return true;
+
+        const user = await getUserFromIdentity(ctx, identity.tokenIdentifier);
+        if (!user) return false;
+
         return true;
     },
 });
 
 /**
- * Get the premium status for a specific user by their token identifier.
- * BETA: Always returns isPremium: true for authenticated users.
+ * Get the premium status and tier for the current user.
  */
 export const isUserPremium = query({
     handler: async (ctx) => {
         const identity = await ctx.auth.getUserIdentity();
-
         if (!identity) {
-            return { isPremium: false, role: null };
+            return { isPremium: false, role: null, tier: "guest" as const };
         }
 
-        // BETA: All authenticated users are treated as premium
-        return { isPremium: true, role: "beta_user" };
+        if (BETA_MODE) {
+            return { isPremium: true, role: "beta_user", tier: "pro" as const };
+        }
+
+        const user = await getUserFromIdentity(ctx, identity.tokenIdentifier);
+        if (!user) {
+            return { isPremium: false, role: null, tier: "free" as const };
+        }
+
+        const isActive = user.subscriptionStatus === "active";
+        return {
+            isPremium: isActive,
+            role: isActive ? "pro" : "free",
+            tier: isActive ? "pro" as const : "free" as const,
+        };
+    },
+});
+
+/**
+ * Get remaining car slots for the current user.
+ */
+export const getRemainingCarSlots = query({
+    handler: async (ctx) => {
+        const identity = await ctx.auth.getUserIdentity();
+        if (!identity) return { remaining: 0, total: 0, unlimited: false };
+
+        if (BETA_MODE) {
+            return { remaining: 999, total: 999, unlimited: true };
+        }
+
+        const user = await getUserFromIdentity(ctx, identity.tokenIdentifier);
+        if (!user) return { remaining: 0, total: 0, unlimited: false };
+
+        // Pro/OG have unlimited
+        if (user.subscriptionStatus === "active") {
+            return { remaining: 999, total: 999, unlimited: true };
+        }
+
+        // Free: count existing cars
+        const userCars = await ctx.db
+            .query("cars")
+            .withIndex("by_user", (q: any) => q.eq("userId", identity.subject))
+            .collect();
+
+        return {
+            remaining: Math.max(0, FREE_CAR_LIMIT - userCars.length),
+            total: FREE_CAR_LIMIT,
+            unlimited: false,
+        };
     },
 });

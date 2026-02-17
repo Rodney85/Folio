@@ -5,6 +5,7 @@ import { Id, Doc } from "./_generated/dataModel";
 import { getUser } from "./auth";
 import { sanitizeText, sanitizeUrl, sanitizeNumber, MAX_LENGTHS } from "./lib/sanitize";
 import { checkRateLimit } from "./lib/rateLimit";
+import { checkIsPremium, FREE_CAR_LIMIT } from "./freemium";
 
 // Create a new car with image URLs
 export const createCar = mutation({
@@ -32,6 +33,19 @@ export const createCar = mutation({
 
       // Rate limit car creation
       checkRateLimit("createCar", user.id);
+
+      // Check limits for Free tier
+      const isPremium = await checkIsPremium(ctx, user.tokenIdentifier);
+      if (!isPremium) {
+        const existingCars = await ctx.db
+          .query("cars")
+          .withIndex("by_user", (q) => q.eq("userId", user.id))
+          .collect();
+
+        if (existingCars.length >= FREE_CAR_LIMIT) {
+          throw new ConvexError(`Free plan is limited to ${FREE_CAR_LIMIT} cars. Please upgrade to add more.`);
+        }
+      }
 
       // Validate year
       const year = sanitizeNumber(args.year, 1900, new Date().getFullYear() + 2);
