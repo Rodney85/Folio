@@ -115,7 +115,7 @@ const CarDetailsPage = () => {
         <div className="text-white">
           <p>Please contact us to purchase this product or for more information.</p>
           <p className="mt-4">
-            <a href="mailto:info@carfolio.app" className="text-blue-400 hover:underline">info@carfolio.app</a>
+            <a href="mailto:support@carfolio.cc" className="text-blue-400 hover:underline">support@carfolio.cc</a>
             <br />
             <a href="tel:+15551234567" className="text-blue-400 hover:underline">+1 (555) 123-4567</a>
           </p>

@@ -16,7 +16,7 @@ export const getSettings = query({
 
         // Set defaults
         settingsMap.siteName = "Carfolio";
-        settingsMap.supportEmail = "support@carfolio.com";
+        settingsMap.supportEmail = "support@carfolio.cc";
         settingsMap.maintenanceMode = false;
         settingsMap.allowRegistrations = true;
         settingsMap.requireEmailVerification = true;

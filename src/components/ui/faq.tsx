@@ -101,7 +101,7 @@ export default function FAQs() {
                 >
                     Still have questions? Contact our{' '}
                     <a
-                        href="mailto:support@carfolio.com"
+                        href="mailto:support@carfolio.cc"
                         className="text-primary font-medium hover:underline underline-offset-4 decoration-primary/50 hover:decoration-primary transition-all">
                         support team
                     </a>

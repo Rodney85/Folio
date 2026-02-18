@@ -37,8 +37,48 @@ export const triggerNotification = internalMutation({
             return;
         }
 
-        // 2. Prepare Template
-        const emailData = { firstName: name, ...args.data };
+        // 3. Determine Action URL (Link)
+        const baseUrl = process.env.SITE_URL || "https://www.carfolio.cc";
+        let actionUrl = args.data?.actionUrl;
+
+        if (!actionUrl) {
+            switch (args.type) {
+                case "welcome":
+                    actionUrl = `${baseUrl}/profile`;
+                    break;
+                case "subscription_success":
+                    actionUrl = `${baseUrl}/dashboard`;
+                    break;
+                case "subscription_failed":
+                    actionUrl = `${baseUrl}/settings/billing`;
+                    break;
+                case "garage_limit":
+                    actionUrl = `${baseUrl}/pricing`;
+                    break;
+                case "talent_scout":
+                case "visionary":
+                    actionUrl = `${baseUrl}/garage`;
+                    break;
+                case "shop_manager":
+                    actionUrl = `${baseUrl}/garage?tab=parts`;
+                    break;
+                case "influencer_stats":
+                    actionUrl = `${baseUrl}/analytics`;
+                    break;
+                case "build_value":
+                    actionUrl = `${baseUrl}/garage?tab=value`;
+                    break;
+                default:
+                    actionUrl = baseUrl;
+            }
+        }
+
+        const emailData = {
+            firstName: name,
+            actionUrl: actionUrl,
+            ...args.data
+        };
+
         let subject = "Notification from CarFolio";
         let reactElement: React.ReactNode;
 

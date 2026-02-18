@@ -64,6 +64,10 @@ const PublicProfilePage = () => {
   }, [profileData?.user, logAnalytics]);
 
 
+  // Move hook to top level to avoid React Invariant Error #310 (Hooks Rule Violation)
+  // @ts-ignore
+  const ownerTier = useQuery(api.freemium.getPublicUserTier, profileData?.user ? { userId: profileData.user._id } : "skip");
+
   // Loading state
   if (profileData === undefined) {
     return (
@@ -88,8 +92,7 @@ const PublicProfilePage = () => {
     );
   }
 
-  // @ts-ignore
-  const ownerTier = useQuery(api.freemium.getPublicUserTier, profileData?.user ? { userId: profileData.user._id } : "skip");
+
 
   const { user, cars } = profileData;
 
