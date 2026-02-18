@@ -104,7 +104,55 @@ export const triggerNotification = internalMutation({
                 return;
         }
 
-        // 3. Call Send Action (with logging)
+        // 3. Determine Sender Identity (Dynamic Personas)
+        const defaultSender = process.env.RESEND_FROM_EMAIL || "CarFolio <onboarding@resend.dev>";
+        let fromAddress = defaultSender;
+
+        // Extract domain to construct new emails (e.g. from "Support <support@carfolio.com>" get "carfolio.com")
+        // Only customize if we are likely on a verified domain (not resend.dev default)
+        if (!defaultSender.includes("@resend.dev")) {
+            const domainMatch = defaultSender.match(/@([^>]+)/);
+            const domain = domainMatch ? domainMatch[1].trim() : null;
+
+            if (domain) {
+                switch (args.type) {
+                    // The Accountant (Billing & Money)
+                    case "subscription_success":
+                    case "subscription_failed":
+                    case "subscription_cancelled":
+                    case "refund_processed":
+                    case "build_value":
+                        fromAddress = `CarFolio Billing <billing@${domain}>`;
+                        break;
+
+                    // The Shop Manager (Updates & Alerts)
+                    case "shop_manager":
+                    case "garage_limit":
+                        fromAddress = `CarFolio Manager <updates@${domain}>`;
+                        break;
+
+                    // The Influencer (Growth)
+                    case "influencer_stats":
+                    case "talent_scout":
+                        fromAddress = `CarFolio Growth <growth@${domain}>`;
+                        break;
+
+                    // The Visionary (Inspiration)
+                    case "visionary":
+                        fromAddress = `CarFolio Vision <visionary@${domain}>`;
+                        break;
+
+                    // Default / System / Issues -> specific "Support" or "Start"
+                    case "issue_received":
+                    case "issue_resolved":
+                    case "welcome":
+                        // Keep default (usually support@ or hello@)
+                        break;
+                }
+            }
+        }
+
+        // 4. Call Send Action
         let templateName: string = args.type;
         if (templateName === "system") {
             templateName = "system_notification";
@@ -116,6 +164,7 @@ export const triggerNotification = internalMutation({
             template: templateName,
             templateArgs: emailData,
             userId: user._id,
+            from: fromAddress,
         });
 
         console.log(`Notification triggered for ${email} type: ${args.type}`);

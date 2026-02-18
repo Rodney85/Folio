@@ -12,6 +12,7 @@ export const logEmail = internalMutation({
         status: v.string(),
         messageId: v.optional(v.string()),
         error: v.optional(v.string()),
+        userId: v.optional(v.string()),
     },
     handler: async (ctx, args) => {
         await ctx.db.insert("sent_emails", {
@@ -21,6 +22,7 @@ export const logEmail = internalMutation({
             status: args.status,
             messageId: args.messageId,
             error: args.error,
+            userId: args.userId,
             createdAt: Date.now(),
         });
     },
@@ -32,10 +34,13 @@ export const send = internalAction({
         subject: v.string(),
         template: v.string(),
         templateArgs: v.any(),
+        userId: v.optional(v.string()),
+        from: v.optional(v.string()), // Optional override
     },
     handler: async (ctx, args) => {
         const apiKey = process.env.RESEND_API_KEY;
-        const fromAddress = process.env.RESEND_FROM_EMAIL;
+        // Use override if provided, else from env
+        const fromAddress = args.from || process.env.RESEND_FROM_EMAIL;
 
         const toAddress = Array.isArray(args.to) ? args.to[0] : args.to; // Log primary recipient
 
@@ -49,6 +54,7 @@ export const send = internalAction({
                 template: args.template,
                 status: "failed",
                 error: errorMsg,
+                userId: args.userId,
             });
             throw new Error(errorMsg);
         }
@@ -62,6 +68,7 @@ export const send = internalAction({
                 template: args.template,
                 status: "failed",
                 error: errorMsg,
+                userId: args.userId,
             });
             throw new Error(errorMsg);
         }
@@ -82,6 +89,7 @@ export const send = internalAction({
                 template: args.template,
                 status: "failed",
                 error: errorMsg,
+                userId: args.userId,
             });
             throw e;
         }
@@ -94,6 +102,7 @@ export const send = internalAction({
                 template: args.template,
                 status: "failed",
                 error: errorMsg,
+                userId: args.userId,
             });
             throw new Error(errorMsg);
         }
@@ -124,6 +133,7 @@ export const send = internalAction({
                 template: args.template,
                 status: "sent",
                 messageId: emailId as string,
+                userId: args.userId,
             });
 
         } catch (e: any) {
@@ -134,6 +144,7 @@ export const send = internalAction({
                 template: args.template,
                 status: "failed",
                 error: e.message || "Unknown component error",
+                userId: args.userId,
             });
             throw e;
         }

@@ -1,5 +1,19 @@
 import * as React from 'react';
-import { render } from "@react-email/render";
+import { renderToStaticMarkup } from "react-dom/server";
+import {
+    Html,
+    Head,
+    Body,
+    Container,
+    Section,
+    Text,
+    Button,
+    Img,
+    Hr,
+    Link,
+    Preview,
+    Heading
+} from "@react-email/components";
 
 interface EmailTemplateProps {
     firstName?: string;
@@ -494,8 +508,16 @@ export const renderTemplate = (templateName: string, args: any) => {
             throw new Error(`Unknown template: ${templateName}`);
     }
 
-    const html = render(component);
-    const text = render(component, { plainText: true });
+    // Use native rendering to avoid module resolution issues with @react-email/render in Convex Actions
+    // Note: renderToStaticMarkup produces valid HTML but doesn't auto-add DOCTYPE, so we add it.
+    const html = "<!DOCTYPE html>" + renderToStaticMarkup(component);
 
-    return { html, text };
+    // We omit plain text version for now as renderToStaticMarkup doesn't support it.
+    // Resend/Clients usually handle HTML-only fine.
+    const text = "";
+
+    return {
+        html,
+        text
+    };
 };
