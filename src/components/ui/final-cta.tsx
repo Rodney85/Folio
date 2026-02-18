@@ -93,16 +93,16 @@ export function FinalCTA() {
                                 initial={{ y: 20, opacity: 0 }}
                                 whileInView={{ y: 0, opacity: 1 }}
                                 transition={{ delay: 0.5, duration: 0.5 }}
-                                className="absolute bottom-6 left-6 right-6 z-20 neumorph-card rounded-xl p-4 border border-white/5 flex items-center gap-4 bg-[#0D0D12]/80 backdrop-blur-md"
+                                className="absolute bottom-4 left-4 right-4 md:bottom-6 md:left-6 md:right-6 z-20 neumorph-card rounded-xl p-3 md:p-4 border border-white/5 flex items-center gap-3 md:gap-4 bg-[#0D0D12]/90 backdrop-blur-md shadow-2xl"
                             >
-                                <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400">
-                                    <TrophyIcon className="w-5 h-5" />
+                                <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 shrink-0">
+                                    <TrophyIcon className="w-4 h-4 md:w-5 md:h-5" />
                                 </div>
-                                <div>
-                                    <div className="text-sm font-medium text-white">Top 1% Build</div>
-                                    <div className="text-xs text-slate-400">Awarded to Early Owners</div>
+                                <div className="min-w-0 flex-1">
+                                    <div className="text-sm font-bold text-white truncate">Top 1% Build</div>
+                                    <div className="text-[10px] md:text-xs text-slate-400 truncate">Awarded to Early Owners</div>
                                 </div>
-                                <div className="ml-auto text-xs font-mono text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded">
+                                <div className="ml-auto text-[10px] md:text-xs font-mono text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded border border-emerald-500/20 shrink-0">
                                     VERIFIED
                                 </div>
                             </motion.div>

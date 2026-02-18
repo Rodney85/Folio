@@ -183,7 +183,7 @@ const PublicProfilePage = () => {
 
       {/* Powered by CarFolio watermark (Free tier only) */}
       {ownerTier === 'free' && (
-        <div className="mt-12 mb-8 flex justify-center">
+        <div className="mt-auto mb-8 flex justify-center">
           <a
             href="/"
             className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 rounded-full transition-colors group"
