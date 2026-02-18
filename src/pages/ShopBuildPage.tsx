@@ -41,6 +41,8 @@ const ShopBuildPage = () => {
   // Fetch car details and parts
   const car = useQuery(api.cars.getCarById, { carId: id as Id<"cars"> });
   const parts = useQuery(api.parts.getCarParts, id ? { carId: id as Id<"cars"> } : "skip");
+  // @ts-ignore
+  const ownerTier = useQuery(api.freemium.getPublicUserTier, car ? { userId: car.userId } : "skip");
 
   // Get unique categories for filtering
   const categories = parts ? [...new Set(parts.map(part => part.category))].filter(Boolean) as string[] : [];
@@ -343,7 +345,7 @@ const ShopBuildPage = () => {
                     </CardContent>
 
                     <CardFooter className="pt-2 pb-4">
-                      {part.purchaseUrl ? (
+                      {part.purchaseUrl && ownerTier !== "free" ? (
                         <Button
                           className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                           onClick={() => {
@@ -357,7 +359,7 @@ const ShopBuildPage = () => {
                       ) : (
                         <Button variant="outline" className="w-full border-slate-700 text-slate-300" disabled>
                           <ShoppingBasket className="h-4 w-4 mr-2" />
-                          Contact for Purchase
+                          {part.purchaseUrl ? "Link Locked" : "Contact for Purchase"}
                         </Button>
                       )}
                     </CardFooter>

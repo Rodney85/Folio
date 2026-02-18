@@ -44,7 +44,7 @@ const ExplorePage = lazy(() => import("./pages/ExplorePage"));
 const AccountSettingsPage = lazy(() => import("./pages/AccountSettingsPage"));
 const SubscriptionPage = lazy(() => import("./pages/SubscriptionPage"));
 const SubscriptionSuccessPage = lazy(() => import("./pages/SubscriptionSuccessPage"));
-const AffiliatesPage = lazy(() => import("./pages/AffiliatesPage"));
+
 import ProfileOnboarding from "./components/ProfileOnboarding";
 
 // Admin Pages
@@ -55,7 +55,8 @@ const AdminUserDetails = lazy(() => import("./components/admin/AdminUserDetails"
 const AdminContentPage = lazy(() => import("./components/admin/AdminContentPage"));
 const AdminSettingsPage = lazy(() => import("./components/admin/AdminSettingsPage"));
 const AdminIssuesPage = lazy(() => import("./components/admin/AdminIssuesPage"));
-const AdminAffiliatesPage = lazy(() => import("./components/admin/AdminAffiliatesPage"));
+
+const AdminMessagesPage = lazy(() => import("./components/admin/AdminMessagesPage"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
 const TermsPage = lazy(() => import("./pages/TermsPage"));
 const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
@@ -73,7 +74,6 @@ const PageLoader = () => (
 const AuthenticatedRoutes = () => {
   return (
     <AppLayout>
-      <ProfileOnboarding />
       <Routes>
         <Route path="/profile" element={
           <PageTransition>
@@ -181,6 +181,7 @@ const AppContent = () => {
 
   return (
     <BrowserRouter>
+      {isSignedIn && <ProfileOnboarding />}
       <FloatingNavBar />
       <Routes>
         {/* Show profile page if user is signed in, otherwise show landing page */}
@@ -310,9 +311,9 @@ const AppContent = () => {
               <AdminSettingsPage />
             </Suspense>
           } />
-          <Route path="affiliates" element={
+          <Route path="messages" element={
             <Suspense fallback={<PageLoader />}>
-              <AdminAffiliatesPage />
+              <AdminMessagesPage />
             </Suspense>
           } />
         </Route>

@@ -11,7 +11,7 @@ const footerLinks = [
 		links: [
 			{ title: 'Showcase', href: '/#feature', isExternal: false },
 			{ title: 'Pricing', href: '/#pricing', isExternal: false },
-			{ title: 'Affiliates', href: '/affiliates', isExternal: false },
+
 			{ title: 'Sign In', href: '/sign-in', isExternal: false },
 		],
 	},

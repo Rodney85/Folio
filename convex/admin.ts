@@ -14,7 +14,7 @@ export const verifyAdmin = async (ctx: any) => {
   if (identity.publicMetadata?.role === 'admin') {
     return; // User is admin based on Clerk metadata
   }
-  
+
   // If not in Clerk metadata, check if the role is stored in the Convex database
   const user = await ctx.db
     .query("users")
@@ -25,7 +25,7 @@ export const verifyAdmin = async (ctx: any) => {
   if (user?.role === 'admin') {
     return; // User is admin based on database record
   }
-  
+
   // If we get here, user is not an admin in either location
   throw new Error("You must be an admin to access this data.");
 };
@@ -71,7 +71,7 @@ export const getMonthlyActiveUsers = query({
 
     // Get unique user IDs
     const uniqueUserIds = new Set(activeUserEvents.map(event => event.userId));
-    
+
     return uniqueUserIds.size;
   },
 });
@@ -91,7 +91,7 @@ export const getDailyActiveUsers = query({
 
     // Get unique user IDs
     const uniqueUserIds = new Set(activeUserEvents.map(event => event.userId));
-    
+
     return uniqueUserIds.size;
   },
 });
@@ -112,7 +112,7 @@ export const getAllCars = query({
   handler: async (ctx) => {
     await verifyAdmin(ctx);
     const cars = await ctx.db.query("cars").collect();
-    
+
     // Fetch owner information for each car
     const carsWithOwners = await Promise.all(
       cars.map(async (car) => {
@@ -129,7 +129,7 @@ export const getAllCars = query({
             console.error(`Error finding owner for car ${car._id}:`, error);
           }
         }
-        
+
         return {
           ...car,
           owner: owner ? {
@@ -144,7 +144,7 @@ export const getAllCars = query({
         };
       })
     );
-    
+
     return carsWithOwners;
   },
 });
@@ -155,7 +155,7 @@ export const getAllParts = query({
   handler: async (ctx) => {
     await verifyAdmin(ctx);
     const parts = await ctx.db.query("parts").collect();
-    
+
     // Fetch owner information for each part
     const partsWithOwners = await Promise.all(
       parts.map(async (part) => {
@@ -172,7 +172,7 @@ export const getAllParts = query({
             console.error(`Error finding owner for part ${part._id}:`, error);
           }
         }
-        
+
         return {
           ...part,
           owner: owner ? {
@@ -187,7 +187,7 @@ export const getAllParts = query({
         };
       })
     );
-    
+
     return partsWithOwners;
   },
 });
@@ -199,10 +199,10 @@ export const getAnalyticsData = query({
   },
   handler: async (ctx, args) => {
     await verifyAdmin(ctx);
-    
+
     let startTime = 0;
     const now = Date.now();
-    
+
     if (args.timeRange === 'day') {
       startTime = now - 24 * 60 * 60 * 1000; // Last 24 hours
     } else if (args.timeRange === 'week') {
@@ -212,12 +212,22 @@ export const getAnalyticsData = query({
     } else if (args.timeRange === 'year') {
       startTime = now - 365 * 24 * 60 * 60 * 1000; // Last 365 days
     }
-    
-    const query = startTime > 0 
+
+    const query = startTime > 0
       ? ctx.db.query("analytics").filter(q => q.gte(q.field("createdAt"), startTime))
       : ctx.db.query("analytics");
-      
+
     const analytics = await query.collect();
     return analytics;
+  },
+});
+
+// Get sent emails for admin panel
+export const getSentEmails = query({
+  args: {},
+  handler: async (ctx) => {
+    await verifyAdmin(ctx);
+    const emails = await ctx.db.query("sent_emails").order("desc").collect();
+    return emails;
   },
 });

@@ -1,4 +1,5 @@
 import { mutation, query } from "./_generated/server";
+import { internal } from "./_generated/api";
 import { v } from "convex/values";
 import { verifyAdmin } from "./admin";
 
@@ -104,6 +105,22 @@ export const updateIssueStatus = mutation({
             updates.resolvedAt = now;
         }
 
+        if (args.status === "resolved") {
+            const issue = await ctx.db.get(args.issueId);
+            if (issue) {
+                // @ts-ignore
+                await ctx.scheduler.runAfter(0, internal.notifications.triggerNotification, {
+                    userId: issue.userId,
+                    email: issue.userEmail,
+                    type: "issue_resolved",
+                    data: {
+                        subject: issue.title,
+                        firstName: issue.userName?.split(" ")[0] || "User",
+                    },
+                });
+            }
+        }
+
         await ctx.db.patch(args.issueId, updates);
         return { success: true };
     },
@@ -164,6 +181,20 @@ export const resolveIssue = mutation({
             resolvedAt: now,
             updatedAt: now,
         });
+
+        const issue = await ctx.db.get(args.issueId);
+        if (issue) {
+            // @ts-ignore
+            await ctx.scheduler.runAfter(0, internal.notifications.triggerNotification, {
+                userId: issue.userId,
+                email: issue.userEmail,
+                type: "issue_resolved",
+                data: {
+                    subject: issue.title,
+                    firstName: issue.userName?.split(" ")[0] || "User",
+                },
+            });
+        }
 
         return { success: true };
     },

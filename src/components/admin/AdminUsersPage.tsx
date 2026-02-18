@@ -1,14 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow
-} from "@/components/ui/table";
+import { ResponsiveTable, Column } from "@/components/ui/ResponsiveTable";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,11 +29,13 @@ import {
     ChevronRight,
     Shield,
     ShieldAlert,
-    User
+    User,
+    Car,
+    Calendar
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
-import { formatDistanceToNow } from "date-fns";
+import { Card, CardContent } from "@/components/ui/card";
 
 const AdminUsersPage = () => {
     const { toast } = useToast();
@@ -68,7 +63,6 @@ const AdminUsersPage = () => {
     }, [searchQuery]);
 
     // Query users
-    // Define args separately to avoid "excessively deep type instantiation" error
     const queryArgs = {
         limit: 20,
         cursor: cursor || undefined,
@@ -79,7 +73,6 @@ const AdminUsersPage = () => {
     };
 
     const usersData = useQuery(api.adminUsers.getFilteredUsers, queryArgs);
-
     const users = usersData?.users || [];
     const nextCursor = usersData?.nextCursor || null;
 
@@ -117,6 +110,168 @@ const AdminUsersPage = () => {
         }
     };
 
+    // Columns configuration
+    const columns: Column<any>[] = [
+        {
+            header: "User",
+            cell: (user) => (
+                <div className="flex items-center gap-3">
+                    <Avatar className="h-9 w-9">
+                        <AvatarImage src={user.pictureUrl} />
+                        <AvatarFallback>{user.name?.[0] || "U"}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col">
+                        <span className="font-medium">{user.name}</span>
+                        <span className="text-xs text-muted-foreground">{user.email}</span>
+                    </div>
+                </div>
+            )
+        },
+        {
+            header: "Role",
+            cell: (user) => (
+                user.role === "admin" ? (
+                    <Badge variant="default" className="bg-primary/10 text-primary hover:bg-primary/20 border-0">
+                        <Shield className="w-3 h-3 mr-1" /> Admin
+                    </Badge>
+                ) : (
+                    <Badge variant="secondary" className="font-normal">
+                        <User className="w-3 h-3 mr-1" /> User
+                    </Badge>
+                )
+            )
+        },
+        {
+            header: "Plan",
+            cell: (user) => (
+                <Badge variant="outline" className="capitalize">
+                    {user.subscriptionStatus || "free"}
+                </Badge>
+            )
+        },
+        {
+            header: "Cars",
+            accessorKey: "carsCount"
+        },
+        {
+            header: "Joined",
+            cell: (user) => (
+                <span className="text-muted-foreground text-sm">
+                    {user.createdAt ? (
+                        typeof user.createdAt === 'number'
+                            ? new Date(user.createdAt).toLocaleDateString()
+                            : new Date(parseInt(user.createdAt)).toLocaleDateString()
+                    ) : "N/A"}
+                </span>
+            )
+        },
+        {
+            header: "Actions",
+            className: "text-right",
+            cell: (user) => (
+                <div className="flex justify-end">
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                                <span className="sr-only">Open menu</span>
+                                <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuItem asChild>
+                                <Link to={`/admin/users/${user._id}`}>View Details</Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuLabel>Change Role</DropdownMenuLabel>
+                            <DropdownMenuItem onClick={() => handleRoleChange(user._id, "user")}>
+                                <User className="mr-2 h-4 w-4" /> Make User
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleRoleChange(user._id, "admin")}>
+                                <ShieldAlert className="mr-2 h-4 w-4" /> Make Admin
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+            )
+        }
+    ];
+
+    // Mobile Card Renderer
+    const renderMobileCard = (user: any) => (
+        <Card className="mb-4">
+            <CardContent className="pt-6">
+                <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                        <Avatar className="h-10 w-10">
+                            <AvatarImage src={user.pictureUrl} />
+                            <AvatarFallback>{user.name?.[0] || "U"}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                            <div className="font-bold">{user.name}</div>
+                            <div className="text-sm text-muted-foreground">{user.email}</div>
+                        </div>
+                    </div>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="-mr-2">
+                                <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem asChild>
+                                <Link to={`/admin/users/${user._id}`}>View Details</Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => handleRoleChange(user._id, "user")}>
+                                Make User
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleRoleChange(user._id, "admin")}>
+                                Make Admin
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+
+                <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
+                    <div className="space-y-1">
+                        <span className="text-muted-foreground block text-xs uppercase tracking-wider">Role</span>
+                        {user.role === "admin" ? (
+                            <Badge variant="default" className="bg-primary/10 text-primary border-0">
+                                <Shield className="w-3 h-3 mr-1" /> Admin
+                            </Badge>
+                        ) : (
+                            <Badge variant="secondary">User</Badge>
+                        )}
+                    </div>
+                    <div className="space-y-1">
+                        <span className="text-muted-foreground block text-xs uppercase tracking-wider">Plan</span>
+                        <Badge variant="outline" className="capitalize">
+                            {user.subscriptionStatus || "free"}
+                        </Badge>
+                    </div>
+                    <div className="space-y-1">
+                        <span className="text-muted-foreground block text-xs uppercase tracking-wider">Cars</span>
+                        <div className="flex items-center gap-1 font-medium">
+                            <Car className="h-3 w-3" /> {user.carsCount}
+                        </div>
+                    </div>
+                    <div className="space-y-1">
+                        <span className="text-muted-foreground block text-xs uppercase tracking-wider">Joined</span>
+                        <div className="flex items-center gap-1 font-medium">
+                            <Calendar className="h-3 w-3" />
+                            {user.createdAt ? (
+                                typeof user.createdAt === 'number'
+                                    ? new Date(user.createdAt).toLocaleDateString()
+                                    : new Date(parseInt(user.createdAt)).toLocaleDateString()
+                            ) : "N/A"}
+                        </div>
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
+    );
+
     return (
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -128,21 +283,21 @@ const AdminUsersPage = () => {
                 </div>
             </div>
 
-            {/* Filters & Search */}
-            <div className="flex flex-col md:flex-row gap-4 items-center bg-card p-4 rounded-lg border">
-                <div className="relative w-full md:w-96">
+            {/* Filters & Search - Stacked on mobile */}
+            <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center bg-card/50 backdrop-blur-sm p-4 rounded-lg border">
+                <div className="relative w-full lg:w-96">
                     <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
                         placeholder="Search by name or email..."
-                        className="pl-8"
+                        className="pl-8 bg-background/50"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
                 </div>
 
-                <div className="flex flex-wrap gap-2 w-full md:w-auto ml-auto">
+                <div className="flex flex-wrap gap-2 w-full lg:w-auto lg:ml-auto">
                     <Select value={roleFilter} onValueChange={setRoleFilter}>
-                        <SelectTrigger className="w-[130px]">
+                        <SelectTrigger className="w-[130px] bg-background/50">
                             <SelectValue placeholder="Role" />
                         </SelectTrigger>
                         <SelectContent>
@@ -153,7 +308,7 @@ const AdminUsersPage = () => {
                     </Select>
 
                     <Select value={subscriptionFilter} onValueChange={setSubscriptionFilter}>
-                        <SelectTrigger className="w-[130px]">
+                        <SelectTrigger className="w-[130px] bg-background/50">
                             <SelectValue placeholder="Plan" />
                         </SelectTrigger>
                         <SelectContent>
@@ -165,7 +320,7 @@ const AdminUsersPage = () => {
                     </Select>
 
                     <Select value={activityFilter} onValueChange={setActivityFilter}>
-                        <SelectTrigger className="w-[130px]">
+                        <SelectTrigger className="w-[130px] bg-background/50">
                             <SelectValue placeholder="Activity" />
                         </SelectTrigger>
                         <SelectContent>
@@ -193,103 +348,14 @@ const AdminUsersPage = () => {
                 </div>
             </div>
 
-            {/* Users Table */}
-            <div className="rounded-md border bg-card">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>User</TableHead>
-                            <TableHead>Role</TableHead>
-                            <TableHead>Plan</TableHead>
-                            <TableHead>Cars</TableHead>
-                            <TableHead>Joined</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {!usersData ? (
-                            <TableRow>
-                                <TableCell colSpan={6} className="h-24 text-center">
-                                    Loading...
-                                </TableCell>
-                            </TableRow>
-                        ) : users.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={6} className="h-24 text-center">
-                                    No users found.
-                                </TableCell>
-                            </TableRow>
-                        ) : (
-                            users.map((user) => (
-                                <TableRow key={user._id}>
-                                    <TableCell>
-                                        <div className="flex items-center gap-3">
-                                            <Avatar className="h-9 w-9">
-                                                <AvatarImage src={user.pictureUrl} />
-                                                <AvatarFallback>{user.name?.[0] || "U"}</AvatarFallback>
-                                            </Avatar>
-                                            <div className="flex flex-col">
-                                                <span className="font-medium">{user.name}</span>
-                                                <span className="text-xs text-muted-foreground">{user.email}</span>
-                                            </div>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        {user.role === "admin" ? (
-                                            <Badge variant="default" className="bg-primary/10 text-primary hover:bg-primary/20 border-0">
-                                                <Shield className="w-3 h-3 mr-1" /> Admin
-                                            </Badge>
-                                        ) : (
-                                            <Badge variant="secondary" className="font-normal">
-                                                <User className="w-3 h-3 mr-1" /> User
-                                            </Badge>
-                                        )}
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge variant="outline" className="capitalize">
-                                            {user.subscriptionStatus || "free"}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell>
-                                        {user.carsCount}
-                                    </TableCell>
-                                    <TableCell className="text-muted-foreground text-sm">
-                                        {user.createdAt ? (
-                                            typeof user.createdAt === 'number'
-                                                ? new Date(user.createdAt).toLocaleDateString()
-                                                : new Date(parseInt(user.createdAt)).toLocaleDateString()
-                                        ) : "N/A"}
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" className="h-8 w-8 p-0">
-                                                    <span className="sr-only">Open menu</span>
-                                                    <MoreHorizontal className="h-4 w-4" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                <DropdownMenuItem asChild>
-                                                    <Link to={`/admin/users/${user._id}`}>View Details</Link>
-                                                </DropdownMenuItem>
-                                                <DropdownMenuSeparator />
-                                                <DropdownMenuLabel>Change Role</DropdownMenuLabel>
-                                                <DropdownMenuItem onClick={() => handleRoleChange(user._id, "user")}>
-                                                    <User className="mr-2 h-4 w-4" /> Make User
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => handleRoleChange(user._id, "admin")}>
-                                                    <ShieldAlert className="mr-2 h-4 w-4" /> Make Admin
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </TableCell>
-                                </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                </Table>
-            </div>
+            {/* Responsive Users Table */}
+            <ResponsiveTable
+                data={users}
+                columns={columns}
+                keyExtractor={(user) => user._id}
+                renderMobileCard={renderMobileCard}
+                emptyMessage="No users found."
+            />
 
             {/* Pagination Controls */}
             <div className="flex items-center justify-end space-x-2">

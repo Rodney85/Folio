@@ -12,7 +12,7 @@ export const FloatingNavBar = () => {
 
     // Define routes where the floating navbar should appear
     // The Landing Page (/) and public info pages
-    const publicRoutes = ['/', '/about', '/terms', '/privacy', '/affiliates'];
+    const publicRoutes = ['/', '/about', '/terms', '/privacy'];
 
     // Check if current path matches one of the public routes
     const shouldShow = publicRoutes.includes(location.pathname);

@@ -50,9 +50,11 @@ export const createPart = mutation({
       if (args.purchaseUrl) {
         const isPremium = await checkIsPremium(ctx, user.tokenIdentifier);
         if (!isPremium) {
-          throw new ConvexError("Purchase links are a Pro feature. Upgrade to make your build shoppable.");
+          // Silently strip the URL for non-premium users
+          partData.purchaseUrl = "";
+        } else {
+          partData.purchaseUrl = sanitizeUrl(args.purchaseUrl) ?? "";
         }
-        partData.purchaseUrl = sanitizeUrl(args.purchaseUrl) ?? "";
       } else {
         partData.purchaseUrl = "";
       }

@@ -2,6 +2,7 @@ import { mutation, query, internalQuery, internalMutation } from "./_generated/s
 import { v, ConvexError } from "convex/values";
 import { sanitizeText, sanitizeUsername, sanitizeSocialHandle, sanitizeUrl, MAX_LENGTHS } from "./lib/sanitize";
 import { checkRateLimit } from "./lib/rateLimit";
+import { internal } from "./_generated/api";
 
 /**
  * Internal query to get user by token identifier
@@ -84,7 +85,21 @@ export const updateProfile = mutation({
       }
 
       // Update existing user
-      return await ctx.db.patch(existingUser._id, updateData);
+      await ctx.db.patch(existingUser._id, updateData);
+
+      // Check for Onboarding Completion (Welcome Email)
+      if (args.profileCompleted === true && !existingUser.profileCompleted) {
+        await ctx.scheduler.runAfter(0, internal.notifications.triggerNotification, {
+          userId: tokenIdentifier,
+          type: "welcome",
+          data: {
+            firstName: args.username || existingUser.name || "User",
+            actionUrl: `${process.env.VITE_APP_URL}/dashboard`,
+          }
+        });
+      }
+
+      return;
     } else {
       // This case shouldn't happen often as users are typically created during auth sync
       throw new ConvexError("User not found in the database");

@@ -38,6 +38,8 @@ const PublicCarDetailsPage = () => {
 
   const car = useQuery(api.cars.getCarById, carId ? { carId } : "skip");
   const parts = useQuery(api.parts.getCarParts, carId ? { carId } : "skip");
+  // @ts-ignore
+  const ownerTier = useQuery(api.freemium.getPublicUserTier, car ? { userId: car.userId } : "skip");
 
   // Setup swipe handlers for mobile
   const swipeHandlers = useSwipeable({
@@ -271,7 +273,7 @@ const PublicCarDetailsPage = () => {
                                       <p className="text-green-400 font-bold text-sm">${part.price}</p>
                                     )}
                                   </div>
-                                  {part.purchaseUrl && (
+                                  {part.purchaseUrl && ownerTier !== "free" && (
                                     <button
                                       onClick={() => {
                                         window.open(part.purchaseUrl, '_blank');
@@ -467,7 +469,7 @@ const PublicCarDetailsPage = () => {
                                       <p className="text-slate-500 text-xs mb-1">{part.category}</p>
                                     )}
                                   </div>
-                                  {part.purchaseUrl && (
+                                  {part.purchaseUrl && ownerTier !== "free" && (
                                     <button
                                       onClick={() => {
                                         window.open(part.purchaseUrl, '_blank');

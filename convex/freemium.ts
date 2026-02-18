@@ -1,4 +1,5 @@
 import { query } from "./_generated/server";
+import { v } from "convex/values";
 
 /**
  * Freemium Access Control — CarFolio
@@ -143,27 +144,49 @@ export const isProfilePublic = query({
 /**
  * Get the premium status and tier for the current user.
  */
+const OG_PRODUCT_ID = process.env.DODO_PRODUCT_OG_LIFETIME;
+
+/**
+ * Helper to determine the user's tier based on subscription status and plan ID.
+ */
+export function getUserTier(user: any): "free" | "pro" | "og" {
+    if (!user || user.subscriptionStatus !== "active") {
+        return "free";
+    }
+
+    // Check if the user has the OG lifetime plan
+    if (OG_PRODUCT_ID && user.planId === OG_PRODUCT_ID) {
+        return "og";
+    }
+
+    // Default to Pro if active but not OG (or if OG ID is not configured)
+    return "pro";
+}
+
+/**
+ * Get the premium status and tier for the current user.
+ */
 export const isUserPremium = query({
     handler: async (ctx) => {
         const identity = await ctx.auth.getUserIdentity();
         if (!identity) {
-            return { isPremium: false, role: null, tier: "guest" as const };
+            return { isPremium: false, tier: "guest" as const };
         }
 
         if (BETA_MODE) {
-            return { isPremium: true, role: "beta_user", tier: "pro" as const };
+            return { isPremium: true, tier: "pro" as const };
         }
 
         const user = await getUserFromIdentity(ctx, identity.tokenIdentifier);
         if (!user) {
-            return { isPremium: false, role: null, tier: "free" as const };
+            return { isPremium: false, tier: "free" as const };
         }
 
-        const isActive = user.subscriptionStatus === "active";
+        const tier = getUserTier(user);
+
         return {
-            isPremium: isActive,
-            role: isActive ? "pro" : "free",
-            tier: isActive ? "pro" as const : "free" as const,
+            isPremium: tier !== "free",
+            tier: tier,
         };
     },
 });
@@ -199,5 +222,18 @@ export const getRemainingCarSlots = query({
             total: FREE_CAR_LIMIT,
             unlimited: false,
         };
+    },
+});
+
+/**
+ * Get the tier of a specific user (publicly accessible).
+ * Used for displaying badges and gating content on public profiles.
+ */
+export const getPublicUserTier = query({
+    args: { userId: v.id("users") },
+    handler: async (ctx, args) => {
+        const user = await ctx.db.get(args.userId);
+        if (!user) return "free";
+        return getUserTier(user);
     },
 });

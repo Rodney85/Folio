@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { internal } from "./_generated/api";
 import { ConvexError } from "convex/values";
 import { Id, Doc } from "./_generated/dataModel";
 import { getUser } from "./auth";
@@ -36,8 +37,10 @@ export const createCar = mutation({
 
       // Check limits for Free tier
       const isPremium = await checkIsPremium(ctx, user.tokenIdentifier);
+
+      let existingCars: any[] = [];
       if (!isPremium) {
-        const existingCars = await ctx.db
+        existingCars = await ctx.db
           .query("cars")
           .withIndex("by_user", (q) => q.eq("userId", user.id))
           .collect();
@@ -74,6 +77,20 @@ export const createCar = mutation({
         isPublished: args.isPublished ?? true,
         createdAt: new Date().toISOString(),
       });
+
+      // Check if they just hit the limit
+      if (!isPremium && existingCars.length + 1 >= FREE_CAR_LIMIT) {
+        // @ts-ignore
+        await ctx.scheduler.runAfter(0, internal.notifications.triggerNotification, {
+          userId: user.id,
+          email: user.email,
+          type: "garage_limit",
+          data: {
+            actionUrl: `${process.env.CONVEX_SITE_URL}/subscription`,
+            firstName: user.name?.split(" ")[0] || "Driver",
+          },
+        });
+      }
 
       return { carId };
     } catch (error) {

@@ -29,7 +29,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import ResponsiveLayout from "@/components/layout/ResponsiveLayout";
-import { Camera, X, PlusCircle, ShoppingBag, Loader2, Save } from "lucide-react";
+import { Camera, X, PlusCircle, ShoppingBag, Loader2, Save, Lock } from "lucide-react";
 import { useMutation, useQuery, useConvex } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { uploadToBackblaze } from "@/utils/storageService";
@@ -195,6 +195,8 @@ const EditCarPage = () => {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const convex = useConvex();
+  // @ts-ignore - Convex type instantiation issue
+  const canUseAffiliateLinks = useQuery(api.freemium.canUseAffiliateLinks);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const modFileInputRef = useRef<HTMLInputElement>(null);
 
@@ -901,8 +903,34 @@ const EditCarPage = () => {
                       </div>
                     </div>
                     <div>
-                      <Label htmlFor="modUrl">Purchase URL</Label>
-                      <Input id="modUrl" name="purchaseUrl" value={currentMod.purchaseUrl} onChange={handleModChange} placeholder="https://example.com/product" />
+                      <div className="flex items-center justify-between mb-1.5">
+                        <Label htmlFor="modUrl">Purchase URL</Label>
+                        {canUseAffiliateLinks === false && (
+                          <div
+                            className="flex items-center text-xs text-yellow-500 cursor-pointer hover:underline"
+                            onClick={() => navigate('/subscription')}
+                          >
+                            <Lock size={12} className="mr-1" />
+                            <span>Pro Feature</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="relative">
+                        <Input
+                          id="modUrl"
+                          name="purchaseUrl"
+                          value={currentMod.purchaseUrl}
+                          onChange={handleModChange}
+                          placeholder="https://example.com/product"
+                          disabled={canUseAffiliateLinks === false}
+                          className={canUseAffiliateLinks === false ? "opacity-50 cursor-not-allowed pr-10" : ""}
+                        />
+                        {canUseAffiliateLinks === false && (
+                          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                            <Lock size={16} className="text-slate-500" />
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>

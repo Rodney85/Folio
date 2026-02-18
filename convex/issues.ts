@@ -1,4 +1,5 @@
-import { mutation, query } from "./_generated/server";
+import { mutation, query, internalMutation } from "./_generated/server";
+import { internal } from "./_generated/api";
 import { v } from "convex/values";
 
 /**
@@ -38,6 +39,18 @@ export const submitIssue = mutation({
             status: "open",
             createdAt: now,
             updatedAt: now,
+        });
+
+        // Trigger email notification
+        // @ts-ignore
+        await ctx.scheduler.runAfter(0, internal.notifications.triggerNotification, {
+            userId: identity.subject,
+            email: identity.email,
+            type: "issue_received",
+            data: {
+                subject: args.title,
+                firstName: identity.name?.split(" ")[0] || identity.email?.split("@")[0] || "User",
+            },
         });
 
         return { issueId, success: true };

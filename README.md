@@ -1,6 +1,10 @@
 # 🚗 Carfolio
 
+
 A modern platform for car enthusiasts to showcase, organize, and share their vehicle collection.
+
+[![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/Rodney85/Folio?utm_source=oss&utm_medium=github&utm_campaign=Rodney85%2FFolio&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)](https://coderabbit.ai/repo/Rodney85/Folio)
+
 
 ![Carfolio Banner](https://via.placeholder.com/800x200?text=Carfolio+Car+Showcase+Platform)
 

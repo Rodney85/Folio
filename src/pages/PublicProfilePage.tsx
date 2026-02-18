@@ -1,8 +1,8 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import { Loader, Car } from "lucide-react";
-import { Car as CarComponent } from '@/components/cars/Car';
+import { Loader, Car, Sparkles } from "lucide-react";
+import CarImageWithUrl from '@/components/cars/CarImageWithUrl';
 import { SEO } from "@/components/SEO";
 import SocialLinks from "@/components/SocialLinks";
 import NotFound from "@/pages/NotFound";
@@ -88,6 +88,9 @@ const PublicProfilePage = () => {
     );
   }
 
+  // @ts-ignore
+  const ownerTier = useQuery(api.freemium.getPublicUserTier, profileData?.user ? { userId: profileData.user._id } : "skip");
+
   const { user, cars } = profileData;
 
   return (
@@ -106,9 +109,17 @@ const PublicProfilePage = () => {
             alt="Profile"
             className="w-24 h-24 rounded-full object-cover border-2 border-white/20"
           />
+          {ownerTier === 'og' && (
+            <div className="absolute -bottom-2 bg-yellow-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full border-2 border-[#020204] shadow-lg flex items-center gap-1">
+              <Sparkles className="w-3 h-3 fill-black" />
+              OG
+            </div>
+          )}
         </div>
 
-        <h2 className="font-bold mt-6 text-xl">@{user.username}</h2>
+        <h2 className="font-bold mt-6 text-xl flex items-center gap-2">
+          @{user.username}
+        </h2>
         <p className="text-center text-sm text-slate-400 mt-4 mb-6 max-w-xs whitespace-pre-wrap">
           {user.bio ? (
             <span className="whitespace-pre-wrap">{user.bio}</span>
@@ -135,41 +146,50 @@ const PublicProfilePage = () => {
           <h2 className="font-bold text-lg">Cars</h2>
         </div>
 
-        {/* BETA MODE: All profiles are public - subscription check removed */}
         {cars && cars.length > 0 ? (
-          <div className="grid grid-cols-3 gap-[2px]">
+          <div className="grid grid-cols-3 gap-1">
             {cars.map((car) => (
               <div
                 key={car._id}
-                className="relative pb-[100%] w-full overflow-hidden cursor-pointer rounded-[5px]"
+                className="relative pb-[100%] w-full overflow-hidden cursor-pointer rounded-md bg-slate-800/50"
                 onClick={() => navigate(`/u/${username}/car/${car._id}`)}
               >
                 {car.images && car.images.length > 0 ? (
-                  <img
-                    src={car.images[0]}
+                  <CarImageWithUrl
+                    storageId={car.images[0]}
                     alt={`${car.make} ${car.model}`}
-                    className="absolute inset-0 w-full h-full object-cover rounded-[5px]"
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                   />
                 ) : (
-                  <div className="absolute inset-0 flex items-center justify-center bg-slate-800/20 rounded-[5px]">
-                    <Car className="h-6 w-6 text-slate-600" />
+                  <div className="absolute inset-0 flex items-center justify-center text-slate-600">
+                    <Car className="h-8 w-8 opacity-50" />
                   </div>
                 )}
               </div>
             ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-10 space-y-4">
-            <Car className="h-12 w-12 text-slate-700" />
-            <div className="text-center">
-              <p className="text-slate-500">No published cars to display</p>
-              <p className="text-sm text-slate-600 mt-2">
-                This user hasn't published any cars yet.
-              </p>
+          <div className="flex flex-col items-center justify-center py-16 px-4 bg-slate-900/30 rounded-xl border border-white/5 mx-2">
+            <div className="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mb-4">
+              <Car className="h-8 w-8 text-slate-500" />
             </div>
+            <p className="text-slate-400 font-medium">No cars published yet</p>
           </div>
         )}
       </div>
+
+      {/* Powered by CarFolio watermark (Free tier only) */}
+      {ownerTier === 'free' && (
+        <div className="mt-12 mb-8 flex justify-center">
+          <a
+            href="/"
+            className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 rounded-full transition-colors group"
+          >
+            <span className="text-xs text-slate-400 group-hover:text-white transition-colors">Powered by</span>
+            <span className="text-sm font-bold text-white">CarFolio</span>
+          </a>
+        </div>
+      )}
     </div>
   );
 };

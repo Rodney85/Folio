@@ -4,21 +4,54 @@ import CarGrid from "@/components/cars/CarGrid";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "convex/react";
+import { api } from "../../convex/_generated/api";
 import { useMediaQuery } from "../hooks/useMediaQuery";
 
 const CarsPage = () => {
   const navigate = useNavigate();
   const isMobile = useMediaQuery("(max-width: 767px)");
 
+  const carSlots = useQuery(api.freemium.getRemainingCarSlots);
+
+  const handleAddCar = () => {
+    if (carSlots && !carSlots.unlimited && carSlots.remaining <= 0) {
+      navigate("/subscription");
+    } else {
+      navigate("/add-car");
+    }
+  };
+
+  const isLimitReached = carSlots && !carSlots.unlimited && carSlots.remaining <= 0;
+
   // Content to render in both mobile and desktop layouts
   const content = (
     <div className={`container ${!isMobile ? 'max-w-6xl mx-auto' : 'p-4'}`}>
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">My Cars</h1>
-        <Button size="sm" onClick={() => navigate("/add-car")}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Car
+        <div>
+          <h1 className="text-2xl font-bold">My Cars</h1>
+          {carSlots && !carSlots.unlimited && (
+            <p className="text-xs text-slate-400 mt-1">
+              {carSlots.total - carSlots.remaining} / {carSlots.total} free slots used
+            </p>
+          )}
+        </div>
+
+        <Button
+          size="sm"
+          onClick={handleAddCar}
+          variant={isLimitReached ? "secondary" : "default"}
+          className={isLimitReached ? "opacity-90" : ""}
+        >
+          {isLimitReached ? (
+            <>Unlock Unlimited</>
+          ) : (
+            <>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Car
+            </>
+          )}
         </Button>
       </div>
 

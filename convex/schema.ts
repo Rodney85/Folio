@@ -29,11 +29,12 @@ export default defineSchema({
     dodoPaymentId: v.optional(v.string()),
   }).index("by_token", ["tokenIdentifier"])
     .index("by_username", ["username"])
+    .index("by_email", ["email"])
     .index("by_planId", ["planId"])
     .searchIndex("search_users", {
       searchField: "name",
       filterFields: ["email"]
-    }),
+    }).index("by_created_date", ["createdAt"]),
 
   cars: defineTable({
     userId: v.string(),
@@ -140,19 +141,7 @@ export default defineSchema({
     .index("by_priority", ["priority"])
     .index("by_created_at", ["createdAt"]),
 
-  // Affiliate applications / waitlist
-  affiliateApplications: defineTable({
-    name: v.string(),
-    email: v.string(),
-    socialHandle: v.optional(v.string()),
-    platform: v.optional(v.string()),       // "instagram" | "tiktok" | "youtube" | "other"
-    audienceSize: v.optional(v.string()),    // "< 1K" | "1K-10K" | "10K-100K" | "100K+"
-    message: v.optional(v.string()),         // Why they want to join
-    status: v.string(),                      // "pending" | "approved" | "rejected"
-    createdAt: v.number(),
-  }).index("by_status", ["status"])
-    .index("by_email", ["email"])
-    .index("by_created_at", ["createdAt"]),
+
 
   // Dodo Payments History (Audit Trail)
   payments: defineTable({
@@ -193,4 +182,24 @@ export default defineSchema({
   }).index("by_user", ["userId"])
     .index("by_dodo_id", ["subscriptionId"])
     .index("by_status", ["status"]),
+
+  // Sent Emails Log (Resend)
+  sent_emails: defineTable({
+    messageId: v.optional(v.string()), // Resend message ID
+    to: v.string(),
+    subject: v.string(),
+    template: v.string(),
+    status: v.string(), // "sent" | "failed"
+    userId: v.optional(v.string()), // If sent to a generic user
+    error: v.optional(v.string()),
+    createdAt: v.number(),
+  }).index("by_user", ["userId"])
+    .index("by_status", ["status"])
+    .index("by_created_at", ["createdAt"]),
+
+  // System Settings (Global Configuration)
+  system_settings: defineTable({
+    key: v.string(),
+    value: v.any(),
+  }).index("by_key", ["key"]),
 });

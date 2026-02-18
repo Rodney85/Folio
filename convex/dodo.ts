@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import { mutation, action, query } from "./_generated/server";
 import { ConvexError } from "convex/values";
-import { api, internal } from "./_generated/api";
+import { internal } from "./_generated/api";
 
 /**
  * Dodo Payments Integration — CarFolio
@@ -231,6 +231,18 @@ export const processWebhook = mutation({
                         createdAt: Date.now(),
                     });
                 }
+
+                // Trigger Success Notification
+                await ctx.scheduler.runAfter(0, internal.notifications.triggerNotification, {
+                    userId: userId,
+                    email: user.email, // Robustness: Pass email directly
+                    type: "subscription_success",
+                    data: {
+                        firstName: user.name || user.username || "Subscriber",
+                        actionUrl: `${process.env.VITE_APP_URL}/dashboard`,
+                    }
+                });
+
                 console.log("✅ Subscription ACTIVATED & Payment Logged for:", user.name || userId);
                 break;
 
@@ -245,6 +257,7 @@ export const processWebhook = mutation({
                 });
 
                 // 2. Log Subscription (Audit Trail)
+                // ... (existing code)
                 if (args.subscriptionId) {
                     const existing = await ctx.db
                         .query("subscriptions")
@@ -263,11 +276,16 @@ export const processWebhook = mutation({
                         });
                     }
                 }
+
+                // Trigger Success Notification (Deduplicate if payment.succeeded also fires? Dodo fires both. Let's send only on payment.succeeded usually, or subscription.created. Let's stick to payment.succeeded for now, or just log here if payment.succeeded didn't fire? 
+                // Actually payment.succeeded is better for "You Paid". subscription.created is "Setup Complete".
+                // I'll leave it in payment.succeeded to avoid double emails.)
+
                 console.log("✅ Subscription ACTIVATED for user:", user.name || userId);
                 break;
 
             case "subscription.updated":
-                // Update status based on what Dodo reports
+                // ... (existing code)
                 const newStatus = args.status === "active" ? "active" : args.status || "active";
                 updateData.subscriptionStatus = newStatus;
                 await ctx.db.patch(user._id, updateData);
@@ -308,6 +326,18 @@ export const processWebhook = mutation({
                         });
                     }
                 }
+
+                // Trigger Cancellation Notification
+                await ctx.scheduler.runAfter(0, internal.notifications.triggerNotification, {
+                    userId: userId,
+                    email: user.email,
+                    type: "subscription_cancelled",
+                    data: {
+                        firstName: user.name || user.username || "User",
+                        actionUrl: `${process.env.VITE_APP_URL}/pricing`, // Re-subscribe link
+                    }
+                });
+
                 console.log("❌ Subscription CANCELLED for user:", user.name || userId);
                 break;
 
@@ -326,6 +356,18 @@ export const processWebhook = mutation({
                         createdAt: Date.now(),
                     });
                 }
+
+                // Trigger Failed Notification
+                await ctx.scheduler.runAfter(0, internal.notifications.triggerNotification, {
+                    userId: userId,
+                    email: user.email,
+                    type: "subscription_failed",
+                    data: {
+                        firstName: user.name || user.username || "User",
+                        actionUrl: `${process.env.VITE_APP_URL}/billing`, // Update payment method
+                    }
+                });
+
                 console.log("❌ Payment FAILED for user:", user.name || userId);
                 break;
 
@@ -333,10 +375,23 @@ export const processWebhook = mutation({
                 updateData.subscriptionStatus = "refunded";
 
                 await ctx.db.patch(user._id, updateData);
+
+                // Trigger Refund Notification
+                await ctx.scheduler.runAfter(0, internal.notifications.triggerNotification, {
+                    userId: userId,
+                    email: user.email,
+                    type: "refund_processed",
+                    data: {
+                        firstName: user.name || user.username || "User",
+                        message: "Your refund has been processed successfully.",
+                    }
+                });
+
                 console.log("💰 Refund processed for user:", user.name || userId);
                 break;
 
             default:
+                // ... (existing code)
                 // Still update IDs even if event is generic
                 if (Object.keys(updateData).length > 1) { // 1 is just updatedAt
                     await ctx.db.patch(user._id, updateData);

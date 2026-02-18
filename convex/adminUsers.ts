@@ -134,6 +134,8 @@ export const getUserDetails = query({
 
     return {
       ...user,
+      cars: userCars,
+      parts: userParts,
       stats: {
         totalCars: userCars.length,
         totalParts: userParts.length,
