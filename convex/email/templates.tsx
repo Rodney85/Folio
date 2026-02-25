@@ -72,20 +72,20 @@ export const WelcomeEmail: React.FC<EmailTemplateProps> = ({
     actionUrl,
 }) => (
     <div style={mainStyle}>
-        <h1 style={h1Style}>Welcome to the Garage, {firstName || 'CarFolio Member'}.</h1>
+        <h1 style={h1Style}>{firstName || 'CarFolio Member'}, your garage is ready.</h1>
         <p style={pStyle}>
-            You’ve just joined the ultimate community for automotive enthusiasts. CarFolio isn’t just a tool—it’s where your build’s legacy begins.
+            Welcome to CarFolio. You're in good company.
         </p>
         <p style={pStyle}>
-            Whether you’re tracking a restoration, managing modifications, or showcasing your collection, we’re here to help you document every mile and every bolt.
+            We built this platform because tracking a build shouldn't require messy spreadsheets or scattered forum posts. It should be as premium as the parts you're installing.
         </p>
         <p style={pStyle}>
-            <strong>Ready to get started?</strong> Complete your profile to unlock the full potential of your garage.
+            Your next step is simple: Add your first car and start tracking your modifications.
         </p>
         {actionUrl && (
             <div style={{ textAlign: 'center', margin: '32px 0' }}>
                 <a href={actionUrl} style={buttonStyle}>
-                    Complete My Profile
+                    Add Your First Car
                 </a>
             </div>
         )}
@@ -102,20 +102,23 @@ export const SubscriptionSuccessEmail: React.FC<EmailTemplateProps> = ({
     actionUrl,
 }) => (
     <div style={mainStyle}>
-        <h1 style={h1Style}>You’re officially a Pro.</h1>
+        <h1 style={h1Style}>Welcome to Pro. Here's what's unlocked.</h1>
         <p style={pStyle}>
-            Thanks for upgrading, {firstName || 'member'}. You’ve just unlocked the highest tier of CarFolio.
+            Hi {firstName || 'there'},
         </p>
         <p style={pStyle}>
-            Here’s what you can do right now:
+            You're officially a CarFolio Pro member. Thank you for upgrading.
+        </p>
+        <p style={pStyle}>
+            You now have no limits. Here is what you can do right now:
         </p>
         <ul style={{ ...pStyle, paddingLeft: '20px' }}>
-            <li style={{ marginBottom: '10px' }}><strong>Unlimited Garage Slots:</strong> Add as many cars as you want.</li>
-            <li style={{ marginBottom: '10px' }}><strong>Advanced Analytics:</strong> Track value and expenses in detail.</li>
-            <li style={{ marginBottom: '10px' }}><strong>Priority Features:</strong> Get first access to new tools.</li>
+            <li style={{ marginBottom: '10px' }}><strong>Track every build:</strong> Your garage slot limits are gone. Add your entire collection.</li>
+            <li style={{ marginBottom: '10px' }}><strong>See your true investment:</strong> Advanced analytics are now active on your dashboard.</li>
+            <li style={{ marginBottom: '10px' }}><strong>Monetize your build:</strong> You can now add affiliate links to your parts list.</li>
         </ul>
         <p style={pStyle}>
-            Jump back into your dashboard to see your new features in action.
+            Let's put these to use.
         </p>
         {actionUrl && (
             <div style={{ textAlign: 'center', margin: '32px 0' }}>
@@ -137,15 +140,15 @@ export const SubscriptionFailedEmail: React.FC<EmailTemplateProps> = ({
     actionUrl,
 }) => (
     <div style={mainStyle}>
-        <h1 style={{ ...h1Style, color: '#e00000' }}>Action Required: We couldn't process your payment.</h1>
+        <h1 style={{ ...h1Style, color: '#e00000' }}>Action Required: Your Pro renewal failed</h1>
         <p style={pStyle}>
             Hi {firstName || 'there'},
         </p>
         <p style={pStyle}>
-            We attempted to renew your CarFolio Pro subscription, but the payment didn't go through. This usually happens due to an expired card or updated bank details.
+            We tried to process your CarFolio Pro renewal today, but the card on file was declined. (This usually just means a card expired or a zip code changed).
         </p>
         <p style={pStyle}>
-            <strong>Don't worry—your data is safe.</strong> However, to keep your Pro features active and avoid any interruption, please update your payment method.
+            Your build data is completely safe. However, to keep your Pro features active, please take 60 seconds to update your payment details.
         </p>
         {actionUrl && (
             <div style={{ textAlign: 'center', margin: '32px 0' }}>
@@ -155,7 +158,7 @@ export const SubscriptionFailedEmail: React.FC<EmailTemplateProps> = ({
             </div>
         )}
         <p style={pStyle}>
-            If you have any questions, simply reply to this email.
+            If you need help, just reply to this email.
         </p>
         <div style={footerStyle}>
             <p>© {new Date().getFullYear()} CarFolio. All rights reserved.</p>
@@ -184,18 +187,18 @@ export const SubscriptionCancelledEmail: React.FC<EmailTemplateProps> = ({
     actionUrl,
 }) => (
     <div style={mainStyle}>
-        <h1 style={h1Style}>We're sorry to see you go.</h1>
+        <h1 style={h1Style}>Your Pro subscription has been cancelled</h1>
         <p style={pStyle}>
             Hi {firstName || 'there'},
         </p>
         <p style={pStyle}>
-            Your CarFolio Pro subscription has been cancelled. You'll continue to have access to Pro features until the end of your current billing period.
+            We've successfully cancelled your CarFolio Pro subscription.
         </p>
         <p style={pStyle}>
-            After that, your account will revert to the free tier. Your car data will remain safe, but some Pro features will be locked.
+            You will keep your Pro features until the end of your current billing cycle. After that, your account will move to the free tier. Your data is safe, but advanced analytics and unlimited slots will be locked.
         </p>
         <p style={pStyle}>
-            If you change your mind, we'd love to have you back in the garage.
+            If you ever need Pro features again, the door is always open.
         </p>
         {actionUrl && (
             <div style={{ textAlign: 'center', margin: '32px 0' }}>
@@ -217,15 +220,18 @@ export const RefundProcessedEmail: React.FC<{ firstName?: string, message?: stri
     message,
 }) => (
     <div style={mainStyle}>
-        <h1 style={h1Style}>Refund Processed</h1>
+        <h1 style={h1Style}>Your refund is on the way</h1>
         <p style={pStyle}>
             Hi {firstName || 'User'},
         </p>
         <p style={pStyle}>
-            {message || "We've processed a refund for your recent transaction. It may take 5-10 business days to appear on your statement."}
+            {message || "This is a quick note to confirm we've processed a full refund for your recent transaction."}
         </p>
         <p style={pStyle}>
-            If you have any questions, simply reply to this email.
+            Depending on your bank, it usually takes 5-10 business days for the funds to appear on your statement.
+        </p>
+        <p style={pStyle}>
+            If you have any questions, just reply directly to this email.
         </p>
         <div style={footerStyle}>
             <p>© {new Date().getFullYear()} CarFolio. All rights reserved.</p>
@@ -239,15 +245,15 @@ export const IssueReceivedEmail: React.FC<{ firstName?: string, issueTitle: stri
     issueTitle,
 }) => (
     <div style={mainStyle}>
-        <h1 style={h1Style}>We got it.</h1>
+        <h1 style={h1Style}>We got it: "{issueTitle}"</h1>
         <p style={pStyle}>
             Hi {firstName || 'there'},
         </p>
         <p style={pStyle}>
-            Thanks for the heads up. We've received your report: <strong>"{issueTitle}"</strong>.
+            Thanks for the heads up. We've received your report regarding <strong>"{issueTitle}"</strong>.
         </p>
         <p style={pStyle}>
-            Our team is looking into it. improving CarFolio is a team sport, and we appreciate you being on the roster.
+            Our engineering team is looking into it now. We build CarFolio based on feedback from builders like you, so we genuinely appreciate you taking the time to report this.
         </p>
         <div style={footerStyle}>
             <p>© {new Date().getFullYear()} CarFolio. All rights reserved.</p>
@@ -261,15 +267,15 @@ export const IssueResolvedEmail: React.FC<{ firstName?: string, issueTitle: stri
     issueTitle,
 }) => (
     <div style={mainStyle}>
-        <h1 style={h1Style}>Fixed.</h1>
+        <h1 style={h1Style}>Fixed: "{issueTitle}"</h1>
         <p style={pStyle}>
             Hi {firstName || 'there'},
         </p>
         <p style={pStyle}>
-            Great news! The issue you reported (<strong>"{issueTitle}"</strong>) has been resolved.
+            Good news. The issue you reported (<strong>"{issueTitle}"</strong>) has been fully resolved and deployed to production.
         </p>
         <p style={pStyle}>
-            Thanks for helping us make the garage a better place.
+            You should be good to go. Thanks again for helping us make the platform better.
         </p>
         <div style={footerStyle}>
             <p>© {new Date().getFullYear()} CarFolio. All rights reserved.</p>
@@ -283,20 +289,23 @@ export const GarageLimitEmail: React.FC<EmailTemplateProps> = ({
     actionUrl,
 }) => (
     <div style={mainStyle}>
-        <h1 style={h1Style}>Your garage is full.</h1>
+        <h1 style={h1Style}>You've hit your garage limit</h1>
         <p style={pStyle}>
-            Hi {firstName || 'Driver'},
+            Hi {firstName || 'Name'},
         </p>
         <p style={pStyle}>
-            You've hit the limit of your current plan. To add more cars to your fleet, you'll need to upgrade to Pro.
+            Your garage is officially full. You've hit the limit of the free plan.
         </p>
         <p style={pStyle}>
-            <strong>Pro Benefits:</strong> Unlimited cars, advanced analytics, and shoppable builds.
+            To add more cars—and unlock advanced financial tracking for your entire collection—you'll need to upgrade to CarFolio Pro.
+        </p>
+        <p style={pStyle}>
+            Pro members get unlimited garage slots, in-depth analytics, and the ability to monetize their builds.
         </p>
         {actionUrl && (
             <div style={{ textAlign: 'center', margin: '32px 0' }}>
                 <a href={actionUrl} style={buttonStyle}>
-                    Upgrade to Pro
+                    Unlock Unlimited Cars
                 </a>
             </div>
         )}
@@ -313,20 +322,20 @@ export const TalentScoutEmail: React.FC<{ firstName?: string, carModel: string, 
     actionUrl
 }) => (
     <div style={mainStyle}>
-        <h1 style={h1Style}>Your build is turning heads.</h1>
+        <h1 style={h1Style}>Your {carModel} is getting noticed</h1>
         <p style={pStyle}>
-            Hi {firstName || 'Builder'},
+            Hi {firstName || 'Name'},
         </p>
         <p style={pStyle}>
-            Your <strong>{carModel}</strong> is getting serious attention. It's one of the most active builds in the community this week.
+            Your <strong>{carModel}</strong> is gaining serious traction. It is currently one of the most viewed builds in the CarFolio community.
         </p>
         <p style={pStyle}>
-            Complete your profile to be considered for our "Featured Builds" list.
+            Builds with complete profiles get 3x more engagement. Add a few more high-quality photos and double-check your parts list to be considered for our "Featured Builds" homepage.
         </p>
         {actionUrl && (
             <div style={{ textAlign: 'center', margin: '32px 0' }}>
                 <a href={actionUrl} style={buttonStyle}>
-                    Complete Profile
+                    Update My Build
                 </a>
             </div>
         )}
@@ -344,20 +353,23 @@ export const ShopManagerEmail: React.FC<{ firstName?: string, carModel: string, 
     actionUrl
 }) => (
     <div style={mainStyle}>
-        <h1 style={h1Style}>Don't leave money on the table.</h1>
+        <h1 style={h1Style}>You're leaving money on the table</h1>
         <p style={pStyle}>
-            Hi {firstName || 'there'},
+            Hi {firstName || 'Name'},
         </p>
         <p style={pStyle}>
-            You have <strong>{missingCount} parts</strong> on your <strong>{carModel}</strong> without purchase links.
+            You currently have <strong>{missingCount} parts</strong> listed on your <strong>{carModel}</strong> right now without purchase links.
         </p>
         <p style={pStyle}>
-            Add affiliate links to your build list to enable "Shoppable Builds" and start earning commissions when others are inspired by your work.
+            When people see your build, they want to know exactly what you bought. By adding your affiliate links to those parts, you turn your build sheet into a passive income stream.
+        </p>
+        <p style={pStyle}>
+            Take 5 minutes to drop your links in.
         </p>
         {actionUrl && (
             <div style={{ textAlign: 'center', margin: '32px 0' }}>
                 <a href={actionUrl} style={buttonStyle}>
-                    Manage Parts
+                    Add Purchase Links
                 </a>
             </div>
         )}
@@ -374,20 +386,23 @@ export const InfluencerEmail: React.FC<{ firstName?: string, viewCount: number, 
     actionUrl
 }) => (
     <div style={mainStyle}>
-        <h1 style={h1Style}>Your bio link is working overtime.</h1>
+        <h1 style={h1Style}>{viewCount} people viewed your garage this week</h1>
         <p style={pStyle}>
-            Hi {firstName || 'Influencer'},
+            Hi {firstName || 'Name'},
         </p>
         <p style={pStyle}>
-            <strong>{viewCount} people</strong> visited your garage this week. Your build is inspiring the community.
+            Your bio link is working overtime.
         </p>
         <p style={pStyle}>
-            Keep your profile fresh to keep them coming back.
+            <strong>{viewCount} people</strong> visited your CarFolio garage this week.
+        </p>
+        <p style={pStyle}>
+            The best way to keep that momentum going is to post a fresh update. Did you install anything new this week? Add it to the log so your followers can see the progress.
         </p>
         {actionUrl && (
             <div style={{ textAlign: 'center', margin: '32px 0' }}>
                 <a href={actionUrl} style={buttonStyle}>
-                    View Analytics
+                    Post an Update
                 </a>
             </div>
         )}
@@ -404,20 +419,23 @@ export const VisionaryEmail: React.FC<{ firstName?: string, carModel: string, ac
     actionUrl
 }) => (
     <div style={mainStyle}>
-        <h1 style={h1Style}>Visualize your build.</h1>
+        <h1 style={h1Style}>Make your {carModel} photos interactive</h1>
         <p style={pStyle}>
-            Hi {firstName || 'Visionary'},
+            Hi {firstName || 'Name'},
         </p>
         <p style={pStyle}>
-            Your <strong>{carModel}</strong> photos are looking great, but they could be even better.
+            The photos of your <strong>{carModel}</strong> look incredible, but you can take them a step further.
         </p>
         <p style={pStyle}>
-            Tag your modifications with <strong>Interactive Hotspots</strong> to help others see exactly what you've done.
+            Did you know you can click directly on your photos to tag the exact parts you installed? This creates "Interactive Hotspots" that let viewers see exactly what wheels, suspension, or aero you're running just by hovering over the image.
+        </p>
+        <p style={pStyle}>
+            Try tagging your first photo.
         </p>
         {actionUrl && (
             <div style={{ textAlign: 'center', margin: '32px 0' }}>
                 <a href={actionUrl} style={buttonStyle}>
-                    Add Hotspots
+                    Tag My Photos
                 </a>
             </div>
         )}
@@ -435,20 +453,26 @@ export const BuildValueEmail: React.FC<{ firstName?: string, carModel: string, t
     actionUrl
 }) => (
     <div style={mainStyle}>
-        <h1 style={h1Style}>Build Update.</h1>
+        <h1 style={h1Style}>Your Build Update: {carModel}</h1>
         <p style={pStyle}>
-            Hi {firstName || 'Investor'},
+            Hi {firstName || 'Name'},
         </p>
         <p style={pStyle}>
-            You've invested <strong>${totalValue.toLocaleString()}</strong> into your <strong>{carModel}</strong> so far.
+            Here is the latest financial summary for your <strong>{carModel}</strong>.
         </p>
         <p style={pStyle}>
-            Keep tracking every part to have a complete history of your build's value.
+            Based on the parts you've logged, you have invested <strong>${totalValue.toLocaleString()}</strong> into this build so far.
+        </p>
+        <p style={pStyle}>
+            Keeping an accurate, up-to-date ledger of every part is the best way to protect your investment for insurance purposes or a future sale.
+        </p>
+        <p style={pStyle}>
+            Missing a recent receipt? Log it now.
         </p>
         {actionUrl && (
             <div style={{ textAlign: 'center', margin: '32px 0' }}>
                 <a href={actionUrl} style={buttonStyle}>
-                    View Details
+                    Update Build Ledger
                 </a>
             </div>
         )}
@@ -472,6 +496,7 @@ export const renderTemplate = (templateName: string, args: any) => {
             component = <SubscriptionFailedEmail {...args} />;
             break;
         case "system":
+        case "system_notification":
             component = <SystemNotificationEmail message={args.message} />;
             break;
         case "subscription_cancelled":
@@ -498,6 +523,7 @@ export const renderTemplate = (templateName: string, args: any) => {
         case "influencer_stats":
             component = <InfluencerEmail viewCount={args.message ? parseInt(args.message) : 0} {...args} />;
             break;
+        case "visionary":
         case "visionary_nudge":
             component = <VisionaryEmail carModel={args.carModel || "Car"} {...args} />;
             break;
