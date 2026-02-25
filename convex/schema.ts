@@ -42,6 +42,7 @@ export default defineSchema({
     model: v.string(),
     year: v.number(),
     // Detailed specs from the new design
+    fuelType: v.optional(v.string()),
     package: v.optional(v.string()),
     engine: v.optional(v.string()),
     transmission: v.optional(v.string()),

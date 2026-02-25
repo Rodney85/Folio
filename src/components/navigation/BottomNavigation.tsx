@@ -1,9 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { UserCircle2, Plus, Menu, Compass } from 'lucide-react';
 
-interface BottomNavigationProps {
-  onMenuClick: () => void;
-}
 
 interface NavItemProps {
   to: string;
@@ -59,7 +56,7 @@ export const BottomNavigation = () => {
     <nav
       className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-xl border-t border-white/10 z-50"
       style={{
-        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 8px)',
       }}
     >
       <div className="flex items-center justify-around h-16 px-2">

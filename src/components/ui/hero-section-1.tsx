@@ -72,16 +72,16 @@ export function HeroSection() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5 }}
-                            className="inline-flex items-center rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1 text-sm font-medium text-blue-600 dark:text-blue-400 backdrop-blur-sm"
+                            className="inline-flex items-center rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1 text-sm font-medium text-blue-400 backdrop-blur-sm"
                         >
                             <span className="flex h-2 w-2 rounded-full bg-blue-500 mr-2 animate-pulse"></span>
                             The Portfolio for Car Enthusiasts
                         </motion.div>
 
                         <div className="space-y-4">
-                            <h1 className="mt-8 max-w-4xl mx-auto text-balance text-6xl md:text-7xl lg:mt-16 xl:text-[5.25rem] font-semibold text-foreground dark:text-white leading-tight">
+                            <h1 className="mt-8 max-w-4xl mx-auto text-balance text-6xl md:text-7xl lg:mt-16 xl:text-[5.25rem] font-semibold text-white leading-tight">
                                 <SplitText>Respect Your Build.</SplitText>
-                                <span className="block text-blue-600 dark:text-blue-400">
+                                <span className="block text-blue-400">
                                     <SplitText>Share Your Story.</SplitText>
                                 </span>
                             </h1>
@@ -90,7 +90,7 @@ export function HeroSection() {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.8, duration: 1 }}
-                                className="mx-auto mt-8 max-w-2xl text-balance text-lg text-slate-600 dark:text-slate-300">
+                                className="mx-auto mt-8 max-w-2xl text-balance text-lg text-slate-300">
                                 Your build is more than a car — it's a statement. Create a stunning portfolio, document every modification, and monetize your expertise with affiliate links. All in one professional link.
                             </motion.p>
                         </div>
@@ -132,16 +132,16 @@ export function HeroSection() {
                                 >
                                     <div className="flex items-center gap-1.5">
                                         <div className="flex -space-x-2">
-                                            <div className="w-6 h-6 rounded-full bg-blue-500 border-2 border-white dark:border-slate-900 flex items-center justify-center text-[10px] text-white font-bold">OG</div>
+                                            <div className="w-6 h-6 rounded-full bg-blue-500 border-2 border-slate-900 flex items-center justify-center text-[10px] text-white font-bold">OG</div>
                                         </div>
                                         <span className="font-medium text-foreground">Accepting Founding Members</span>
                                     </div>
-                                    <span className="hidden sm:inline text-slate-300 dark:text-slate-600">•</span>
+                                    <span className="hidden sm:inline text-slate-600">•</span>
                                     <div className="flex items-center gap-1">
                                         <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                                         <span className="ml-1 font-medium">Lifetime Access Available</span>
                                     </div>
-                                    <span className="hidden sm:inline text-slate-300 dark:text-slate-600">•</span>
+                                    <span className="hidden sm:inline text-slate-600">•</span>
                                     <span>Secure your username today</span>
                                 </motion.div>
                             </motion.div>

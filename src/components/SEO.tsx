@@ -43,6 +43,23 @@ export const SEO: React.FC<SEOProps> = ({
             <meta name="twitter:title" content={title} />
             <meta name="twitter:description" content={description} />
             <meta name="twitter:image" content={image} />
+            <script type="application/ld+json">
+                {JSON.stringify({
+                    "@context": "https://schema.org",
+                    "@type": "SoftwareApplication",
+                    "name": name,
+                    "applicationCategory": "LifestyleApplication",
+                    "operatingSystem": "Web",
+                    "offers": {
+                        "@type": "Offer",
+                        "price": "0",
+                        "priceCurrency": "USD"
+                    },
+                    "description": description,
+                    "image": image,
+                    "url": currentUrl
+                })}
+            </script>
         </Helmet>
     );
 };

@@ -84,22 +84,10 @@ export const PageTransition: React.FC<PageTransitionProps> = ({
   children,
   className = ""
 }) => {
-  const location = useLocation();
-
   return (
-    <AnimatePresence mode="sync">
-      <motion.div
-        key={location.pathname}
-        initial="initial"
-        animate="in"
-        exit="out"
-        variants={pageVariants}
-        transition={pageTransition}
-        className={className}
-      >
-        {children}
-      </motion.div>
-    </AnimatePresence>
+    <div className={className}>
+      {children}
+    </div>
   );
 };
 

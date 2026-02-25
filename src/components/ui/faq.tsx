@@ -41,7 +41,7 @@ export default function FAQs() {
     ]
 
     return (
-        <section className="py-16 md:py-24 bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-blue-950" id="faq">
+        <section className="py-16 md:py-24 bg-gradient-to-br from-slate-900 to-blue-950" id="faq">
             <div className="mx-auto max-w-4xl px-4 md:px-6">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}

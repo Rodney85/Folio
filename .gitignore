@@ -19,8 +19,7 @@ dist-ssr
 !.env.example
 .env.local
 .env.development
-.env.production
-.env.temp
+.env.production.env.temp
 
 # Documentation with sensitive information
 /src/Md/
@@ -36,6 +35,7 @@ dist-ssr
 
 # Convex local dev files
 .convex/
+.dexor_skills
 
 # Editor directories and files
 .vscode/*

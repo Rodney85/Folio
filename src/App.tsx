@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HelmetProvider } from "react-helmet-async";
 import { SEO } from "@/components/SEO";
+import { PostHogProvider } from "@/components/PostHogProvider";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { ThemeProvider } from "@/components/theme-provider";
 import AppLayout from "@/components/layout/AppLayout";
@@ -373,9 +374,11 @@ const App = () => {
                 image="/og-image.png"
                 url="https://www.carfolio.cc"
               />
-              <AuthSyncProvider>
-                <AppContent />
-              </AuthSyncProvider>
+              <PostHogProvider>
+                <AuthSyncProvider>
+                  <AppContent />
+                </AuthSyncProvider>
+              </PostHogProvider>
             </HelmetProvider>
           </TooltipProvider>
         </ThemeProvider>
