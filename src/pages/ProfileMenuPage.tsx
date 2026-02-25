@@ -1,5 +1,5 @@
 import { toast } from "sonner";
-import { ChevronLeft, ChevronRight, Shield, Monitor, Flag, LogOut, Settings } from "lucide-react";
+import { ChevronLeft, ChevronRight, Shield, Monitor, Flag, LogOut, Settings, CreditCard } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth, useClerk } from "@clerk/clerk-react";
 
@@ -40,6 +40,13 @@ const ProfileMenuPage = () => {
             }
           }
         });
+      }
+    },
+    {
+      title: "Subscription",
+      icon: <CreditCard className="h-5 w-5" />,
+      onClick: () => {
+        navigate("/subscription");
       }
     },
     {
