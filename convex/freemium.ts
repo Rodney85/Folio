@@ -237,3 +237,16 @@ export const getPublicUserTier = query({
         return getUserTier(user);
     },
 });
+
+/**
+ * Get the tier of a specific user by their token identifier (Clerk ID).
+ * Used when we only have car.userId (which is a tokenIdentifier string).
+ */
+export const getPublicUserTierByToken = query({
+    args: { tokenIdentifier: v.string() },
+    handler: async (ctx, args) => {
+        const user = await getUserFromIdentity(ctx, args.tokenIdentifier);
+        if (!user) return "free";
+        return getUserTier(user);
+    },
+});

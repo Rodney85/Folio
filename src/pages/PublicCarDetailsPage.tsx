@@ -38,8 +38,8 @@ const PublicCarDetailsPage = () => {
 
   const car = useQuery(api.cars.getCarById, carId ? { carId } : "skip");
   const parts = useQuery(api.parts.getCarParts, carId ? { carId } : "skip");
-  // @ts-ignore
-  const ownerTier = useQuery(api.freemium.getPublicUserTier, car ? { userId: car.userId } : "skip");
+  // Use the new token-based query since car.userId is a tokenIdentifier string
+  const ownerTier = useQuery(api.freemium.getPublicUserTierByToken, car ? { tokenIdentifier: car.userId } : "skip");
 
   // Setup swipe handlers for mobile
   const swipeHandlers = useSwipeable({

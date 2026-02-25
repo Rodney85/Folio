@@ -41,8 +41,8 @@ const ShopBuildPage = () => {
   // Fetch car details and parts
   const car = useQuery(api.cars.getCarById, { carId: id as Id<"cars"> });
   const parts = useQuery(api.parts.getCarParts, id ? { carId: id as Id<"cars"> } : "skip");
-  // @ts-ignore
-  const ownerTier = useQuery(api.freemium.getPublicUserTier, car ? { userId: car.userId } : "skip");
+  // Use the new token-based query since car.userId is a tokenIdentifier string
+  const ownerTier = useQuery(api.freemium.getPublicUserTierByToken, car ? { tokenIdentifier: car.userId } : "skip");
 
   // Get unique categories for filtering
   const categories = parts ? [...new Set(parts.map(part => part.category))].filter(Boolean) as string[] : [];
