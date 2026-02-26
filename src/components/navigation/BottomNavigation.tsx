@@ -50,12 +50,6 @@ export const BottomNavigation = () => {
       label: "Add Car",
       active: location.pathname.startsWith('/add-car'),
     },
-    {
-      to: "/profile/menu",
-      icon: <Menu size={24} />,
-      label: "Menu",
-      active: location.pathname === '/profile/menu',
-    },
   ];
 
   return (
