@@ -44,9 +44,9 @@ const Logo: React.FC<LogoProps> = ({
 
   return (
     <div className={cn("flex items-center", sizeClasses[size].container, className)}>
-      <span 
+      <span
         className={cn(
-          "font-heading tracking-tight font-semibold", 
+          "font-heading tracking-tight font-semibold",
           sizeClasses[size].text,
           textClassName
         )}

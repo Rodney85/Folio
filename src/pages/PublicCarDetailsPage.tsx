@@ -34,12 +34,15 @@ const PublicCarDetailsPage = () => {
 
   const carId = id ? (id as Id<"cars">) : null;
 
-  const logAnalytics = useMutation(api.analytics.logEvent);
+  const logAnalytics: any = useMutation(api.analytics.logEvent);
 
   const car = useQuery(api.cars.getCarById, carId ? { carId } : "skip");
   const parts = useQuery(api.parts.getCarParts, carId ? { carId } : "skip");
   // Use the new token-based query since car.userId is a tokenIdentifier string
   const ownerTier = useQuery(api.freemium.getPublicUserTierByToken, car ? { tokenIdentifier: car.userId } : "skip");
+
+  // Get OG image URL - MUST be called before any early returns to obey Rules of Hooks
+  const ogImageUrl = useConvexImage(car?.images?.[0]);
 
   // Setup swipe handlers for mobile
   const swipeHandlers = useSwipeable({
@@ -94,9 +97,6 @@ const PublicCarDetailsPage = () => {
 
   const hp = car?.powerHp;
   const tq = car?.torqueLbFt;
-
-  // Get OG image URL
-  const ogImageUrl = useConvexImage(car?.images?.[0]);
 
   const specItems = [
     { label: "Year", value: car?.year },

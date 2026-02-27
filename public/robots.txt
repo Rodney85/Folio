@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://www.carfolio.cc/sitemap.xml
+Sitemap: https://carfolio.cc/sitemap.xml

@@ -11,7 +11,6 @@ interface ProfileOnboardingProps {
 }
 
 const ProfileOnboarding = ({ onComplete }: ProfileOnboardingProps) => {
-  console.log("!!! PROFILE ONBOARDING MOUNTED !!!");
   const navigate = useNavigate();
   // @ts-ignore - Suppressing TypeScript errors for deep instantiation
   const isProfileComplete = useQuery(api.users.isProfileComplete);

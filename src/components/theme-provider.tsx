@@ -15,7 +15,7 @@ type ThemeProviderState = {
 }
 
 const initialState: ThemeProviderState = {
-  theme: "system",
+  theme: "dark",
   setTheme: () => null,
 }
 
@@ -23,7 +23,7 @@ const ThemeProviderContext = createContext<ThemeProviderState>(initialState)
 
 export function ThemeProvider({
   children,
-  defaultTheme = "system",
+  defaultTheme = "dark",
   storageKey = "ui-theme",
   ...props
 }: ThemeProviderProps) {
@@ -34,26 +34,22 @@ export function ThemeProvider({
   useEffect(() => {
     const root = window.document.documentElement
 
-    root.classList.remove("light", "dark")
+    // Force clear any explicit light class
+    root.classList.remove("light")
 
-    if (theme === "system") {
-      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
-        .matches
-        ? "dark"
-        : "light"
+    // Always ensure dark class is present for Tailwind components
+    root.classList.add("dark")
 
-      root.classList.add(systemTheme)
-      return
-    }
-
-    root.classList.add(theme)
+    // Set data-theme for any other integrations
+    root.setAttribute("data-theme", "dark")
   }, [theme])
 
   const value = {
-    theme,
+    theme: "dark" as Theme,
     setTheme: (theme: Theme) => {
-      localStorage.setItem(storageKey, theme)
-      setTheme(theme)
+      // Ignore incoming requests to change theme - force dark
+      localStorage.setItem(storageKey, "dark")
+      setTheme("dark")
     },
   }
 

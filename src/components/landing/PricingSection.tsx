@@ -91,20 +91,20 @@ export const PricingSection = () => {
                     >
                         <div className="mb-6">
                             <div className="flex items-center gap-2 mb-3">
-                                <Sparkles className="w-5 h-5 text-slate-400" />
-                                <span className="text-sm font-semibold text-slate-400 uppercase tracking-wider">Free</span>
+                                <Sparkles className="w-5 h-5 text-slate-300" />
+                                <span className="text-sm font-semibold text-slate-300 uppercase tracking-wider">Free</span>
                             </div>
                             <div className="flex items-baseline gap-1 mb-2">
                                 <span className="text-4xl font-bold text-white">$0</span>
-                                <span className="text-slate-500 text-sm">/forever</span>
+                                <span className="text-slate-400 text-sm">/forever</span>
                             </div>
-                            <p className="text-slate-500 text-sm">Showcase your cars to the world.</p>
+                            <p className="text-slate-400 text-sm">Showcase your cars to the world.</p>
                         </div>
 
                         <div className="space-y-3 flex-1 mb-8">
                             {features.map((f) => (
                                 <div key={f.label} className="flex items-center justify-between py-1.5">
-                                    <span className="text-slate-400 text-sm">{f.label}</span>
+                                    <span className="text-slate-300 text-sm">{f.label}</span>
                                     <FeatureValue value={f.free} />
                                 </div>
                             ))}
@@ -192,15 +192,15 @@ export const PricingSection = () => {
                             </div>
                             <div className="flex items-baseline gap-1 mb-2">
                                 <span className="text-4xl font-bold text-white">$49</span>
-                                <span className="text-slate-500 text-sm">/one-time</span>
+                                <span className="text-slate-400 text-sm">/one-time</span>
                             </div>
-                            <p className="text-slate-500 text-sm">Launch price — everything in Pro, forever.</p>
+                            <p className="text-slate-400 text-sm">Launch price — everything in Pro, forever.</p>
                         </div>
 
                         <div className="space-y-3 flex-1 mb-8">
                             {features.map((f) => (
                                 <div key={f.label} className="flex items-center justify-between py-1.5">
-                                    <span className="text-slate-400 text-sm">{f.label}</span>
+                                    <span className="text-slate-300 text-sm">{f.label}</span>
                                     <FeatureValue value={f.og} />
                                 </div>
                             ))}

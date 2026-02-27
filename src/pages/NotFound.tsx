@@ -1,5 +1,7 @@
-import { useLocation } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import { useEffect } from "react";
+import { Home } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const NotFound = () => {
   const location = useLocation();
@@ -12,16 +14,23 @@ const NotFound = () => {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">404</h1>
-        <p className="text-xl text-gray-600 mb-4">Oops! Page not found</p>
-        <a href="/" className="text-blue-500 hover:text-blue-700 underline">
-          Return to Home
-        </a>
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="text-center space-y-6">
+        <div className="text-8xl font-bold text-white/10">404</div>
+        <h1 className="text-2xl font-semibold text-white">Page not found</h1>
+        <p className="text-slate-400 max-w-sm mx-auto">
+          The page you're looking for doesn't exist or has been moved.
+        </p>
+        <Button asChild variant="outline" className="mt-4">
+          <Link to="/">
+            <Home className="w-4 h-4 mr-2" />
+            Return Home
+          </Link>
+        </Button>
       </div>
     </div>
   );
 };
 
 export default NotFound;
+

@@ -10,17 +10,17 @@ import { Button } from "@/components/ui/button";
 const CarGalleryPage = () => {
   const { id } = useParams(); // The param is named 'id' based on the route path '/car/:id/gallery'
   const navigate = useNavigate();
-  
+
   // Make sure we have a valid ID and explicitly pass it as carId
-  const car = useQuery(api.cars.getCarById, { carId: id as any });
+  const car: any = useQuery(api.cars.getCarById, { carId: id as any });
 
   if (!car || !car.images || car.images.length === 0) {
     return (
       <div className="flex flex-col h-screen bg-slate-900 text-white">
         <div className="py-4 px-6 flex items-center">
-          <Button 
-            variant="outline" 
-            size="icon" 
+          <Button
+            variant="outline"
+            size="icon"
             onClick={() => navigate(-1)}
             className="bg-slate-800 shadow-sm border border-slate-700 text-white"
           >
@@ -35,7 +35,7 @@ const CarGalleryPage = () => {
   const cards = car.images.map((imageId, index) => {
     // Create a data URL for the component to use as a placeholder
     const placeholderUrl = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23f0f0f0'/%3E%3C/svg%3E`;
-    
+
     return {
       id: index,
       className: "h-80 w-full", // Fixed height for better layout
@@ -58,10 +58,10 @@ const CarGalleryPage = () => {
     <div className="flex flex-col h-screen bg-slate-900 text-white">
       {/* Header */}
       <div className="flex items-center p-4 border-b border-slate-800 bg-slate-900 shadow-sm sticky top-0 z-10">
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           size="icon"
-          className="bg-slate-800 shadow-sm border border-slate-700 text-white" 
+          className="bg-slate-800 shadow-sm border border-slate-700 text-white"
           onClick={() => navigate(-1)}
         >
           <ArrowLeft className="h-5 w-5 text-white" />

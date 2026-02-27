@@ -37,7 +37,6 @@ export default defineConfig(({ mode }) => {
             // Analytics page chunks
             analyticsPages: [
               './src/pages/AnalyticsPage.tsx',
-              './src/pages/ProAnalyticsPage.tsx',
             ],
           },
         },

@@ -198,12 +198,13 @@ export const triggerNotification = internalMutation({
             templateName = "system_notification";
         }
 
+        // @ts-ignore
         await ctx.scheduler.runAfter(0, internal.email.send.send, {
             to: email,
             subject: subject,
             template: templateName,
             templateArgs: emailData,
-            userId: user._id,
+            userId: user?._id,
             from: fromAddress,
         });
 
