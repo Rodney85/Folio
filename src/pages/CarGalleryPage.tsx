@@ -12,7 +12,7 @@ const CarGalleryPage = () => {
   const navigate = useNavigate();
 
   // Make sure we have a valid ID and explicitly pass it as carId
-  const car: any = useQuery(api.cars.getCarById, { carId: id as any });
+  const car: any = useQuery(api.cars.getCarById as any, { carId: id as any });
 
   if (!car || !car.images || car.images.length === 0) {
     return (
