@@ -52,7 +52,7 @@ function FeatureValue({ value }: { value: boolean | string }) {
 export const PricingSection = () => {
     const { isSignedIn } = useUser();
     const navigate = useNavigate();
-    const ogUserCount = useQuery(api.dodo.getOgUserCount) ?? 0;
+    const ogUserCount: any = useQuery(api.dodo.getOgUserCount as any) ?? 0;
     const TOTAL_OG_SPOTS = 100;
     const remainingSpots = Math.max(0, TOTAL_OG_SPOTS - ogUserCount);
 
@@ -142,9 +142,17 @@ export const PricingSection = () => {
                                 <Zap className="w-5 h-5 text-blue-400" />
                                 <span className="text-sm font-semibold text-blue-400 uppercase tracking-wider">Pro</span>
                             </div>
-                            <div className="flex items-baseline gap-1 mb-2">
-                                <span className="text-4xl font-bold text-white">$5.99</span>
-                                <span className="text-slate-500 text-sm">/month</span>
+                            <div className="flex flex-col mb-4 gap-1.5 mt-1">
+                                <div className="flex items-baseline gap-1">
+                                    <span className="text-4xl font-bold text-white">$5.99</span>
+                                    <span className="text-slate-500 text-sm">/month</span>
+                                </div>
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <span className="text-slate-500 line-through text-sm font-medium">$11.99</span>
+                                    <span className="text-amber-400 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 whitespace-nowrap">
+                                        50% Off Launch Offer
+                                    </span>
+                                </div>
                             </div>
                             <p className="text-slate-500 text-sm">Monetize your builds & track performance.</p>
                         </div>
