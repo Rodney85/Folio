@@ -4,6 +4,11 @@
 
 # Redirects for client-side routing with React Router
 [[redirects]]
+  from = "https://www.carfolio.cc/*"
+  to = "https://carfolio.cc/:splat"
+  status = 301
+
+[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
