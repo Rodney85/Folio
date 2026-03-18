@@ -11,6 +11,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import AppLayout from "@/components/layout/AppLayout";
 import { FloatingNavBar } from "@/components/layout/FloatingNavBar";
 import AuthSyncProvider from "@/components/AuthSyncProvider";
+import AffonsoTracker from "@/components/AffonsoTracker";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { useUser } from "@clerk/clerk-react";
 import { useEffect, Suspense, lazy } from "react";
@@ -361,6 +362,7 @@ const App = () => {
 
   return (
     <ErrorBoundary>
+      <AffonsoTracker />
       <GrainOverlay />
       <QueryClientProvider client={queryClient}>
         <ThemeProvider defaultTheme="system" storageKey="carfolio-ui-theme">
