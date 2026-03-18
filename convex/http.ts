@@ -221,4 +221,189 @@ http.route({
     }),
 });
 
+// =============================================================================
+// Affonso Webhook
+// POST /webhooks/affonso
+// =============================================================================
+// Affonso affiliate platform webhook for real-time affiliate events
+// Events: affiliate.created, affiliate.confirmed, affiliate.updated, affiliate.deleted
+//         referral.updated, referral.lead, referral.converted, referral.deleted
+//         transaction.*, payout.*, coupon.created, coupon.updated
+// =============================================================================
+
+http.route({
+    path: "/webhooks/affonso",
+    method: "POST",
+    handler: httpAction(async (ctx, request) => {
+        try {
+            const rawBody = await request.text();
+            console.log("🔔 Webhook request received from Affonso");
+
+            // ── Signature Verification ──────────────────────────
+            const webhookSecret = process.env.AFFONSO_WEBHOOK_SECRET;
+            const signature = request.headers.get("x-affonso-signature");
+            const webhookId = request.headers.get("x-affonso-webhook-id");
+            const webhookTimestamp = request.headers.get("x-affonso-timestamp");
+
+            if (!webhookSecret || !signature || !webhookId || !webhookTimestamp) {
+                console.warn("⚠️ Affonso webhook missing headers");
+                return new Response("Missing webhook headers", { status: 400 });
+            }
+
+            // Verify HMAC signature (Affonso standard)
+            const signedMessage = `${webhookId}.${webhookTimestamp}.${rawBody}`;
+            const secretBytes = Uint8Array.from(
+                atob(webhookSecret),
+                (c) => c.charCodeAt(0)
+            );
+
+            const key = await crypto.subtle.importKey(
+                "raw",
+                secretBytes,
+                { name: "HMAC", hash: "SHA-256" },
+                false,
+                ["sign"]
+            );
+            const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(signedMessage));
+            const computed = `v1,${btoa(String.fromCharCode(...new Uint8Array(sig)))}`;
+
+            const signatures = signature.split(" ");
+            const isValid = signatures.some((s) => s === computed);
+
+            if (!isValid) {
+                console.error("❌ Affonso webhook signature verification FAILED");
+                return new Response("Invalid signature", { status: 401 });
+            }
+
+            console.log("✅ Affonso webhook signature verified");
+
+            // Parse and process webhook payload
+            const payload = JSON.parse(rawBody);
+            console.log("📦 Affonso webhook event:", payload.event_type);
+
+            // Process different event types
+            switch (payload.event_type) {
+                case "affiliate.created":
+                console.log("👤 New affiliate created:", payload.data.email);
+                    // Handle new affiliate registration
+                    break;
+
+                case "affiliate.confirmed":
+                    console.log("✅ Affiliate confirmed:", payload.data.email);
+                    // Handle affiliate confirmation
+                    break;
+
+                case "affiliate.updated":
+                    console.log("🔄 Affiliate updated:", payload.data.email);
+                    // Handle affiliate updates
+                    break;
+
+                case "affiliate.deleted":
+                    console.log("🗑️ Affiliate deleted:", payload.data.email);
+                    // Handle affiliate deletion
+                    break;
+
+                case "referral.lead":
+                    console.log("🎯 New referral lead:", payload.data.referral_code);
+                    // Handle new referral lead
+                    break;
+
+                case "referral.converted":
+                    console.log("💰 Referral converted:", payload.data.referral_code);
+                    // Handle successful referral conversion
+                    break;
+
+                case "referral.updated":
+                    console.log("🔄 Referral updated:", payload.data.referral_code);
+                    // Handle referral updates
+                    break;
+
+                case "referral.deleted":
+                    console.log("🗑️ Referral deleted:", payload.data.referral_code);
+                    // Handle referral deletion
+                    break;
+
+                case "transaction.created":
+                    console.log("💳 Transaction created:", payload.data.id);
+                    // Handle new transaction
+                    break;
+
+                case "transaction.updated":
+                    console.log("🔄 Transaction updated:", payload.data.id);
+                    // Handle transaction updates
+                    break;
+
+                case "transaction.approved":
+                    console.log("✅ Transaction approved:", payload.data.id);
+                    // Handle transaction approval
+                    break;
+
+                case "transaction.paid":
+                    console.log("💳 Transaction paid:", payload.data.id);
+                    // Handle successful payment
+                    break;
+
+                case "transaction.rejected":
+                    console.log("❌ Transaction rejected:", payload.data.id);
+                    // Handle transaction rejection
+                    break;
+
+                case "transaction.deleted":
+                    console.log("🗑️ Transaction deleted:", payload.data.id);
+                    // Handle transaction deletion
+                    break;
+
+                case "payout.created":
+                    console.log("💸 Payout created:", payload.data.id);
+                    // Handle new payout
+                    break;
+
+                case "payout.updated":
+                    console.log("🔄 Payout updated:", payload.data.id);
+                    // Handle payout updates
+                    break;
+
+                case "payout.paid":
+                    console.log("✅ Payout paid:", payload.data.id);
+                    // Handle successful payout
+                    break;
+
+                case "payout.deleted":
+                    console.log("🗑️ Payout deleted:", payload.data.id);
+                    // Handle payout deletion
+                    break;
+
+                case "payout.failed":
+                    console.log("❌ Payout failed:", payload.data.id);
+                    // Handle failed payout
+                    break;
+
+                case "coupon.created":
+                    console.log("🎫️ Coupon created:", payload.data.code);
+                    // Handle coupon creation
+                    break;
+
+                case "coupon.updated":
+                    console.log("🔄 Coupon updated:", payload.data.code);
+                    // Handle coupon updates
+                    break;
+
+                default:
+                    console.log("ℹ️ Unhandled Affonso event:", payload.event_type);
+            }
+
+            return new Response(JSON.stringify({ received: true }), {
+                status: 200,
+                headers: { "Content-Type": "application/json" },
+            });
+        } catch (error: any) {
+            console.error("Affonso webhook processing error:", error.message);
+            return new Response(JSON.stringify({ error: "Webhook processing failed" }), {
+                status: 500,
+                headers: { "Content-Type": "application/json" },
+            });
+        }
+    }),
+});
+
 export default http;

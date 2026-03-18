@@ -86,6 +86,21 @@ export default function PrivacyPage() {
                                 </a>.
                             </p>
                         </section>
+
+                        <section className="space-y-4">
+                            <h2 className="text-xl font-semibold text-white">8. Affiliate Program</h2>
+                            <p className="text-slate-300 leading-relaxed">
+                                Our affiliate partners may have access to aggregated, non-personally identifiable 
+                                data for tracking purposes. Affiliates must comply with our privacy policy 
+                                and applicable privacy laws when promoting CarFolio.
+                            </p>
+                            <p className="text-slate-300 leading-relaxed">
+                                For affiliate privacy inquiries, contact us at{" "}
+                                <a href="mailto:affiliates@carfolio.cc" className="text-blue-400 hover:underline">
+                                    affiliates@carfolio.cc
+                                </a>.
+                            </p>
+                        </section>
                     </div>
                 </motion.div>
             </div>

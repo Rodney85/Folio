@@ -19,6 +19,7 @@ const footerLinks = [
 		label: 'Company',
 		links: [
 			{ title: 'About', href: '/about', isExternal: false },
+			{ title: 'Affiliates', href: 'https://affonso.carfolio.cc', isExternal: true },
 		],
 	},
 	{

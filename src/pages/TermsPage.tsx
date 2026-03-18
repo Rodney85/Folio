@@ -81,8 +81,23 @@ export default function TermsPage() {
                             <h2 className="text-xl font-semibold text-white">7. Contact</h2>
                             <p className="text-slate-300 leading-relaxed">
                                 For questions about these Terms, please contact us at{" "}
-                                <a href="mailto:legal@carfolio.cc" className="text-blue-400 hover:underline">
-                                    legal@carfolio.cc
+                                <a href="mailto:support@carfolio.cc" className="text-blue-400 hover:underline">
+                                    support@carfolio.cc
+                                </a>.
+                            </p>
+                        </section>
+
+                        <section className="space-y-4">
+                            <h2 className="text-xl font-semibold text-white">8. Affiliate Program</h2>
+                            <p className="text-slate-300 leading-relaxed">
+                                Join our affiliate program and earn commissions by promoting CarFolio. 
+                                Affiliates receive a commission on all referred subscriptions and must comply with 
+                                our terms of service and marketing guidelines.
+                            </p>
+                            <p className="text-slate-300 leading-relaxed">
+                                For affiliate inquiries, contact us at{" "}
+                                <a href="mailto:affiliates@carfolio.cc" className="text-blue-400 hover:underline">
+                                    affiliates@carfolio.cc
                                 </a>.
                             </p>
                         </section>
