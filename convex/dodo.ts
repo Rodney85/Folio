@@ -108,6 +108,7 @@ export const createCheckoutSession = action({
             ],
             payment_link: true,
             return_url: args.successUrl,
+            cancel_url: args.cancelUrl,
             // ✅ FIX: Store tokenIdentifier (not subject) so webhook lookup matches
             metadata: {
                 userId: identity.tokenIdentifier,
@@ -512,7 +513,7 @@ export const getSubscriptionStatus = query({
 });
 
 export const getOgUserCount = query({
-    handler: async (ctx) => {
+    handler: async (ctx): Promise<number> => {
         // Read OG product ID from env, fall back to checking any user with planId set
         const ogProductId = process.env.DODO_PRODUCT_OG_LIFETIME;
         if (!ogProductId) {

@@ -1,8 +1,92 @@
 import { httpRouter } from "convex/server";
 import { httpAction } from "./_generated/server";
-import { api } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 
 const http = httpRouter();
+
+// =============================================================================
+// Clerk Webhook
+// POST /webhooks/clerk
+// =============================================================================
+
+http.route({
+    path: "/webhooks/clerk",
+    method: "POST",
+    handler: httpAction(async (ctx, request) => {
+        try {
+            const rawBody = await request.text();
+            console.log("🔔 Webhook request received from Clerk");
+
+            const webhookSecret = process.env.CLERK_WEBHOOK_SECRET;
+            if (!webhookSecret) {
+                console.error("❌ CLERK_WEBHOOK_SECRET is missing!");
+                return new Response("Internal Server Error", { status: 500 });
+            }
+
+            const svixId = request.headers.get("svix-id");
+            const svixTimestamp = request.headers.get("svix-timestamp");
+            const svixSignature = request.headers.get("svix-signature");
+
+            if (!svixId || !svixTimestamp || !svixSignature) {
+                console.warn("⚠️ Clerk webhook missing svix headers");
+                return new Response("Missing svix headers", { status: 400 });
+            }
+
+            // Verify signature using Web Crypto (Svix standard)
+            const signedMessage = `${svixId}.${svixTimestamp}.${rawBody}`;
+            const secretBytes = Uint8Array.from(
+                atob(webhookSecret.replace(/^whsec_/, "")),
+                (c) => c.charCodeAt(0)
+            );
+
+            const key = await crypto.subtle.importKey(
+                "raw",
+                secretBytes,
+                { name: "HMAC", hash: "SHA-256" },
+                false,
+                ["sign"]
+            );
+            const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(signedMessage));
+            const computed = `v1,${btoa(String.fromCharCode(...new Uint8Array(sig)))}`;
+
+            const signatures = svixSignature.split(" ");
+            const isValid = signatures.some((s) => s === computed);
+
+            if (!isValid) {
+                console.error("Clerk Webhook signature verification FAILED");
+                return new Response("Invalid signature", { status: 400 });
+            }
+
+            const payload = JSON.parse(rawBody);
+            console.log(`📦 Clerk Webhook event: ${payload.type}`);
+
+            if (payload.type === "user.deleted") {
+                const clerkUserId = payload.data.id;
+                await ctx.runMutation(internal.users.handleUserDeleted, { clerkUserId });
+                console.log(`✅ Completed cleanup for deleted user: ${clerkUserId}`);
+            } else if (payload.type === "user.created" || payload.type === "user.updated") {
+                // Future syncing can be implemented here if needed.
+                const clerkUserData = payload.data;
+                await ctx.runMutation(internal.users.syncUserFromClerk, { 
+                    clerkUserId: clerkUserData.id,
+                    email: clerkUserData.email_addresses?.[0]?.email_address,
+                    firstName: clerkUserData.first_name,
+                    lastName: clerkUserData.last_name,
+                    imageUrl: clerkUserData.image_url,
+                });
+                console.log(`✅ Synced user data for: ${clerkUserData.id}`);
+            }
+
+            return new Response(JSON.stringify({ success: true }), {
+                status: 200,
+                headers: { "Content-Type": "application/json" },
+            });
+        } catch (error: any) {
+            console.error("Clerk Webhook processing error:", error.message);
+            return new Response("Webhook processing failed", { status: 500 });
+        }
+    }),
+});
 
 // =============================================================================
 // Dodo Payments Webhook
@@ -92,26 +176,34 @@ http.route({
             // Dodo may send it in product_cart, product_id, or the metadata
             // Extract the product ID from the payload
             // Dodo may send it in product_cart, product_id, or the metadata
+            // Extract the product ID from the payload
+            // Dodo may send it in product_cart, product_id, or the metadata
             const productId =
                 data.product_cart?.[0]?.product_id ||
                 data.product_id ||
-                metadata.planType ||
+                metadata?.planType ||
+                metadata?.planId ||
                 undefined;
+
+            const subscriptionId = data.subscription_id || data.subscription?.subscription_id || metadata?.subscriptionId || undefined;
 
             console.log("🐛 DEBUG extraction:");
             console.log(" - data.customer:", JSON.stringify(data.customer));
             console.log(" - data.customer_id:", data.customer_id);
+            console.log(" - data.subscription_id:", data.subscription_id);
             console.log(" - EXTRACTED customerId:", data.customer?.customer_id || data.customer_id);
+            console.log(" - EXTRACTED subscriptionId:", subscriptionId);
+            console.log(" - EXTRACTED productId (planId):", productId);
 
             // @ts-ignore — Convex deep type instantiation with many optional args
             await ctx.runMutation(api.dodo.processWebhook, {
                 eventType,
                 customerId: data.customer?.customer_id || data.customer_id || undefined,
                 customerEmail: data.customer?.email || undefined,
-                subscriptionId: data.subscription_id || undefined,
+                subscriptionId: subscriptionId,
                 paymentId: data.payment_id || data.id || undefined,
                 planId: productId,
-                userId: metadata.userId || undefined,
+                userId: metadata?.userId || undefined,
                 status: data.status || undefined,
             });
 

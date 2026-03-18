@@ -145,7 +145,7 @@ export const triggerNotification = internalMutation({
         }
 
         // 3. Determine Sender Identity (Dynamic Personas)
-        const defaultSender = process.env.RESEND_FROM_EMAIL || "CarFolio <onboarding@resend.dev>";
+        const defaultSender = process.env.RESEND_FROM_EMAIL || "CarFolio <support@carfolio.cc>";
         let fromAddress = defaultSender;
 
         // Extract domain to construct new emails (e.g. from "Support <support@carfolio.com>" get "carfolio.com")

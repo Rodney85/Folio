@@ -6,6 +6,7 @@ import { useUser } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
+import { pricingConfig } from "@/config/pricing";
 
 interface FeatureRow {
     label: string;
@@ -144,7 +145,7 @@ export const PricingSection = () => {
                             </div>
                             <div className="flex flex-col mb-4 gap-1.5 mt-1">
                                 <div className="flex items-baseline gap-1">
-                                    <span className="text-4xl font-bold text-white">$5.99</span>
+                                    <span className="text-4xl font-bold text-white">${pricingConfig.find(p => p.id === "pro")?.priceAmount || 5.99}</span>
                                     <span className="text-slate-500 text-sm">/month</span>
                                 </div>
                                 <div className="flex flex-wrap items-center gap-2">
@@ -199,7 +200,7 @@ export const PricingSection = () => {
                                 <span className="text-sm font-semibold text-amber-400 uppercase tracking-wider">OG</span>
                             </div>
                             <div className="flex items-baseline gap-1 mb-2">
-                                <span className="text-4xl font-bold text-white">$49</span>
+                                <span className="text-4xl font-bold text-white">${pricingConfig.find(p => p.id === "og")?.priceAmount || 49}</span>
                                 <span className="text-slate-400 text-sm">/one-time</span>
                             </div>
                             <p className="text-slate-400 text-sm">Launch price — everything in Pro, forever.</p>

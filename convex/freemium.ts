@@ -167,7 +167,7 @@ export function getUserTier(user: any): "free" | "pro" | "og" {
  * Get the premium status and tier for the current user.
  */
 export const isUserPremium = query({
-    handler: async (ctx) => {
+    handler: async (ctx): Promise<{ isPremium: boolean; tier: "guest" | "free" | "pro" | "og" }> => {
         const identity = await ctx.auth.getUserIdentity();
         if (!identity) {
             return { isPremium: false, tier: "guest" as const };

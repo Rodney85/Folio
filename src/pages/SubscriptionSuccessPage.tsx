@@ -10,8 +10,9 @@ const SubscriptionSuccessPage = () => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const sessionId = searchParams.get("session_id");
-    const premiumStatus = useQuery(api.freemium.isUserPremium);
+    const premiumStatus: any = useQuery(api.freemium.isUserPremium as any);
     const [isVerifying, setIsVerifying] = useState(true);
+    const [showRefresh, setShowRefresh] = useState(false);
 
     useEffect(() => {
         if (premiumStatus?.isPremium) {
@@ -19,15 +20,21 @@ const SubscriptionSuccessPage = () => {
             return;
         }
 
-        // Fallback timeout in case webhook is slow (10s)
-        // We continuously poll via useQuery, but if it takes too long, just show success 
-        // anyway so the user isn't stuck — they'll see the features unlocked eventually.
-        const timer = setTimeout(() => {
-            if (isVerifying) setIsVerifying(false);
-        }, 10000);
+        // Show a refresh button if verification takes too long (8s)
+        const refreshTimer = setTimeout(() => {
+            if (isVerifying) setShowRefresh(true);
+        }, 8000);
 
-        return () => clearTimeout(timer);
+        // Instead of faking success, if it takes over 15s, we can stop the spinner 
+        // and tell the user to check their subscription page.
+        // We will just let 'showRefresh' stay visible. The user can go to the dashboard.
+        
+        return () => clearTimeout(refreshTimer);
     }, [premiumStatus?.isPremium, isVerifying]);
+
+    const handleRefresh = () => {
+        window.location.reload();
+    };
 
     const containerVariants = {
         hidden: { opacity: 0, scale: 0.9 },
@@ -90,7 +97,8 @@ const SubscriptionSuccessPage = () => {
                                 "Unlimited cars",
                                 "Affiliate links",
                                 "Analytics dashboard",
-                                "Featured in Explore"
+                                "Ad-Free profile",
+                                premiumStatus?.tier === "og" ? "Lifetime Access" : "Premium Support"
                             ].map((item, index) => (
                                 <div key={index} className="flex items-center gap-3">
                                     <div className="flex-shrink-0 w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center">
@@ -99,6 +107,31 @@ const SubscriptionSuccessPage = () => {
                                     <span className="text-slate-300 text-sm">{item}</span>
                                 </div>
                             ))}
+                        </div>
+                    )}
+
+                    {/* Manual Refresh CTA if stuck */}
+                    {isVerifying && showRefresh && (
+                        <div className="relative mt-4">
+                            <p className="text-sm font-semibold text-rose-400 mb-2">
+                                Verification is taking longer than usual, or the payment wasn't completed.
+                            </p>
+                            <div className="flex flex-col gap-3 max-w-xs mx-auto">
+                                <Button 
+                                    variant="outline" 
+                                    onClick={handleRefresh}
+                                    className="border-slate-700 text-slate-300 hover:bg-slate-800"
+                                >
+                                    Refresh Status
+                                </Button>
+                                <Button 
+                                    variant="ghost" 
+                                    onClick={() => navigate('/subscription')}
+                                    className="text-slate-400 hover:text-white"
+                                >
+                                    Return to Plans
+                                </Button>
+                            </div>
                         </div>
                     )}
 

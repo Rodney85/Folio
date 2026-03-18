@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
+import { Id } from "../../convex/_generated/dataModel";
 import { ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
 import { LayoutGrid } from "@/components/ui/layout-grid";
@@ -11,8 +12,8 @@ const CarGalleryPage = () => {
   const { id } = useParams(); // The param is named 'id' based on the route path '/car/:id/gallery'
   const navigate = useNavigate();
 
-  // Make sure we have a valid ID and explicitly pass it as carId
-  const car: any = useQuery(api.cars.getCarById as any, { carId: id as any });
+  // Using explicit argument typing to avoid deep instantiation issues
+  const car = useQuery(api.cars.getCarById, id ? { carId: id as Id<"cars"> } : "skip") as any;
 
   if (!car || !car.images || car.images.length === 0) {
     return (

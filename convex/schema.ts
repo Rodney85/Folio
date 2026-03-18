@@ -203,4 +203,13 @@ export default defineSchema({
     key: v.string(),
     value: v.any(),
   }).index("by_key", ["key"]),
+
+  // Future Affiliate Program
+  affiliateApplications: defineTable({
+    userId: v.optional(v.string()),
+    email: v.optional(v.string()),
+    status: v.optional(v.string()),
+    details: v.optional(v.any()),
+    createdAt: v.optional(v.number()),
+  }).index("by_user", ["userId"]),
 });

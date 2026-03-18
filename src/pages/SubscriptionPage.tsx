@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Check, X, Crown, Zap, Sparkles, ArrowLeft, Loader2 } from "lucide-react";
 import { useAction, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
+import { pricingConfig } from "@/config/pricing";
 import { useState } from "react";
 import { SEO } from "@/components/SEO";
 import { ResponsiveLayout } from "@/components/layout/ResponsiveLayout";
@@ -62,7 +63,7 @@ const SubscriptionPage = () => {
     // Fix: Define missing state and action
     const [loadingPlan, setLoadingPlan] = useState<"monthly" | "lifetime" | null>(null);
     const createCheckout = useAction(api.dodo.createCheckoutSession);
-    const ogUserCount = useQuery(api.dodo.getOgUserCount) || 0;
+    const ogUserCount: any = useQuery(api.dodo.getOgUserCount as any) ?? 0;
     const remainingSpots = Math.max(0, 100 - (ogUserCount as number));
 
     const userProfile = useQuery(api.users.getProfile);
@@ -234,7 +235,7 @@ const SubscriptionPage = () => {
                                     <span className="text-sm font-semibold text-blue-400 uppercase tracking-wider">Pro</span>
                                 </div>
                                 <div className="flex items-baseline gap-1 mb-2">
-                                    <span className="text-4xl font-bold text-white">$5.99</span>
+                                    <span className="text-4xl font-bold text-white">${pricingConfig.find(p => p.id === "pro")?.priceAmount || 5.99}</span>
                                     <span className="text-slate-500 text-sm">/month</span>
                                 </div>
                                 <p className="text-slate-500 text-sm">Monetize your builds & track performance.</p>
@@ -286,7 +287,7 @@ const SubscriptionPage = () => {
                                     <span className="text-sm font-semibold text-amber-400 uppercase tracking-wider">OG</span>
                                 </div>
                                 <div className="flex items-baseline gap-1 mb-2">
-                                    <span className="text-4xl font-bold text-white">$49</span>
+                                    <span className="text-4xl font-bold text-white">${pricingConfig.find(p => p.id === "og")?.priceAmount || 49}</span>
                                     <span className="text-slate-500 text-sm">/one-time</span>
                                 </div>
                                 <p className="text-slate-500 text-sm">Launch price — everything in Pro, forever.</p>

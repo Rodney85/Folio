@@ -410,3 +410,100 @@ export const updateDodoFields = internalMutation({
     await ctx.db.patch(args.userId, patchData);
   },
 });
+
+export const handleUserDeleted = internalMutation({
+  args: { clerkUserId: v.string() },
+  handler: async (ctx, args) => {
+    // Collect all users and find the one that matches the clerk ID
+    const users = await ctx.db.query("users").collect();
+    const userToDel = users.find(
+      u => u.tokenIdentifier.includes(args.clerkUserId) || u.tokenIdentifier === args.clerkUserId
+    );
+
+    if (!userToDel) {
+      console.log(`User not found for deletion: ${args.clerkUserId}`);
+      return;
+    }
+
+    const tokenIdentifier = userToDel.tokenIdentifier;
+
+    // 1. Find cars using database ID and possible token formats
+    const carsByDbId = await ctx.db
+      .query("cars")
+      .withIndex("by_user", (q) => q.eq("userId", userToDel._id))
+      .collect();
+
+    const possibleClerkIds = [
+      tokenIdentifier,
+      tokenIdentifier.split("|")[1],
+      `user_${userToDel._id.slice(0, 24)}`,
+      `user_${userToDel._id}`,
+    ];
+
+    let allCars = [...carsByDbId];
+
+    for (const possibleId of possibleClerkIds) {
+      if (possibleId) {
+        const extraCars = await ctx.db
+          .query("cars")
+          .withIndex("by_user", (q) => q.eq("userId", possibleId))
+          .collect();
+        allCars = [...allCars, ...extraCars];
+      }
+    }
+
+    const uniqueCars = Array.from(new Map(allCars.map(car => [car._id.toString(), car])).values());
+
+    for (const car of uniqueCars) {
+      // Could also delete associated `files` here if they are linked
+      await ctx.db.delete(car._id);
+    }
+
+    // 2. Clear payments/subscriptions using tokenIdentifier where applicable
+    const payments = await ctx.db.query("payments").collect();
+    const toDeletePayments = payments.filter(
+        p => p.userId === userToDel._id || p.userId === tokenIdentifier
+    );
+    for (const p of toDeletePayments) await ctx.db.delete(p._id);
+
+    const subscriptions = await ctx.db.query("subscriptions").collect();
+    const toDeleteSubs = subscriptions.filter(
+        s => s.userId === userToDel._id || s.userId === tokenIdentifier
+    );
+    for (const s of toDeleteSubs) await ctx.db.delete(s._id);
+
+    // 3. Delete the user
+    await ctx.db.delete(userToDel._id);
+    console.log(`Successfully deleted user ${userToDel._id} and ${uniqueCars.length} cars`);
+  }
+});
+
+export const syncUserFromClerk = internalMutation({
+  args: {
+    clerkUserId: v.string(),
+    email: v.optional(v.string()),
+    firstName: v.optional(v.string()),
+    lastName: v.optional(v.string()),
+    imageUrl: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const users = await ctx.db.query("users").collect();
+    const existing = users.find(
+      u => u.tokenIdentifier.includes(args.clerkUserId) || u.tokenIdentifier === args.clerkUserId
+    );
+
+    if (existing) {
+      const patchData: any = {};
+      if (args.email) patchData.email = args.email;
+      if (args.imageUrl) patchData.pictureUrl = args.imageUrl;
+      
+      const name = [args.firstName, args.lastName].filter(Boolean).join(" ");
+      if (name && !existing.name) patchData.name = name;
+
+      if (Object.keys(patchData).length > 0) {
+        await ctx.db.patch(existing._id, patchData);
+        console.log(`Synced data for user ${existing._id} from webhook`);
+      }
+    }
+  }
+});
