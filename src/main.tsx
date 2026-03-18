@@ -1,7 +1,7 @@
 import { createRoot } from 'react-dom/client'
 import { ClerkProvider, useAuth } from '@clerk/clerk-react'
 import { ConvexProviderWithClerk } from 'convex/react-clerk'
-import { convex } from './lib/convex'
+import { convex } from './context/lib/convex'
 import App from './App.tsx'
 import './index.css'
 import * as Sentry from "@sentry/react";
