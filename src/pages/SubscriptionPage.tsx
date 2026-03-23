@@ -11,6 +11,7 @@ import { ResponsiveLayout } from "@/components/layout/ResponsiveLayout";
 import { useUser } from "@clerk/clerk-react";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import MobileLayout from "@/components/layout/MobileLayout";
+import Cookies from "js-cookie";
 
 // ─── Feature comparison table (matches landing page exactly) ──────────────────
 interface FeatureRow {
@@ -72,11 +73,18 @@ const SubscriptionPage = () => {
 
     const handleUpgrade = async (planType: "monthly" | "lifetime") => {
         setLoadingPlan(planType);
+        
+        // Grab affiliate identifiers
+        const affiliateCode = sessionStorage.getItem("via") || Cookies.get("via") || undefined;
+        const affonsoReferral = Cookies.get("affonso_referral") || undefined;
+
         try {
             const { checkoutUrl } = await createCheckout({
                 planType,
                 successUrl: `${window.location.origin}/subscription/success`,
                 cancelUrl: `${window.location.origin}/subscription`,
+                affiliateCode,
+                affonsoReferral,
             });
             window.location.href = checkoutUrl;
         } catch (error) {

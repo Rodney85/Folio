@@ -73,6 +73,8 @@ export const createCheckoutSession = action({
         planType: v.union(v.literal("monthly"), v.literal("lifetime")),
         successUrl: v.string(),
         cancelUrl: v.string(),
+        affiliateCode: v.optional(v.string()),
+        affonsoReferral: v.optional(v.string()),
     },
     handler: async (ctx, args): Promise<{ checkoutUrl: string }> => {
         const identity = await ctx.auth.getUserIdentity();
@@ -113,6 +115,8 @@ export const createCheckoutSession = action({
             metadata: {
                 userId: identity.tokenIdentifier,
                 planType: args.planType,
+                ...(args.affiliateCode ? { via: args.affiliateCode } : {}),
+                ...(args.affonsoReferral ? { affonso_referral: args.affonsoReferral } : {}),
             },
         };
 
