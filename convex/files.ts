@@ -78,7 +78,7 @@ export const uploadFileToBackblaze = action({
     fileName: v.string(),  // Desired filename in Backblaze
     contentType: v.string(), // MIME type of the file
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<{ success: boolean; fileUrl: string; fileName: string; fileId: string }> => {
     // Get environment variables
     const BACKBLAZE_KEY_ID = process.env.BACKBLAZE_KEY_ID;
     const BACKBLAZE_APP_KEY = process.env.BACKBLAZE_APP_KEY;
@@ -229,9 +229,9 @@ export const uploadFileToBackblaze = action({
 
       return {
         success: true,
-        fileUrl,
-        fileName: uniqueFileName,
-        fileId: uploadResult.fileId,
+        fileUrl: String(fileUrl),
+        fileName: String(uniqueFileName),
+        fileId: String(uploadResult.fileId),
       };
     } catch (error) {
       console.error("Error uploading to Backblaze:", error);

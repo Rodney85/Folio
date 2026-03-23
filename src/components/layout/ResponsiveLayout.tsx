@@ -1,7 +1,7 @@
 import React, { ReactNode, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useUser, useAuth, useClerk } from '@clerk/clerk-react';
-import { Plus, UserCircle2, LogOut, ChevronRight, Share, Eye, Flag, CreditCard, Compass } from 'lucide-react';
+import { Plus, UserCircle2, LogOut, ChevronRight, Share, Eye, Flag, CreditCard, Compass, Users } from 'lucide-react';
 import { Logo } from '@/components/ui/logo';
 import ShareModal from '@/components/ShareModal';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
@@ -88,6 +88,13 @@ export const ResponsiveLayout = ({ children, noPadding = false }: ResponsiveLayo
       icon: <Flag className="h-5 w-5" />,
       onClick: () => {
         navigate("/report-issue");
+      }
+    },
+    {
+      title: "Affiliate Dashboard",
+      icon: <Users className="h-5 w-5" />,
+      onClick: () => {
+        navigate("/affiliates");
       }
     }
   ];

@@ -1,5 +1,4 @@
 import { api } from "../../convex/_generated/api";
-import { ConvexReactClient } from "convex/react";
 
 /**
  * Get the MIME type of a file, falling back to extension detection if file.type is empty.
@@ -28,20 +27,19 @@ function getMimeType(file: File): string {
  * @param convex The Convex client for API calls (can be obtained from useConvex())
  * @returns URL to the uploaded file
  */
-export async function uploadToBackblaze(file: File, fileName: string, convex: ConvexReactClient): Promise<string> {
+export async function uploadToBackblaze(file: File, fileName: string, convex: any): Promise<string> {
   try {
     // Step 1: Upload file to Convex temporary storage
     const storageId = await uploadToConvexStorage(file, convex);
     if (!storageId) {
       throw new Error('Failed to upload file to temporary storage');
     }
-    
     // Step 2: Transfer the file from Convex storage to Backblaze
-    const result = await convex.action(api.files.uploadFileToBackblaze as any, {
+    const result = await (convex as any).action("files:uploadFileToBackblaze", {
       storageId,
       fileName,
       contentType: getMimeType(file),
-    }) as { success: boolean; fileUrl: string } | null;
+    }) as { success: boolean; fileUrl: string; fileName: string; fileId: string };
     
     if (!result || !result.success || !result.fileUrl) {
       throw new Error('Failed to transfer file to Backblaze');
@@ -61,16 +59,17 @@ export async function uploadToBackblaze(file: File, fileName: string, convex: Co
  * @param convex The Convex client for API calls
  * @returns Storage ID of the uploaded file
  */
-async function uploadToConvexStorage(file: File, convex: ConvexReactClient): Promise<string> {
+async function uploadToConvexStorage(file: File, convex: any): Promise<string | null> {
   try {
     // Get an upload URL from Convex (use derived MIME type as fallback)
     const mimeType = getMimeType(file);
-    const uploadUrl = await convex.mutation(api.files.generateUploadUrl, {
+    // Step 1: Execute mutation securely (returns string | null)
+    const postUrl = await (convex as any).mutation("files:generateUploadUrl", {
       contentType: mimeType,
-    });
+    }) as string | null;
     
     // Upload the file to Convex storage
-    const result = await fetch(uploadUrl, {
+    const result = await fetch(postUrl, {
       method: 'POST',
       headers: {
         'Content-Type': mimeType,

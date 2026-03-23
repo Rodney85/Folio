@@ -53,6 +53,7 @@ const PublicProfilePage = lazyWithRetry(() => import("./pages/PublicProfilePage"
 const PublicCarDetailsPage = lazyWithRetry(() => import("./pages/PublicCarDetailsPage"));
 const AnalyticsPage = lazyWithRetry(() => import("./pages/AnalyticsPage"));
 const ReportIssuePage = lazyWithRetry(() => import("./pages/ReportIssuePage"));
+const AffiliatePage = lazyWithRetry(() => import("./pages/AffiliatePage"));
 
 const ExplorePage = lazyWithRetry(() => import("./pages/ExplorePage"));
 const AccountSettingsPage = lazyWithRetry(() => import("./pages/AccountSettingsPage"));
@@ -175,6 +176,13 @@ const AuthenticatedRoutes = () => {
             </Suspense>
           </PageTransition>
         } />
+        <Route path="/affiliates" element={
+          <PageTransition>
+            <Suspense fallback={<PageLoader />}>
+              <AffiliatePage />
+            </Suspense>
+          </PageTransition>
+        } />
       </Routes>
     </AppLayout>
   );
@@ -229,6 +237,7 @@ const AppContent = () => {
 
         {/* App feature routes - protected by authentication - wrapped in AppLayout */}
         {isSignedIn && <Route path="/*" element={<AuthenticatedRoutes />} />}
+        {!isSignedIn && <Route path="/affiliates" element={<Navigate to="/sign-in?redirect_url=/affiliates" replace />} />}
 
         {/* Explore Page - accessible to all users */}
         <Route path="/explore" element={

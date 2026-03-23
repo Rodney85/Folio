@@ -1,13 +1,74 @@
+import { useEffect } from "react";
 import { useUser, SignOutButton } from "@clerk/clerk-react";
 import { Button } from "@/components/ui/button";
 import { Car, LogOut } from "lucide-react";
 import { Link } from "react-router-dom";
+
+import Cookies from "js-cookie";
+
+/**
+ * Fires the Affonso lead tracking pixel so affiliate sign-ups are attributed.
+ * Called once on mount after a successful sign-up.
+ */
+function trackAffonsoLead(email: string, name?: string) {
+  try {
+    // Retrieve the stored affiliate code (set by SignUp.tsx when ?via= was in the URL)
+    const viaCode =
+      sessionStorage.getItem("affonso_via") ||
+      document.cookie
+        .split("; ")
+        .find((c) => c.startsWith("affonso_ref="))
+        ?.split("=")?.[1];
+
+    // Try to fire Affonso lead pixel
+    if (typeof window !== 'undefined' && (window as any).Affonso) {
+      try {
+        (window as any).Affonso.signup({
+          email: email,
+          name: name,
+        });
+        console.log("Affonso lead tracked successfully");
+      } catch (err) {
+        console.error("Error tracking Affonso lead:", err);
+      }
+      Cookies.remove('via'); // Remove the 'via' cookie after tracking
+    } else {
+      // Pixel not ready yet — retry once after a short delay
+      setTimeout(() => {
+        if (typeof window !== 'undefined' && (window as any).Affonso) {
+          try {
+            (window as any).Affonso.signup({
+              email: email,
+              name: name,
+            });
+            console.log("Affonso lead tracked (delayed) successfully");
+          } catch (err) {
+            console.error("Error tracking Affonso lead (delayed):", err);
+          }
+          Cookies.remove('via');
+        }
+      }, 2000);
+    }
+
+    // Clean up the stored code so it doesn't fire again on revisit
+    sessionStorage.removeItem("affonso_via");
+  } catch (err) {
+    console.warn("Affonso lead tracking failed:", err);
+  }
+}
 
 /**
  * WelcomeScreen displayed after successful authentication
  */
 export const WelcomeScreen = () => {
   const { user } = useUser();
+
+  useEffect(() => {
+    const email = user?.primaryEmailAddress?.emailAddress;
+    if (email) {
+      trackAffonsoLead(email, user?.fullName || undefined);
+    }
+  }, [user]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-blue-950 p-4">
@@ -70,3 +131,5 @@ export const WelcomeScreen = () => {
 };
 
 export default WelcomeScreen;
+
+

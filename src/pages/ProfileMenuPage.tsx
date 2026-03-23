@@ -1,5 +1,5 @@
 import { toast } from "sonner";
-import { ChevronLeft, ChevronRight, Shield, Monitor, Flag, LogOut, Settings, CreditCard } from "lucide-react";
+import { ChevronLeft, ChevronRight, Shield, Monitor, Flag, LogOut, Settings, CreditCard, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth, useClerk } from "@clerk/clerk-react";
 
@@ -55,6 +55,13 @@ const ProfileMenuPage = () => {
       onClick: () => {
         // Future: Navigate to display settings
         toast.info("Display settings coming soon");
+      }
+    },
+    {
+      title: "Affiliate Dashboard",
+      icon: <Users className="h-5 w-5" />,
+      onClick: () => {
+        navigate("/affiliates");
       }
     },
     {
