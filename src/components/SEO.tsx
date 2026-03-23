@@ -18,7 +18,7 @@ export const SEO: React.FC<SEOProps> = ({
     image = '/mac.png',
     url,
 }) => {
-    const siteUrl = 'https://www.carfolio.cc'; // Updated domain
+    const siteUrl = 'https://carfolio.cc'; // Updated domain
     const currentUrl = url ? url : siteUrl;
 
     return (
