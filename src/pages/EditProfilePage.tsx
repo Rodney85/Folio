@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Camera, Loader2 } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import ProfileSetupForm from '@/components/ProfileSetupForm';
+import { convertHeicToJpeg, isHeic } from '@/utils/imageUtils';
 
 export default function EditProfilePage() {
   const { user } = useUser();
@@ -13,13 +14,17 @@ export default function EditProfilePage() {
   
   // Handle profile image upload using Clerk
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const rawFile = e.target.files?.[0];
+    if (!rawFile) return;
     
     setImageUploading(true);
     
     try {
       if (user) {
+        console.log("Profile image upload started:", rawFile.name, rawFile.type);
+        const file = await convertHeicToJpeg(rawFile);
+        console.log("Profile image processed:", file.name, file.type);
+        
         await user.setProfileImage({ file });
         toast({
           title: "Profile photo updated",
@@ -30,7 +35,7 @@ export default function EditProfilePage() {
       console.error("Error uploading profile image:", error);
       toast({
         title: "Image upload failed",
-        description: "We couldn't upload your profile image.",
+        description: "We couldn't upload your profile image. Please try a regular JPEG/PNG file.",
         variant: "destructive",
       });
     } finally {
@@ -69,7 +74,7 @@ export default function EditProfilePage() {
           <input 
             id="profileImage" 
             type="file" 
-            accept="image/*" 
+            accept="image/*,.heic,.heif" 
             className="hidden" 
             onChange={handleImageUpload}
             disabled={imageUploading}

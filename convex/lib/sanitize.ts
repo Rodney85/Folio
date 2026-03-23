@@ -148,7 +148,7 @@ export function sanitizeNumber(
  */
 export function isValidFileType(
     contentType: string,
-    allowedTypes: string[] = ["image/jpeg", "image/png", "image/webp", "image/gif"]
+    allowedTypes: string[] = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/heic", "image/heif"]
 ): boolean {
     return allowedTypes.includes(contentType.toLowerCase());
 }
@@ -164,6 +164,8 @@ export function getFileExtension(contentType: string): string {
         "image/png": "png",
         "image/webp": "webp",
         "image/gif": "gif",
+        "image/heic": "heic",
+        "image/heif": "heif",
     };
     return extensions[contentType.toLowerCase()] || "bin";
 }

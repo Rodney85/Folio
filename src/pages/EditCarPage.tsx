@@ -34,6 +34,7 @@ import { useMutation, useQuery, useConvex } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { uploadToBackblaze } from "@/utils/storageService";
 import CarImageWithUrl from '@/components/cars/CarImageWithUrl';
+import { processImages, convertHeicToJpeg, isHeic } from "@/utils/imageUtils";
 
 // Form constants for select options
 const CURRENT_YEAR = new Date().getFullYear();
@@ -332,13 +333,38 @@ const EditCarPage = () => {
     }
   }, [car, parts]);
 
-  // File handling for car images
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      const newFiles = Array.from(e.target.files);
-      const totalImages = images.length + existingImages.length;
+      const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+      const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/heic', 'image/heif'];
+      
+      const rawFiles = Array.from(e.target.files);
+      const totalImagesCount = images.length + existingImages.length;
 
-      if (totalImages + newFiles.length > 8) {
+      const validFiles = rawFiles.filter(file => {
+        // Check file size
+        if (file.size > MAX_FILE_SIZE) {
+          toast({
+            title: "File too large",
+            description: `"${file.name}" exceeds 10MB limit.`,
+            variant: "destructive"
+          });
+          return false;
+        }
+        // Check file type
+        const isActuallyHeic = isHeic(file);
+        if (!ALLOWED_TYPES.includes(file.type) && !isActuallyHeic) {
+          toast({
+            title: "Invalid file type",
+            description: `"${file.name}" is not a valid image.`,
+            variant: "destructive"
+          });
+          return false;
+        }
+        return true;
+      });
+
+      if (totalImagesCount + validFiles.length > 8) {
         toast({
           title: "Too many images",
           description: "You can upload a maximum of 8 images per car.",
@@ -347,13 +373,29 @@ const EditCarPage = () => {
         return;
       }
 
-      // Reverse the order so first selected appears first in the array
-      const newImages = [...newFiles.reverse(), ...images];
-      setImages(newImages);
+      setUploading(true);
+      try {
+        console.log("Processing images:", validFiles.map(f => `${f.name} (${f.type})`));
+        const processedFiles = await processImages(validFiles);
+        console.log("Processed images:", processedFiles.map(f => `${f.name} (${f.type})`));
 
-      // Create preview URLs
-      const newPreviews = newFiles.map(file => URL.createObjectURL(file));
-      setImagePreviewUrls([...imagePreviewUrls, ...newPreviews]);
+        // Reverse the order so first selected appears first in the array
+        const updatedImages = [...processedFiles.reverse(), ...images];
+        setImages(updatedImages);
+
+        // Create preview URLs
+        const newPreviews = processedFiles.map(file => URL.createObjectURL(file));
+        setImagePreviewUrls([...imagePreviewUrls, ...newPreviews]);
+      } catch (err) {
+        console.error("Image processing failed", err);
+        toast({
+          title: "Processing failed",
+          description: "We couldn't process some of your images. Please try with regular JPEG/PNG files.",
+          variant: "destructive"
+        });
+      } finally {
+        setUploading(false);
+      }
     }
   };
 
@@ -385,9 +427,18 @@ const EditCarPage = () => {
   };
 
   // Mod handling
-  const handleModImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleModImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setCurrentMod(prev => ({ ...prev, image: e.target.files![0] }));
+      const file = e.target.files[0];
+      setUploading(true);
+      try {
+        const processedFile = await convertHeicToJpeg(file);
+        setCurrentMod(prev => ({ ...prev, image: processedFile }));
+      } catch (err) {
+        console.error("Mod image processing failed", err);
+      } finally {
+        setUploading(false);
+      }
     }
   };
 
@@ -638,7 +689,7 @@ const EditCarPage = () => {
                 ref={fileInputRef}
                 onChange={handleFileChange}
                 multiple
-                accept="image/*"
+                accept="image/*,.heic,.heif"
                 className="hidden"
               />
             </div>

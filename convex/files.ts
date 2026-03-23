@@ -7,7 +7,7 @@ import { isValidFileType } from "./lib/sanitize";
 import { checkRateLimit } from "./lib/rateLimit";
 
 // Allowed image types for uploads
-const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/heic", "image/heif"];
 
 // Generate a URL for file upload to Convex storage
 export const generateUploadUrl = mutation({
@@ -30,7 +30,7 @@ export const generateUploadUrl = mutation({
     const rawType = (args.contentType || '').split(';')[0].trim().toLowerCase() || 'image/jpeg';
     if (!isValidFileType(rawType, ALLOWED_IMAGE_TYPES)) {
       throw new ConvexError(
-        `Invalid file type: ${rawType}. Allowed types: JPEG, PNG, WebP, GIF`
+        `Invalid file type: ${rawType}. Allowed types: JPEG, PNG, WebP, GIF, HEIC, HEIF`
       );
     }
 

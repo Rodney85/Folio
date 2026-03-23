@@ -38,6 +38,7 @@ import { trackCarAdded } from "@/utils/analytics";
 import * as carDB from "@/services/carDatabaseService";
 import { type CarTrim } from "@/services/carDatabaseService";
 import { Switch } from "@/components/ui/switch";
+import { processImages, convertHeicToJpeg, isHeic } from "@/utils/imageUtils";
 
 // Form constants for select options
 const CURRENT_YEAR = new Date().getFullYear();
@@ -392,9 +393,18 @@ export default function AddCarPage() {
     setCarData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleModImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleModImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setCurrentMod(prev => ({ ...prev, image: e.target.files![0] }));
+      const file = e.target.files[0];
+      setUploading(true);
+      try {
+        const processedFile = await convertHeicToJpeg(file);
+        setCurrentMod(prev => ({ ...prev, image: processedFile }));
+      } catch (err) {
+        console.error("Mod image processing failed", err);
+      } finally {
+        setUploading(false);
+      }
     }
   };
 
@@ -418,12 +428,13 @@ export default function AddCarPage() {
     setMods(mods.filter((_, i) => i !== index));
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-      const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+      const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/heic', 'image/heif'];
 
-      const newFiles = Array.from(e.target.files).filter(file => {
+      const rawFiles = Array.from(e.target.files);
+      const validFiles = rawFiles.filter(file => {
         // Check file size
         if (file.size > MAX_FILE_SIZE) {
           toast({
@@ -433,11 +444,12 @@ export default function AddCarPage() {
           });
           return false;
         }
-        // Check file type
-        if (!ALLOWED_TYPES.includes(file.type)) {
+        // Check file type (allowing HEIC/HEIF now)
+        const isActuallyHeic = isHeic(file);
+        if (!ALLOWED_TYPES.includes(file.type) && !isActuallyHeic) {
           toast({
             title: "Invalid file type",
-            description: `"${file.name}" is not a valid image. Please use JPEG, PNG, WebP, or GIF.`,
+            description: `"${file.name}" is not a valid image. Please use JPEG, PNG, WebP, GIF, or HEIC.`,
             variant: "destructive"
           });
           return false;
@@ -445,12 +457,29 @@ export default function AddCarPage() {
         return true;
       });
 
-      if (newFiles.length === 0) return;
+      if (validFiles.length === 0) return;
 
-      const totalImages = [...images, ...newFiles].slice(0, 8);
-      setImages(totalImages);
-      const newPreviewUrls = totalImages.map(file => URL.createObjectURL(file));
-      setImagePreviewUrls(newPreviewUrls);
+      // Process images (convert HEIC to JPEG)
+      setUploading(true);
+      try {
+        console.log("Processing images:", validFiles.map(f => `${f.name} (${f.type})`));
+        const newFiles = await processImages(validFiles);
+        console.log("Processed images:", newFiles.map(f => `${f.name} (${f.type})`));
+        
+        const totalImages = [...images, ...newFiles].slice(0, 8);
+        setImages(totalImages);
+        const newPreviewUrls = totalImages.map(file => URL.createObjectURL(file));
+        setImagePreviewUrls(newPreviewUrls);
+      } catch (err) {
+        console.error("Image processing failed", err);
+        toast({
+          title: "Processing failed",
+          description: "We couldn't process some of your images. Please try with regular JPEG/PNG files.",
+          variant: "destructive"
+        });
+      } finally {
+        setUploading(false);
+      }
     }
   };
 
@@ -1039,7 +1068,7 @@ export default function AddCarPage() {
                           ref={modFileInputRef}
                           onChange={handleModImageChange}
                           className="hidden"
-                          accept="image/*"
+                          accept="image/*,.heic,.heif"
                         />
                       </div>
 
