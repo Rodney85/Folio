@@ -278,17 +278,7 @@ const ExplorePage = () => {
                                             </div>
                                         )}
 
-                                        {/* Hover Overlay */}
-                                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-4">
-                                            <div className="flex items-center gap-1 text-white font-bold">
-                                                <span className="text-sm">❤️</span>
-                                                <span>{item.likes || 0}</span>
-                                            </div>
-                                            <div className="flex items-center gap-1 text-white font-bold">
-                                                <span className="text-sm">💬</span>
-                                                <span>{item.comments || 0}</span>
-                                            </div>
-                                        </div>
+
                                     </motion.div>
                                 );
                             })}

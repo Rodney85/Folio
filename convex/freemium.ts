@@ -36,7 +36,14 @@ export async function getUserFromIdentity(ctx: any, tokenIdentifier: string) {
 export async function checkIsPremium(ctx: any, tokenIdentifier: string) {
     if (BETA_MODE) return true;
     const user = await getUserFromIdentity(ctx, tokenIdentifier);
-    return user?.subscriptionStatus === "active";
+    if (!user) return false;
+    
+    // Admins are always premium
+    if (user.role === "admin" || (user.publicMetadata && user.publicMetadata.role === "admin")) {
+        return true;
+    }
+    
+    return user.subscriptionStatus === "active";
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -56,6 +63,11 @@ export const isPremiumUser = query({
         const user = await getUserFromIdentity(ctx, identity.tokenIdentifier);
         if (!user) return false;
 
+        // Admins are always premium
+        if (user.role === "admin" || (user.publicMetadata && user.publicMetadata.role === "admin")) {
+            return true;
+        }
+
         return user.subscriptionStatus === "active";
     },
 });
@@ -74,8 +86,12 @@ export const canAddCar = query({
         const user = await getUserFromIdentity(ctx, identity.tokenIdentifier);
         if (!user) return false;
 
-        // Pro/OG have no limit
-        if (user.subscriptionStatus === "active") return true;
+        // Pro/OG/Admin have no limit
+        if (user.subscriptionStatus === "active" || 
+            user.role === "admin" || 
+            (user.publicMetadata && user.publicMetadata.role === "admin")) {
+            return true;
+        }
 
         // Free tier: check car count against limit
         const userCars = await ctx.db
@@ -100,6 +116,11 @@ export const canUseAffiliateLinks = query({
 
         const user = await getUserFromIdentity(ctx, identity.tokenIdentifier);
         if (!user) return false;
+
+        // Admins can always use affiliate links
+        if (user.role === "admin" || (user.publicMetadata && user.publicMetadata.role === "admin")) {
+            return true;
+        }
 
         return user.subscriptionStatus === "active";
     },
@@ -150,7 +171,14 @@ const OG_PRODUCT_ID = process.env.DODO_PRODUCT_OG_LIFETIME;
  * Helper to determine the user's tier based on subscription status and plan ID.
  */
 export function getUserTier(user: any): "free" | "pro" | "og" {
-    if (!user || user.subscriptionStatus !== "active") {
+    if (!user) return "free";
+
+    // Admins are treated as OG for features
+    if (user.role === "admin" || (user.publicMetadata && user.publicMetadata.role === "admin")) {
+        return "og";
+    }
+
+    if (user.subscriptionStatus !== "active") {
         return "free";
     }
 
@@ -206,8 +234,10 @@ export const getRemainingCarSlots = query({
         const user = await getUserFromIdentity(ctx, identity.tokenIdentifier);
         if (!user) return { remaining: 0, total: 0, unlimited: false };
 
-        // Pro/OG have unlimited
-        if (user.subscriptionStatus === "active") {
+        // Pro/OG/Admin have unlimited
+        if (user.subscriptionStatus === "active" || 
+            user.role === "admin" || 
+            (user.publicMetadata && user.publicMetadata.role === "admin")) {
             return { remaining: 999, total: 999, unlimited: true };
         }
 

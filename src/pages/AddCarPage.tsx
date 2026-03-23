@@ -589,7 +589,8 @@ export default function AddCarPage() {
   const prevStep = () => setCurrentStep((s) => Math.max(s - 1, 1));
 
   return (
-    <ResponsiveLayout>
+    <>
+      <ResponsiveLayout>
       <div className="min-h-screen bg-transparent text-white">
         <div className="container mx-auto px-0 md:px-4 py-0 md:py-8 max-w-3xl">
           <form onSubmit={handleSubmit}>
@@ -1017,11 +1018,15 @@ export default function AddCarPage() {
                       <div className="space-y-2">
                         <Label htmlFor="modImage">Image</Label>
                         <div
-                          className="relative aspect-square w-[100px] bg-white/5 border-2 border-dashed border-white/10 rounded-xl flex items-center justify-center cursor-pointer hover:border-white/20 transition-colors"
+                          className="relative aspect-square w-[100px] bg-white/5 border-2 border-dashed border-white/10 rounded-xl flex items-center justify-center cursor-pointer hover:border-white/20 transition-colors overflow-hidden"
                           onClick={triggerModFileInput}
                         >
                           {currentMod.image ? (
-                            <img src={URL.createObjectURL(currentMod.image)} alt="Mod preview" className="w-full h-full object-cover rounded-xl" />
+                            <ModThumbnail 
+                              file={currentMod.image} 
+                              alt="Mod preview" 
+                              className="w-full h-full object-cover" 
+                            />
                           ) : (
                             <div className="text-center text-slate-500 p-2">
                               <Camera size={20} className="mx-auto" />
@@ -1097,9 +1102,15 @@ export default function AddCarPage() {
                           <div key={index} className="flex items-center justify-between p-3 bg-white/[0.02] hover:bg-white/[0.04] transition-colors">
                             <div className="flex items-center gap-4">
                               {mod.image ? (
-                                <img src={URL.createObjectURL(mod.image)} alt={mod.name} className="w-12 h-12 object-cover rounded-lg" />
+                                <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0">
+                                  <ModThumbnail 
+                                    file={mod.image} 
+                                    alt={mod.name} 
+                                    className="w-full h-full object-cover" 
+                                  />
+                                </div>
                               ) : (
-                                <div className="w-12 h-12 bg-white/5 rounded-lg flex items-center justify-center">
+                                <div className="w-12 h-12 bg-white/5 rounded-lg flex items-center justify-center shrink-0">
                                   <ShoppingBag size={20} className="text-slate-500" />
                                 </div>
                               )}
@@ -1148,5 +1159,73 @@ export default function AddCarPage() {
         </div>
       </div>
     </ResponsiveLayout>
+
+    {/* Elegant Uploading/Adding Overlay */}
+    {loading && (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md transition-all duration-300">
+        <div className="max-w-md w-full mx-4 p-8 rounded-3xl border border-white/10 bg-white/[0.05] shadow-2xl overflow-hidden relative group">
+          {/* Animated Background Glow */}
+          <div className="absolute -top-24 -left-24 w-48 h-48 bg-blue-500/20 blur-[100px] rounded-full animate-pulse" />
+          <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-cyan-500/20 blur-[100px] rounded-full animate-pulse delay-700" />
+          
+          <div className="relative flex flex-col items-center text-center space-y-6">
+            <div className="relative">
+              <div className="absolute inset-0 bg-blue-500/20 blur-xl rounded-full animate-ping" />
+              <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-blue-600 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                <Loader2 className="h-10 w-10 text-white animate-spin" />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <h3 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">
+                {uploading ? "Uploading Build..." : "Adding to Garage..."}
+              </h3>
+              <p className="text-slate-400 text-sm max-w-[280px] mx-auto">
+                {uploading 
+                  ? "We're preparing your build details and gallery. Hang tight!" 
+                  : "Finalizing your car's profile..."}
+              </p>
+            </div>
+
+            {uploading && (
+              <div className="w-full space-y-3">
+                <div className="flex justify-between items-center text-xs font-medium uppercase tracking-wider text-slate-500">
+                  <span>Progress</span>
+                  <span className="text-blue-400">{Math.round(uploadProgress)}%</span>
+                </div>
+                <div className="h-2.5 w-full bg-white/5 rounded-full overflow-hidden border border-white/10">
+                  <div 
+                    className="h-full bg-gradient-to-r from-blue-600 to-cyan-400 transition-all duration-500 ease-out shadow-[0_0_15px_rgba(37,99,235,0.4)]"
+                    style={{ width: `${uploadProgress}%` }}
+                  />
+                </div>
+              </div>
+            )}
+            
+            <div className="pt-2">
+              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-[10px] font-medium text-slate-400 uppercase tracking-widest">
+                <span className="flex h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
+                Don't close this window
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
+}
+
+// Separate component for mod image preview to handle URL lifecycle
+function ModThumbnail({ file, alt, className }: { file: File, alt: string, className?: string }) {
+  const [url, setUrl] = useState<string>("");
+
+  useEffect(() => {
+    const objectUrl = URL.createObjectURL(file);
+    setUrl(objectUrl);
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [file]);
+
+  if (!url) return null;
+  return <img src={url} alt={alt} className={className} />;
 }
