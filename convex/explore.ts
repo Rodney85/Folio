@@ -57,10 +57,13 @@ export const getExploreFeed = query({
             }
         }
 
-        // Filter cars to ensure the user exists
+        // Filter cars to ensure the user exists and is not an admin
         const availableCars = allCars.filter((car) => {
             const user = userByIdMap.get(car.userId);
-            return user !== undefined;
+            if (!user) return false;
+            // Exclude admin cars from explore feed
+            if (user.role === "admin" || user.publicMetadata?.role === "admin") return false;
+            return true;
         });
 
         // Get analytics data for popularity scoring
@@ -212,6 +215,11 @@ export const searchExplore = query({
                 return false;
             }
 
+            // Exclude admin cars
+            if (user.role === "admin" || user.publicMetadata?.role === "admin") {
+                return false;
+            }
+
             // Search in make, model, year, and owner username
             const makeMatch = car.make.toLowerCase().includes(searchQuery);
             const modelMatch = car.model.toLowerCase().includes(searchQuery);
@@ -279,6 +287,11 @@ export const getFilteredExploreFeed = query({
             const user = userByIdMap.get(car.userId);
             // Verify user status
             if (!user) {
+                return false;
+            }
+
+            // Exclude admin cars
+            if (user.role === "admin" || user.publicMetadata?.role === "admin") {
                 return false;
             }
 
@@ -393,6 +406,11 @@ export const getTrendingCars = query({
                 const owner = userByIdMap.get(car.userId);
                 if (!owner) continue;
 
+                // Exclude admin cars
+                if (owner.role === "admin" || owner.publicMetadata?.role === "admin") {
+                    continue;
+                }
+
                 trendingCars.push({
                     car,
                     owner: {
@@ -418,11 +436,24 @@ export const getTrendingCars = query({
  */
 export const getPopularMakes = query({
     handler: async (ctx) => {
-        const allCars = await ctx.db.query("cars").collect();
+        const allCars = await ctx.db.query("cars")
+            .filter((q) => q.eq(q.field("isPublished"), true))
+            .collect();
+
+        const allUsers = await ctx.db.query("users").collect();
+        const userByIdMap = new Map<string, Doc<"users">>();
+        for (const user of allUsers) {
+            userByIdMap.set(user.tokenIdentifier, user);
+            const parts = user.tokenIdentifier.split("|");
+            if (parts[1]) userByIdMap.set(parts[1], user);
+        }
 
         // Count makes
         const makeCounts = new Map<string, number>();
         for (const car of allCars) {
+            const owner = userByIdMap.get(car.userId);
+            if (!owner || owner.role === "admin" || owner.publicMetadata?.role === "admin") continue;
+
             const make = car.make.toLowerCase();
             makeCounts.set(make, (makeCounts.get(make) ?? 0) + 1);
         }
