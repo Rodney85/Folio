@@ -21,7 +21,7 @@ const ProfileSetupForm = ({ isOnboarding = false, onComplete }: ProfileSetupForm
   const navigate = useNavigate();
   
   // Use a type-safe mutation or cast it properly to avoid "excessively deep" errors
-  const updateProfile = useMutation(api.users.updateProfile as any);
+  const updateProfile = useMutation((api as any).users.updateProfile);
   
   // useReverification returns an enhanced function that handles security modals automatically.
   // We wrap the user.update call. If Clerk needs verification, it will pop up a modal.
