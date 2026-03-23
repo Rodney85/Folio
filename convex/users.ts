@@ -259,22 +259,7 @@ export const getProfileByUsername = query({
       return null; // User not found
     }
 
-    // Hide cars for users with admin metadata
-    if (user.role === "admin" || user.publicMetadata?.role === "admin") {
-      return {
-        user: {
-          _id: user._id,
-          name: user.name,
-          username: user.username,
-          bio: user.bio,
-          pictureUrl: user.pictureUrl,
-          instagram: user.instagram,
-          tiktok: user.tiktok,
-          youtube: user.youtube,
-        },
-        cars: [], 
-      };
-    }    // Handle the ID mismatch between auth systems
+    // Handle the ID mismatch between auth systems
     // First, try to find cars using the direct database ID
     const carsByDatabaseId = await ctx.db
       .query("cars")
