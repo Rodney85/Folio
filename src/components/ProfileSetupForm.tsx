@@ -8,12 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useUser, useReverification } from "@clerk/clerk-react";
-import { Loader2, ShieldCheck } from "lucide-react";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from "@/components/ui/input-otp";
+import { Loader2 } from "lucide-react";
 
 type ProfileSetupFormProps = {
   isOnboarding?: boolean;
@@ -22,10 +17,18 @@ type ProfileSetupFormProps = {
 
 const ProfileSetupForm = ({ isOnboarding = false, onComplete }: ProfileSetupFormProps) => {
   const { user } = useUser();
-  const { status: reverifyStatus, prepare: prepareReverify, attempt: attemptReverify } = useReverification();
   const { isAuthenticated } = useConvexAuth();
   const navigate = useNavigate();
+  
+  // Use a type-safe mutation or cast it properly to avoid "excessively deep" errors
   const updateProfile = useMutation(api.users.updateProfile as any);
+  
+  // useReverification returns an enhanced function that handles security modals automatically.
+  // We wrap the user.update call. If Clerk needs verification, it will pop up a modal.
+  const reverifiedUpdate = useReverification(async (params: { username: string }) => {
+    if (!user) return;
+    return user.update(params);
+  });
 
   const profileData = useQuery(api.users.getProfile);
   
@@ -36,10 +39,6 @@ const ProfileSetupForm = ({ isOnboarding = false, onComplete }: ProfileSetupForm
   const [youtube, setYoutube] = useState("");
   const [loading, setLoading] = useState(false);
   
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [verificationCode, setVerificationCode] = useState("");
-  const [pendingPayload, setPendingPayload] = useState<any>(null);
-
   useEffect(() => {
     if (profileData) {
       setUsername(profileData.username || "");
@@ -63,7 +62,7 @@ const ProfileSetupForm = ({ isOnboarding = false, onComplete }: ProfileSetupForm
       return url.trim();
     }
   };
-  
+
   const handleSave = async () => {
     if (!isAuthenticated) {
       toast.error("Please wait while we connect to the server...");
@@ -71,7 +70,7 @@ const ProfileSetupForm = ({ isOnboarding = false, onComplete }: ProfileSetupForm
     }
 
     if (isOnboarding && !username.trim()) {
-      toast.error("Please enter a username for your profile.");
+      toast.error("Please enter a username.");
       return;
     }
 
@@ -94,63 +93,39 @@ const ProfileSetupForm = ({ isOnboarding = false, onComplete }: ProfileSetupForm
         profilePayload.profileCompleted = true;
       }
 
-      // Sync with Clerk FIRST if username is changing
+      // Step 1: Update in Clerk (if username changed)
+      // reverifiedUpdate will trigger the OTP modal if Clerk security requires it.
       if (user && profilePayload.username && profilePayload.username !== user.username) {
         try {
-          // Check if we need to trigger reverification
-          await user.update({ username: profilePayload.username as string });
-          // If update succeeded without error, proceed to Convex
+          await reverifiedUpdate({ username: profilePayload.username });
         } catch (err: any) {
-          // Handle "reverification required" error
-          if (err.errors && err.errors[0]?.code === "verification_required") {
-            // Trigger Clerk's verification email/sms
-            if (prepareReverify) {
-              await prepareReverify();
-              setPendingPayload(profilePayload);
-              setIsVerifying(true);
-              setLoading(false);
-              toast.info("A verification code has been sent to your primary email.");
-              return; // Wait for OTP
-            }
+          console.error("Clerk update error:", err);
+          
+          // Check for cancelled verification or other errors
+          if (err.errors?.[0]?.code === "form_identifier_exists") {
+             toast.error("Username is already taken.");
+          } else if (err.status === 403 || err.message?.includes("verification")) {
+             // This is usually handled by the modal, but just in case
+             toast.error("Verification failed or cancelled.");
+          } else {
+             toast.error(err.errors?.[0]?.message || "Could not update username.");
           }
-          throw err; // Rethrow other errors
+          setLoading(false);
+          return;
         }
       }
 
+      // Step 2: Update in Convex
       await updateProfile(profilePayload);
       toast.success(isOnboarding ? "Profile created!" : "Profile updated.");
-      if (isOnboarding && onComplete) onComplete(); else navigate('/profile');
+      if (isOnboarding && onComplete) {
+        onComplete();
+      } else {
+        navigate('/profile');
+      }
     } catch (e: any) {
       console.error("Error saving profile:", e);
       toast.error(e?.data?.message || e?.message || "Something went wrong.");
-    } finally {
-      if (!isVerifying) setLoading(false);
-    }
-  };
-
-  const handleVerifyOTP = async () => {
-    if (!verificationCode || verificationCode.length < 6) {
-      toast.error("Please enter a valid 6-digit code.");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      if (attemptReverify) {
-        await attemptReverify(verificationCode);
-        
-        // Verification succeeded, now finalize the update
-        if (pendingPayload) {
-          // Re-try the username update now that we're verified
-          await user?.update({ username: pendingPayload.username });
-          await updateProfile(pendingPayload);
-          toast.success("Username verified and profile updated!");
-          if (isOnboarding && onComplete) onComplete(); else navigate('/profile');
-        }
-      }
-    } catch (err: any) {
-      console.error("Verification failed:", err);
-      toast.error(err.errors?.[0]?.message || "Invalid verification code.");
     } finally {
       setLoading(false);
     }
@@ -159,140 +134,70 @@ const ProfileSetupForm = ({ isOnboarding = false, onComplete }: ProfileSetupForm
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
-        <CardTitle>{isVerifying ? "Verify Your Identity" : (isOnboarding ? "Complete Your Profile" : "Edit Profile")}</CardTitle>
+        <CardTitle>{isOnboarding ? "Complete Your Profile" : "Edit Profile"}</CardTitle>
         <CardDescription>
-          {isVerifying 
-            ? "For security, we've sent a code to your email to confirm this change."
-            : (isOnboarding ? "Let's set up your profile to get started." : "Update your profile information.")}
+          {isOnboarding ? "Let's set up your profile to get started." : "Update your profile information."}
         </CardDescription>
       </CardHeader>
       
       <CardContent className="space-y-4">
-        {isVerifying ? (
-          <div className="flex flex-col items-center justify-center py-4 space-y-6">
-            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-              <ShieldCheck className="w-8 h-8 text-primary animate-pulse" />
-            </div>
-            
-            <div className="space-y-2 text-center">
-              <label className="text-sm font-medium">Enter 6-digit verification code</label>
-              <InputOTP 
-                maxLength={6} 
-                value={verificationCode} 
-                onChange={(val) => setVerificationCode(val)}
-                disabled={loading}
-              >
-                <InputOTPGroup>
-                  <InputOTPSlot index={0} />
-                  <InputOTPSlot index={1} />
-                  <InputOTPSlot index={2} />
-                  <InputOTPSlot index={3} />
-                  <InputOTPSlot index={4} />
-                  <InputOTPSlot index={5} />
-                </InputOTPGroup>
-              </InputOTP>
-            </div>
-            
-            <p className="text-xs text-muted-foreground">
-              Didn't receive a code? <button onClick={() => prepareReverify?.()} className="text-primary hover:underline">Resend</button>
-            </p>
+        <div className="space-y-2">
+          <label className="text-sm font-medium" htmlFor="username">Username *</label>
+          <div className="flex items-center">
+            <span className="text-muted-foreground mr-1">@</span>
+            <Input id="username" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="username" required />
           </div>
-        ) : (
-          <>
-            {/* Username */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="username">
-                Username *
-              </label>
-              <div className="flex items-center">
-                <span className="text-muted-foreground mr-1">@</span>
-                <Input
-                  id="username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="username"
-                  required
-                />
-              </div>
-            </div>
+        </div>
 
-            {/* Bio */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="bio">
-                Bio
-              </label>
-              <Textarea
-                id="bio"
-                value={bio}
-                onChange={(e) => setBio(e.target.value)}
-                placeholder="Tell us about yourself..."
-                rows={3}
+        <div className="space-y-2">
+          <label className="text-sm font-medium" htmlFor="bio">Bio</label>
+          <Textarea id="bio" value={bio} onChange={(e) => setBio(e.target.value)} placeholder="Tell us about yourself..." rows={3} />
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Social Media Handles</label>
+          <div className="grid gap-2">
+            <div className="flex items-center space-x-2">
+              <label htmlFor="instagram" className="text-pink-500 min-w-[80px]">Instagram</label>
+              <Input
+                id="instagram"
+                value={instagram}
+                onChange={(e) => setInstagram(e.target.value)}
+                placeholder="Your Instagram username"
               />
             </div>
-
-            {/* Social Media */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Social Media</label>
-              
-              {/* Instagram */}
-              <div className="flex items-center space-x-2">
-                <label htmlFor="instagram" className="text-pink-500 min-w-[80px]">Instagram</label>
-                <Input
-                  id="instagram"
-                  value={instagram}
-                  onChange={(e) => setInstagram(e.target.value)}
-                  placeholder="Your Instagram username"
-                />
-              </div>
-              
-              {/* TikTok */}
-              <div className="flex items-center space-x-2">
-                <label htmlFor="tiktok" className="text-slate-900 dark:text-white min-w-[80px]">TikTok</label>
-                <Input
-                  id="tiktok"
-                  value={tiktok}
-                  onChange={(e) => setTiktok(e.target.value)}
-                  placeholder="Your TikTok username"
-                />
-              </div>
-              
-              {/* YouTube */}
-              <div className="flex items-center space-x-2">
-                <label htmlFor="youtube" className="text-red-600 min-w-[80px]">YouTube</label>
-                <Input
-                  id="youtube"
-                  value={youtube}
-                  onChange={(e) => setYoutube(e.target.value)}
-                  placeholder="Your YouTube handle"
-                />
-              </div>
+            <div className="flex items-center space-x-2">
+              <label htmlFor="tiktok" className="text-slate-900 dark:text-white min-w-[80px]">TikTok</label>
+              <Input
+                id="tiktok"
+                value={tiktok}
+                onChange={(e) => setTiktok(e.target.value)}
+                placeholder="Your TikTok username"
+              />
             </div>
-          </>
-        )}
+            <div className="flex items-center space-x-2">
+              <label htmlFor="youtube" className="text-red-500 min-w-[80px]">YouTube</label>
+              <Input
+                id="youtube"
+                value={youtube}
+                onChange={(e) => setYoutube(e.target.value)}
+                placeholder="Your YouTube handle"
+              />
+            </div>
+          </div>
+        </div>
       </CardContent>
 
       <CardFooter className="flex justify-end space-x-2">
-        {isVerifying ? (
-          <>
-            <Button variant="ghost" onClick={() => setIsVerifying(false)} disabled={loading}>Back</Button>
-            <Button onClick={handleVerifyOTP} disabled={loading || verificationCode.length < 6}>
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Verify & Save
-            </Button>
-          </>
-        ) : (
-          <>
-            {!isOnboarding && (
-              <Button variant="outline" onClick={() => navigate('/profile')} disabled={loading || !isAuthenticated}>
-                Cancel
-              </Button>
-            )}
-            <Button onClick={handleSave} disabled={loading || !isAuthenticated}>
-              {(loading || !isAuthenticated) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {!isAuthenticated ? "Connecting..." : (isOnboarding ? "Complete Setup" : "Save Changes")}
-            </Button>
-          </>
+        {!isOnboarding && (
+          <Button variant="outline" onClick={() => navigate('/profile')} disabled={loading}>
+            Cancel
+          </Button>
         )}
+        <Button onClick={handleSave} disabled={loading || !isAuthenticated}>
+          {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {isOnboarding ? "Complete Setup" : "Save Changes"}
+        </Button>
       </CardFooter>
     </Card>
   );
