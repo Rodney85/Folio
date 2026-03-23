@@ -73,6 +73,7 @@ http.route({
                     firstName: clerkUserData.first_name,
                     lastName: clerkUserData.last_name,
                     imageUrl: clerkUserData.image_url,
+                    username: clerkUserData.username,
                 });
                 console.log(`✅ Synced user data for: ${clerkUserData.id}`);
             }

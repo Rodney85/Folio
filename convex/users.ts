@@ -498,6 +498,7 @@ export const syncUserFromClerk = internalMutation({
     firstName: v.optional(v.string()),
     lastName: v.optional(v.string()),
     imageUrl: v.optional(v.string()),
+    username: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const users = await ctx.db.query("users").collect();
@@ -509,6 +510,7 @@ export const syncUserFromClerk = internalMutation({
       const patchData: any = {};
       if (args.email) patchData.email = args.email;
       if (args.imageUrl) patchData.pictureUrl = args.imageUrl;
+      if (args.username) patchData.username = args.username;
       
       const name = [args.firstName, args.lastName].filter(Boolean).join(" ");
       if (name && !existing.name) patchData.name = name;
