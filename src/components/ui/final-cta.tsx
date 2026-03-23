@@ -1,10 +1,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export function FinalCTA() {
+    const location = useLocation();
     return (
         <section className="py-24 md:py-32 relative overflow-hidden bg-background">
             <div className="mx-auto max-w-7xl px-6">
@@ -55,7 +56,7 @@ export function FinalCTA() {
                                     size="lg"
                                     className="h-14 px-8 text-base bg-white text-black hover:bg-slate-200 rounded-full font-medium transition-all duration-300 shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5)]"
                                 >
-                                    <Link to="/sign-up">
+                                    <Link to={`/sign-up${location.search}`}>
                                         Start Your Garage
                                     </Link>
                                 </Button>

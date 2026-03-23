@@ -51,6 +51,10 @@ class ErrorBoundary extends Component<Props, State> {
     window.location.href = '/';
   };
 
+  handleGoBack = () => {
+    window.history.back();
+  };
+
   render() {
     if (this.state.hasError) {
       // Custom fallback UI
@@ -113,6 +117,13 @@ class ErrorBoundary extends Component<Props, State> {
               >
                 <Home className="w-4 h-4" />
                 Go Home
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={this.handleGoBack}
+                className="flex items-center gap-2"
+              >
+                Go Back
               </Button>
             </div>
           </div>

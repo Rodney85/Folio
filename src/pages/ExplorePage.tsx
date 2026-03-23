@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { ExploreGrid, ExploreSearch } from "@/components/explore";
@@ -22,6 +23,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { motion, AnimatePresence } from "framer-motion";
 
 const ExplorePage = () => {
+    const navigate = useNavigate();
     // Filter States
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedMake, setSelectedMake] = useState<string | null>(null);
@@ -35,7 +37,7 @@ const ExplorePage = () => {
 
     // Queries with Skip Logic
     const exploreFeed = useQuery(
-        api.explore.getExploreFeed,
+        api.explore.getExploreFeed as any,
         !searchQuery && !isFiltering ? { limit: 50 } : "skip"
     );
 
@@ -261,7 +263,7 @@ const ExplorePage = () => {
                                         animate={{ opacity: 1 }}
                                         transition={{ delay: index * 0.05 }}
                                         className={`relative group cursor-pointer overflow-hidden bg-slate-900 rounded-2xl aspect-square ${isLarge ? 'col-span-2 row-span-2' : 'col-span-1 row-span-1'}`}
-                                        onClick={() => window.location.href = `/u/${item.owner.username}/car/${item.car._id}`}
+                                        onClick={() => navigate(`/car/${item.car._id}`)}
                                     >
                                         {item.car.images?.[0] ? (
                                             <img

@@ -69,8 +69,8 @@ const AdminDashboard = () => {
         <div className="space-y-6 max-w-7xl mx-auto">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-                    <p className="text-muted-foreground mt-1">System overview and key metrics</p>
+                    <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">Admin Dashboard</h1>
+                    <p className="text-slate-400 mt-1">System overview and core platform metrics</p>
                 </div>
                 <div className="flex items-center space-x-2">
                     <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
@@ -81,7 +81,8 @@ const AdminDashboard = () => {
 
             {/* Quick Stats Cards */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Card className="bg-card/50 backdrop-blur-sm border-muted/50 shadow-sm hover:shadow-md transition-all">
+                <Card className="relative overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700 shadow-xl hover:shadow-2xl transition-all group">
+                    <div className="absolute -right-8 -top-8 w-24 h-24 bg-primary/10 rounded-full blur-2xl group-hover:bg-primary/20 transition-all"></div>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium text-muted-foreground">Total Users</CardTitle>
                         <Users className="h-4 w-4 text-primary" />
@@ -97,7 +98,8 @@ const AdminDashboard = () => {
                         </p>
                     </CardContent>
                 </Card>
-                <Card className="bg-card/50 backdrop-blur-sm border-muted/50 shadow-sm hover:shadow-md transition-all">
+                <Card className="relative overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700 shadow-xl hover:shadow-2xl transition-all group">
+                    <div className="absolute -right-8 -top-8 w-24 h-24 bg-primary/10 rounded-full blur-2xl group-hover:bg-primary/20 transition-all"></div>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium text-muted-foreground">Total Cars</CardTitle>
                         <Car className="h-4 w-4 text-blue-500" />
@@ -113,7 +115,8 @@ const AdminDashboard = () => {
                         </p>
                     </CardContent>
                 </Card>
-                <Card className="bg-card/50 backdrop-blur-sm border-muted/50 shadow-sm hover:shadow-md transition-all">
+                <Card className="relative overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700 shadow-xl hover:shadow-2xl transition-all group">
+                    <div className="absolute -right-8 -top-8 w-24 h-24 bg-primary/10 rounded-full blur-2xl group-hover:bg-primary/20 transition-all"></div>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium text-muted-foreground">MRR</CardTitle>
                         <DollarSign className="h-4 w-4 text-green-500" />
@@ -125,7 +128,8 @@ const AdminDashboard = () => {
                         </p>
                     </CardContent>
                 </Card>
-                <Card className="bg-card/50 backdrop-blur-sm border-muted/50 shadow-sm hover:shadow-md transition-all">
+                <Card className="relative overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700 shadow-xl hover:shadow-2xl transition-all group">
+                    <div className="absolute -right-8 -top-8 w-24 h-24 bg-primary/10 rounded-full blur-2xl group-hover:bg-primary/20 transition-all"></div>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium text-muted-foreground">Churn Rate</CardTitle>
                         <UserMinus className="h-4 w-4 text-red-500" />
@@ -141,7 +145,7 @@ const AdminDashboard = () => {
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
                 {/* Financial Growth Chart */}
-                <Card className="col-span-4 bg-card/50 backdrop-blur-sm border-muted/50 shadow-sm">
+                <Card className="col-span-4 relative overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700 shadow-xl">
                     <CardHeader>
                         <CardTitle>Revenue Growth</CardTitle>
                         <CardDescription>
@@ -198,7 +202,7 @@ const AdminDashboard = () => {
                 </Card>
 
                 {/* Usage Heatmap (Top Features) */}
-                <Card className="col-span-3 bg-card/50 backdrop-blur-sm border-muted/50 shadow-sm">
+                <Card className="col-span-3 relative overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700 shadow-xl">
                     <CardHeader>
                         <CardTitle>Top Features</CardTitle>
                         <CardDescription>
@@ -240,7 +244,7 @@ const AdminDashboard = () => {
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
                 {/* User Growth Chart */}
-                <Card className="col-span-4 bg-card/50 backdrop-blur-sm border-muted/50 shadow-sm">
+                <Card className="col-span-4 relative overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700 shadow-xl">
                     <CardHeader>
                         <CardTitle>User Growth</CardTitle>
                         <CardDescription>
@@ -293,7 +297,7 @@ const AdminDashboard = () => {
                 </Card>
 
                 {/* Recent Issues Feed */}
-                <Card className="col-span-3 bg-card/50 backdrop-blur-sm border-muted/50 shadow-sm">
+                <Card className="col-span-3 relative overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700 shadow-xl">
                     <CardHeader className="flex flex-row items-center justify-between">
                         <div>
                             <CardTitle>Recent Open Issues</CardTitle>

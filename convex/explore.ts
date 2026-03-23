@@ -57,10 +57,10 @@ export const getExploreFeed = query({
             }
         }
 
-        // Filter cars to only show those from premium/admin users
-        const premiumCars = allCars.filter((car) => {
+        // Filter cars to ensure the user exists
+        const availableCars = allCars.filter((car) => {
             const user = userByIdMap.get(car.userId);
-            return user && (user.role === "premium" || user.role === "admin");
+            return user !== undefined;
         });
 
         // Get analytics data for popularity scoring
@@ -93,7 +93,7 @@ export const getExploreFeed = query({
         // Track makes for diversity scoring
         const seenMakes = new Set<string>();
 
-        const scoredCars: ExploreCarResult[] = premiumCars.map((car) => {
+        const scoredCars: ExploreCarResult[] = availableCars.map((car) => {
             const carIdStr = car._id.toString();
             const totalViews = viewCounts.get(carIdStr) ?? 0;
             const recentViews = recentViewCounts.get(carIdStr) ?? 0;
@@ -205,10 +205,10 @@ export const searchExplore = query({
             }
         }
 
-        // Filter cars: premium users only AND matching search
+        // Filter cars: ensure user exists AND matching search
         const matchingCars = allCars.filter((car) => {
             const user = userByIdMap.get(car.userId);
-            if (!user || (user.role !== "premium" && user.role !== "admin")) {
+            if (!user) {
                 return false;
             }
 
@@ -277,8 +277,8 @@ export const getFilteredExploreFeed = query({
         // Filter cars
         const filteredCars = allCars.filter((car) => {
             const user = userByIdMap.get(car.userId);
-            // Verify premium user status
-            if (!user || (user.role !== "premium" && user.role !== "admin")) {
+            // Verify user status
+            if (!user) {
                 return false;
             }
 
@@ -391,7 +391,7 @@ export const getTrendingCars = query({
                 if (!car || !car.isPublished) continue;
 
                 const owner = userByIdMap.get(car.userId);
-                if (!owner || (owner.role !== "premium" && owner.role !== "admin")) continue;
+                if (!owner) continue;
 
                 trendingCars.push({
                     car,

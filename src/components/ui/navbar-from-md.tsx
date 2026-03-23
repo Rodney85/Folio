@@ -17,6 +17,9 @@ export const NavBar = () => {
     const location = useLocation()
     const navigate = useNavigate()
     const isHomePage = location.pathname === '/'
+    
+    // Preserve affiliate/utm query params (like ?via=) through auth navigation
+    const withParams = (path: string) => `${path}${location.search}`
 
     const handleNavClick = (item: typeof menuItems[0]) => {
         if (isHomePage) {
@@ -77,7 +80,7 @@ export const NavBar = () => {
                                     variant="ghost"
                                     size="sm"
                                     className="text-slate-400 hover:text-white">
-                                    <Link to="/sign-in">
+                                    <Link to={withParams("/sign-in")}>
                                         <span>Sign In</span>
                                     </Link>
                                 </Button>
@@ -85,7 +88,7 @@ export const NavBar = () => {
                                     asChild
                                     size="sm"
                                     className="bg-white text-black hover:bg-slate-200 font-semibold shadow-[0_0_15px_rgba(255,255,255,0.3)] hover:shadow-[0_0_25px_rgba(255,255,255,0.5)] transition-all duration-300">
-                                    <Link to="/sign-up">
+                                    <Link to={withParams("/sign-up")}>
                                         <span>Get Started</span>
                                     </Link>
                                 </Button>

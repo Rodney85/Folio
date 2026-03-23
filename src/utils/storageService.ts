@@ -2,6 +2,26 @@ import { api } from "../../convex/_generated/api";
 import { ConvexReactClient } from "convex/react";
 
 /**
+ * Get the MIME type of a file, falling back to extension detection if file.type is empty.
+ */
+function getMimeType(file: File): string {
+  if (file.type && file.type !== '') return file.type;
+
+  // Fallback: guess from file extension
+  const ext = file.name.split('.').pop()?.toLowerCase();
+  const extMap: Record<string, string> = {
+    jpg: 'image/jpeg',
+    jpeg: 'image/jpeg',
+    png: 'image/png',
+    webp: 'image/webp',
+    gif: 'image/gif',
+    heic: 'image/heic',
+    heif: 'image/heif',
+  };
+  return extMap[ext ?? ''] ?? 'image/jpeg';
+}
+
+/**
  * Upload a file to Backblaze B2 via Convex
  * @param file The file to upload
  * @param fileName Desired file name (can include path)
@@ -17,11 +37,11 @@ export async function uploadToBackblaze(file: File, fileName: string, convex: Co
     }
     
     // Step 2: Transfer the file from Convex storage to Backblaze
-    const result = await convex.action(api.files.uploadFileToBackblaze, {
+    const result = await convex.action(api.files.uploadFileToBackblaze as any, {
       storageId,
       fileName,
-      contentType: file.type
-    });
+      contentType: getMimeType(file),
+    }) as { success: boolean; fileUrl: string } | null;
     
     if (!result || !result.success || !result.fileUrl) {
       throw new Error('Failed to transfer file to Backblaze');
@@ -43,16 +63,17 @@ export async function uploadToBackblaze(file: File, fileName: string, convex: Co
  */
 async function uploadToConvexStorage(file: File, convex: ConvexReactClient): Promise<string> {
   try {
-    // Get an upload URL from Convex
+    // Get an upload URL from Convex (use derived MIME type as fallback)
+    const mimeType = getMimeType(file);
     const uploadUrl = await convex.mutation(api.files.generateUploadUrl, {
-      contentType: file.type,
+      contentType: mimeType,
     });
     
     // Upload the file to Convex storage
     const result = await fetch(uploadUrl, {
       method: 'POST',
       headers: {
-        'Content-Type': file.type,
+        'Content-Type': mimeType,
       },
       body: file,
     });

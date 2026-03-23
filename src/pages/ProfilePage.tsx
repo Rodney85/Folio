@@ -160,7 +160,13 @@ const ProfilePage = () => {
             variant="outline"
             size="sm"
             className="bg-transparent border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white rounded-full px-6"
-            onClick={() => setShareModalOpen(true)}
+            onClick={() => {
+              if (!profile?.username) {
+                toast.error("Please set a username in Edit Profile before sharing.");
+                return;
+              }
+              setShareModalOpen(true);
+            }}
           >
             Share Profile
           </Button>

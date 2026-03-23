@@ -1,5 +1,5 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { ArrowRight, ChevronRight, Car, Squirrel, Home, Star, DollarSign, FileText } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { motion } from 'framer-motion'
@@ -62,6 +62,7 @@ const transitionVariants = {
 }
 
 export function HeroSection() {
+    const location = useLocation();
     return (
         <section id="hero-section" className="relative w-full overflow-hidden pt-32 pb-16 md:pt-48 md:pb-32 min-h-screen flex flex-col items-center" style={{ backgroundColor: '#0f172a' }}>
 
@@ -107,7 +108,7 @@ export function HeroSection() {
                                         size="lg"
                                         className="w-full sm:w-auto bg-white text-black hover:bg-slate-200 text-lg h-14 px-8 rounded-full font-medium transition-all duration-300 shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)]"
                                     >
-                                        <Link to="/sign-up">
+                                        <Link to={`/sign-up${location.search}`}>
                                             Start Your Garage
                                             <ArrowRight className="ml-2 h-5 w-5" />
                                         </Link>

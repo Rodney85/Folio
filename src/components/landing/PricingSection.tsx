@@ -3,7 +3,7 @@ import type { Variants } from "framer-motion";
 import { Check, X, Crown, Zap, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 import { useUser } from "@clerk/clerk-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { pricingConfig } from "@/config/pricing";
@@ -53,15 +53,16 @@ function FeatureValue({ value }: { value: boolean | string }) {
 export const PricingSection = () => {
     const { isSignedIn } = useUser();
     const navigate = useNavigate();
+    const location = useLocation();
     const ogUserCount: any = useQuery(api.dodo.getOgUserCount as any) ?? 0;
     const TOTAL_OG_SPOTS = 100;
     const remainingSpots = Math.max(0, TOTAL_OG_SPOTS - ogUserCount);
 
     const handleCta = (plan: "free" | "pro" | "og") => {
         if (plan === "free") {
-            navigate(isSignedIn ? "/cars" : "/sign-up");
+            navigate(isSignedIn ? "/cars" : `/sign-up${location.search}`);
         } else {
-            navigate(isSignedIn ? "/subscription" : "/sign-up");
+            navigate(isSignedIn ? "/subscription" : `/sign-up${location.search}`);
         }
     };
 
@@ -235,7 +236,7 @@ export const PricingSection = () => {
                 {/* Bottom CTA */}
                 <div className="text-center mt-12">
                     <button
-                        onClick={() => navigate(isSignedIn ? "/cars" : "/sign-up")}
+                        onClick={() => navigate(isSignedIn ? "/cars" : `/sign-up${location.search}`)}
                         className="text-slate-500 hover:text-white transition-colors text-sm font-medium flex items-center justify-center gap-2 mx-auto group"
                     >
                         Not sure yet? <span className="underline decoration-slate-700 underline-offset-4 group-hover:decoration-white transition-all">Explore the free plan</span>

@@ -102,6 +102,11 @@ const ProfileSetupForm = ({ isOnboarding = false, onComplete }: ProfileSetupForm
       
       // Update profile in Convex database
       await updateProfile(profileData);
+
+      // Sync username with Clerk
+      if (user && profileData.username) {
+        await user.update({ username: profileData.username });
+      }
       
       toast.success(
         isOnboarding 

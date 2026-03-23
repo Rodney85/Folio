@@ -22,46 +22,58 @@ import { AnimatePresence } from "framer-motion";
 import { useSmoothScroll } from "./hooks/use-smooth-scroll";
 import { GrainOverlay } from "./components/ui/effects/GrainOverlay";
 
-// Lazy load pages for code splitting
-const Index = lazy(() => import("./pages/Index"));
-const NotFound = lazy(() => import("./pages/NotFound"));
-const SignIn = lazy(() => import("./pages/SignIn"));
-const SignUp = lazy(() => import("./pages/SignUp"));
-const ProfilePage = lazy(() => import("./pages/ProfilePage"));
-const CarsPage = lazy(() => import("./pages/CarsPage"));
-const EditProfilePage = lazy(() => import("./pages/EditProfilePage"));
-const ProfileMenuPage = lazy(() => import("./pages/ProfileMenuPage"));
-const AddCarPage = lazy(() => import("./pages/AddCarPage"));
-const CarDetailsPage = lazy(() => import("./pages/CarDetailsPage"));
-const CarGalleryPage = lazy(() => import("./pages/CarGalleryPage"));
-const EditCarPage = lazy(() => import("./pages/EditCarPage"));
-const AddModPage = lazy(() => import("./pages/AddModPage"));
-const ShopBuildPage = lazy(() => import("./pages/ShopBuildPage"));
-const PublicProfilePage = lazy(() => import("./pages/PublicProfilePage"));
-const PublicCarDetailsPage = lazy(() => import("./pages/PublicCarDetailsPage"));
-const AnalyticsPage = lazy(() => import("./pages/AnalyticsPage"));
-const ReportIssuePage = lazy(() => import("./pages/ReportIssuePage"));
+// Wrapper to handle dynamic import failures (e.g., when a new deploy changes chunk hashes)
+const lazyWithRetry = (componentImport: () => Promise<any>) =>
+  lazy(async () => {
+    try {
+      return await componentImport();
+    } catch (error) {
+      console.error('Dynamic import failed, reloading page...', error);
+      window.location.reload();
+      return { default: () => <div className="p-8 text-center text-slate-500">Loading module...</div> };
+    }
+  });
 
-const ExplorePage = lazy(() => import("./pages/ExplorePage"));
-const AccountSettingsPage = lazy(() => import("./pages/AccountSettingsPage"));
-const SubscriptionPage = lazy(() => import("./pages/SubscriptionPage"));
-const SubscriptionSuccessPage = lazy(() => import("./pages/SubscriptionSuccessPage"));
+// Lazy load pages for code splitting
+const Index = lazyWithRetry(() => import("./pages/Index"));
+const NotFound = lazyWithRetry(() => import("./pages/NotFound"));
+const SignIn = lazyWithRetry(() => import("./pages/SignIn"));
+const SignUp = lazyWithRetry(() => import("./pages/SignUp"));
+const ProfilePage = lazyWithRetry(() => import("./pages/ProfilePage"));
+const CarsPage = lazyWithRetry(() => import("./pages/CarsPage"));
+const EditProfilePage = lazyWithRetry(() => import("./pages/EditProfilePage"));
+const ProfileMenuPage = lazyWithRetry(() => import("./pages/ProfileMenuPage"));
+const AddCarPage = lazyWithRetry(() => import("./pages/AddCarPage"));
+const CarDetailsPage = lazyWithRetry(() => import("./pages/CarDetailsPage"));
+const CarGalleryPage = lazyWithRetry(() => import("./pages/CarGalleryPage"));
+const EditCarPage = lazyWithRetry(() => import("./pages/EditCarPage"));
+const AddModPage = lazyWithRetry(() => import("./pages/AddModPage"));
+const ShopBuildPage = lazyWithRetry(() => import("./pages/ShopBuildPage"));
+const PublicProfilePage = lazyWithRetry(() => import("./pages/PublicProfilePage"));
+const PublicCarDetailsPage = lazyWithRetry(() => import("./pages/PublicCarDetailsPage"));
+const AnalyticsPage = lazyWithRetry(() => import("./pages/AnalyticsPage"));
+const ReportIssuePage = lazyWithRetry(() => import("./pages/ReportIssuePage"));
+
+const ExplorePage = lazyWithRetry(() => import("./pages/ExplorePage"));
+const AccountSettingsPage = lazyWithRetry(() => import("./pages/AccountSettingsPage"));
+const SubscriptionPage = lazyWithRetry(() => import("./pages/SubscriptionPage"));
+const SubscriptionSuccessPage = lazyWithRetry(() => import("./pages/SubscriptionSuccessPage"));
 
 import ProfileOnboarding from "./components/ProfileOnboarding";
 
 // Admin Pages
-const AdminLayout = lazy(() => import("./components/admin/AdminLayout"));
-const AdminDashboard = lazy(() => import("./components/admin/AdminDashboard"));
-const AdminUsersPage = lazy(() => import("./components/admin/AdminUsersPage"));
-const AdminUserDetails = lazy(() => import("./components/admin/AdminUserDetails"));
-const AdminContentPage = lazy(() => import("./components/admin/AdminContentPage"));
-const AdminSettingsPage = lazy(() => import("./components/admin/AdminSettingsPage"));
-const AdminIssuesPage = lazy(() => import("./components/admin/AdminIssuesPage"));
+const AdminLayout = lazyWithRetry(() => import("./components/admin/AdminLayout"));
+const AdminDashboard = lazyWithRetry(() => import("./components/admin/AdminDashboard"));
+const AdminUsersPage = lazyWithRetry(() => import("./components/admin/AdminUsersPage"));
+const AdminUserDetails = lazyWithRetry(() => import("./components/admin/AdminUserDetails"));
+const AdminContentPage = lazyWithRetry(() => import("./components/admin/AdminContentPage"));
+const AdminSettingsPage = lazyWithRetry(() => import("./components/admin/AdminSettingsPage"));
+const AdminIssuesPage = lazyWithRetry(() => import("./components/admin/AdminIssuesPage"));
 
-const AdminMessagesPage = lazy(() => import("./components/admin/AdminMessagesPage"));
-const AboutPage = lazy(() => import("./pages/AboutPage"));
-const TermsPage = lazy(() => import("./pages/TermsPage"));
-const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
+const AdminMessagesPage = lazyWithRetry(() => import("./components/admin/AdminMessagesPage"));
+const AboutPage = lazyWithRetry(() => import("./pages/AboutPage"));
+const TermsPage = lazyWithRetry(() => import("./pages/TermsPage"));
+const PrivacyPage = lazyWithRetry(() => import("./pages/PrivacyPage"));
 
 const queryClient = new QueryClient();
 
@@ -77,13 +89,7 @@ const AuthenticatedRoutes = () => {
   return (
     <AppLayout>
       <Routes>
-        <Route path="/profile" element={
-          <PageTransition>
-            <Suspense fallback={<PageLoader />}>
-              <ProfilePage />
-            </Suspense>
-          </PageTransition>
-        } />
+        <Route path="/profile" element={<Navigate to="/" replace />} />
         <Route path="/profile/edit" element={
           <PageTransition>
             <Suspense fallback={<PageLoader />}>

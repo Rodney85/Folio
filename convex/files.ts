@@ -24,10 +24,13 @@ export const generateUploadUrl = mutation({
     // Rate limit file uploads
     checkRateLimit("uploadFile", identity.subject);
 
-    // Validate content type
-    if (!isValidFileType(args.contentType, ALLOWED_IMAGE_TYPES)) {
+    // Normalise and validate content type
+    // Some browsers pass MIME types with parameters e.g. "image/jpeg; name=photo.jpg"
+    // Also default to image/jpeg if everything else is missing
+    const rawType = (args.contentType || '').split(';')[0].trim().toLowerCase() || 'image/jpeg';
+    if (!isValidFileType(rawType, ALLOWED_IMAGE_TYPES)) {
       throw new ConvexError(
-        `Invalid file type: ${args.contentType}. Allowed types: JPEG, PNG, WebP, GIF`
+        `Invalid file type: ${rawType}. Allowed types: JPEG, PNG, WebP, GIF`
       );
     }
 
