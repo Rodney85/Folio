@@ -75,7 +75,7 @@ export const updateProfile = mutation({
         ...(args.bio !== undefined ? { bio: sanitizeText(args.bio, MAX_LENGTHS.bio) } : {}),
         ...(args.instagram !== undefined ? { instagram: sanitizeSocialHandle(args.instagram) } : {}),
         ...(args.tiktok !== undefined ? { tiktok: sanitizeSocialHandle(args.tiktok) } : {}),
-        ...(args.youtube !== undefined ? { youtube: sanitizeUrl(args.youtube) } : {}),
+        ...(args.youtube !== undefined ? { youtube: sanitizeSocialHandle(args.youtube) } : {}),
         updatedAt: currentTimestamp,
       };
 

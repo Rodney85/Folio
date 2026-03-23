@@ -19,7 +19,7 @@ const ProfileSetupForm = ({ isOnboarding = false, onComplete }: ProfileSetupForm
   const { user } = useUser();
   const { isAuthenticated } = useConvexAuth();
   const navigate = useNavigate();
-  const updateProfile = useMutation(api.users.updateProfile);
+  const updateProfile = useMutation(api.users.updateProfile as any);
 
   // Get current profile data
   const profileData = useQuery(api.users.getProfile);
@@ -84,44 +84,56 @@ const ProfileSetupForm = ({ isOnboarding = false, onComplete }: ProfileSetupForm
     setLoading(true);
 
     try {
-      // Clean up social media URLs to extract usernames
+      // Clean up social media inputs — treat all three as handles, not full URLs
       const instagramUsername = instagram ? extractSocialUsername(instagram, 'instagram.com/') : undefined;
       const tiktokUsername = tiktok ? extractSocialUsername(tiktok, 'tiktok.com/@') : undefined;
-      const youtubeUsername = youtube ? extractSocialUsername(youtube, 'youtube.com/') : undefined;
-      
-      // Only send fields that have values
-      const profileData: Record<string, string | undefined> = {};
-      
-      // For non-onboarding updates, all fields should be sent to maintain existing data
-      // This prevents fields from being unintentionally reset
-      profileData.username = username.trim();
-      profileData.bio = bio.trim();
-      profileData.instagram = instagramUsername;
-      profileData.tiktok = tiktokUsername;
-      profileData.youtube = youtubeUsername;
-      
-      // Update profile in Convex database
-      await updateProfile(profileData);
+      // YouTube: extract handle from URL or use as-is (strip @ prefix)
+      const youtubeHandle = youtube
+        ? extractSocialUsername(youtube, 'youtube.com/').replace(/^@/, '')
+        : undefined;
 
-      // Sync username with Clerk
-      if (user && profileData.username) {
-        await user.update({ username: profileData.username });
+      const profilePayload: Record<string, string | boolean | undefined> = {
+        username: username.trim(),
+        bio: bio.trim(),
+        instagram: instagramUsername,
+        tiktok: tiktokUsername,
+        youtube: youtubeHandle,
+      };
+
+      // Mark profile as complete when finishing onboarding
+      if (isOnboarding) {
+        profilePayload.profileCompleted = true;
       }
-      
+
+      // Update profile in Convex database
+      await updateProfile(profilePayload as any);
+
+      // Sync username with Clerk — non-blocking, failures should not abort the save
+      if (user && profilePayload.username) {
+        try {
+          await user.update({ username: profilePayload.username as string });
+        } catch (clerkErr) {
+          // Clerk username sync failed (e.g. username taken, not enabled, or policy) — not fatal
+          console.warn("Clerk username sync skipped:", clerkErr);
+        }
+      }
+
       toast.success(
-        isOnboarding 
-          ? "Your profile has been created successfully!" 
+        isOnboarding
+          ? "Your profile has been created successfully!"
           : "Your profile has been updated successfully."
       );
-      
+
       if (isOnboarding && onComplete) {
         onComplete();
       } else {
         navigate('/profile');
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error("Error saving profile:", e);
-      toast.error("Something went wrong while saving your profile.");
+      // Show the actual Convex error if available so user knows what to fix
+      const message = e?.data?.message || e?.message || "Something went wrong while saving your profile.";
+      toast.error(message);
     } finally {
       setLoading(false);
     }
