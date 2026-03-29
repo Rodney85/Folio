@@ -38,7 +38,7 @@ export const sendWeeklyInfluencerStats = internalMutation({
                     data: {
                         message: viewCount.toString(),
                         firstName: user.name?.split(" ")[0] || "Influencer",
-                        actionUrl: `${process.env.CONVEX_SITE_URL}/dashboard/analytics`
+                        actionUrl: `${(process.env.SITE_URL || "https://carfolio.cc").replace(/\/$/, "")}/analytics`
                     },
                 });
             }
@@ -87,7 +87,7 @@ export const sendWeeklyShopManagerNudge = internalMutation({
                         subject: totalMissingLinks.toString(),
                         message: carModel,
                         firstName: user.name?.split(" ")[0] || "Builder",
-                        actionUrl: `${process.env.CONVEX_SITE_URL}/dashboard/cars`
+                        actionUrl: `${(process.env.SITE_URL || "https://carfolio.cc").replace(/\/$/, "")}/cars`
                     },
                 });
             }
@@ -137,7 +137,7 @@ export const sendMonthlyBuildValue = internalMutation({
                         subject: totalValue.toFixed(0),
                         message: carModel,
                         firstName: user.name?.split(" ")[0] || "Investor",
-                        actionUrl: `${process.env.CONVEX_SITE_URL}/dashboard/cars`
+                        actionUrl: `${(process.env.SITE_URL || "https://carfolio.cc").replace(/\/$/, "")}/cars`
                     },
                 });
             }
@@ -191,7 +191,7 @@ export const sendMonthlyVisionaryNudge = internalMutation({
                         data: {
                             message: carModel,
                             firstName: user.name?.split(" ")[0] || "Visionary",
-                            actionUrl: `${process.env.CONVEX_SITE_URL}/dashboard/cars`
+                            actionUrl: `${(process.env.SITE_URL || "https://carfolio.cc").replace(/\/$/, "")}/cars`
                         },
                     });
                 }

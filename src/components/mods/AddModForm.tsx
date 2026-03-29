@@ -55,7 +55,7 @@ const AddModForm: React.FC<AddModFormProps> = ({ carId }) => {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="e.g., Performance Exhaust"
-            className="bg-white/5 border-white/10 text-white placeholder:text-slate-500"
+            className="input-premium"
             required
           />
         </div>
@@ -66,7 +66,7 @@ const AddModForm: React.FC<AddModFormProps> = ({ carId }) => {
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             placeholder="e.g., Performance, Exterior, Wheels..."
-            className="bg-white/5 border-white/10 text-white placeholder:text-slate-500"
+            className="input-premium"
             required
           />
         </div>
@@ -77,7 +77,7 @@ const AddModForm: React.FC<AddModFormProps> = ({ carId }) => {
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             placeholder="Paste product URL"
-            className="bg-white/5 border-white/10 text-white placeholder:text-slate-500"
+            className="input-premium"
           />
         </div>
         <div className="flex justify-end gap-2">

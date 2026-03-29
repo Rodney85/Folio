@@ -88,7 +88,7 @@ export const createCar = mutation({
           email: user.email,
           type: "garage_limit",
           data: {
-            actionUrl: `${process.env.CONVEX_SITE_URL}/subscription`,
+            actionUrl: `${(process.env.SITE_URL || "https://carfolio.cc").replace(/\/$/, "")}/subscription`,
             firstName: user.name?.split(" ")[0] || "Driver",
           },
         });

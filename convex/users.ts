@@ -89,12 +89,13 @@ export const updateProfile = mutation({
 
       // Check for Onboarding Completion (Welcome Email)
       if (args.profileCompleted === true && !existingUser.profileCompleted) {
+        // @ts-ignore - Convex scheduler type inference can be excessively deep
         await ctx.scheduler.runAfter(0, internal.notifications.triggerNotification, {
           userId: tokenIdentifier,
           type: "welcome",
           data: {
             firstName: args.username || existingUser.name || "User",
-            actionUrl: `${process.env.VITE_APP_URL}/dashboard`,
+            actionUrl: `${(process.env.SITE_URL || "https://carfolio.cc").replace(/\/$/, "")}/add-car`,
           }
         });
       }
@@ -412,11 +413,20 @@ export const updateDodoFields = internalMutation({
 export const handleUserDeleted = internalMutation({
   args: { clerkUserId: v.string() },
   handler: async (ctx, args) => {
-    // Collect all users and find the one that matches the clerk ID
-    const users = await ctx.db.query("users").collect();
-    const userToDel = users.find(
-      u => u.tokenIdentifier.includes(args.clerkUserId) || u.tokenIdentifier === args.clerkUserId
-    );
+    // Use indexed lookup instead of full table scan
+    // Try the most common tokenIdentifier format first
+    let userToDel = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) => q.eq("tokenIdentifier", `https://clerk.carfolio.cc|${args.clerkUserId}`))
+      .first();
+
+    // Fallback: try raw clerkUserId as tokenIdentifier
+    if (!userToDel) {
+      userToDel = await ctx.db
+        .query("users")
+        .withIndex("by_token", (q) => q.eq("tokenIdentifier", args.clerkUserId))
+        .first();
+    }
 
     if (!userToDel) {
       console.log(`User not found for deletion: ${args.clerkUserId}`);
@@ -457,18 +467,30 @@ export const handleUserDeleted = internalMutation({
       await ctx.db.delete(car._id);
     }
 
-    // 2. Clear payments/subscriptions using tokenIdentifier where applicable
-    const payments = await ctx.db.query("payments").collect();
-    const toDeletePayments = payments.filter(
-        p => p.userId === userToDel._id || p.userId === tokenIdentifier
-    );
-    for (const p of toDeletePayments) await ctx.db.delete(p._id);
+    // 2. Clear payments/subscriptions using indexed queries
+    const payments = await ctx.db
+      .query("payments")
+      .withIndex("by_user", (q) => q.eq("userId", userToDel._id))
+      .collect();
+    const paymentsByToken = await ctx.db
+      .query("payments")
+      .withIndex("by_user", (q) => q.eq("userId", tokenIdentifier))
+      .collect();
+    const allPayments = [...payments, ...paymentsByToken];
+    const uniquePayments = Array.from(new Map(allPayments.map(p => [p._id.toString(), p])).values());
+    for (const p of uniquePayments) await ctx.db.delete(p._id);
 
-    const subscriptions = await ctx.db.query("subscriptions").collect();
-    const toDeleteSubs = subscriptions.filter(
-        s => s.userId === userToDel._id || s.userId === tokenIdentifier
-    );
-    for (const s of toDeleteSubs) await ctx.db.delete(s._id);
+    const subs = await ctx.db
+      .query("subscriptions")
+      .withIndex("by_user", (q) => q.eq("userId", userToDel._id))
+      .collect();
+    const subsByToken = await ctx.db
+      .query("subscriptions")
+      .withIndex("by_user", (q) => q.eq("userId", tokenIdentifier))
+      .collect();
+    const allSubs = [...subs, ...subsByToken];
+    const uniqueSubs = Array.from(new Map(allSubs.map(s => [s._id.toString(), s])).values());
+    for (const s of uniqueSubs) await ctx.db.delete(s._id);
 
     // 3. Delete the user
     await ctx.db.delete(userToDel._id);
@@ -486,10 +508,19 @@ export const syncUserFromClerk = internalMutation({
     username: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const users = await ctx.db.query("users").collect();
-    const existing = users.find(
-      u => u.tokenIdentifier.includes(args.clerkUserId) || u.tokenIdentifier === args.clerkUserId
-    );
+    // Use indexed lookup instead of full table scan
+    let existing = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) => q.eq("tokenIdentifier", `https://clerk.carfolio.cc|${args.clerkUserId}`))
+      .first();
+
+    // Fallback: try raw clerkUserId as tokenIdentifier
+    if (!existing) {
+      existing = await ctx.db
+        .query("users")
+        .withIndex("by_token", (q) => q.eq("tokenIdentifier", args.clerkUserId))
+        .first();
+    }
 
     if (existing) {
       const patchData: any = {};

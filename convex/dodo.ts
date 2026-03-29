@@ -23,8 +23,12 @@ import { internal } from "./_generated/api";
 // =============================================================================
 
 // Dodo API: test.dodopayments.com (test mode) or live.dodopayments.com (production)
-function getDodoApiBase() {
-    const env = process.env.DODO_PAYMENTS_ENVIRONMENT || "test_mode";
+function getDodoApiBase(): string {
+    const env = process.env.DODO_PAYMENTS_ENVIRONMENT;
+    if (!env) {
+        console.warn("⚠️ DODO_PAYMENTS_ENVIRONMENT not set — defaulting to test_mode. Set to 'live_mode' for production.");
+        return "https://test.dodopayments.com";
+    }
     return env === "live_mode"
         ? "https://live.dodopayments.com"
         : "https://test.dodopayments.com";
@@ -244,7 +248,7 @@ export const processWebhook = mutation({
                     type: "subscription_success",
                     data: {
                         firstName: user.name || user.username || "Subscriber",
-                        actionUrl: `${process.env.VITE_APP_URL}/dashboard`,
+                        actionUrl: `${(process.env.SITE_URL || "https://carfolio.cc").replace(/\/$/, "")}/cars`,
                     }
                 });
 
@@ -339,7 +343,7 @@ export const processWebhook = mutation({
                     type: "subscription_cancelled",
                     data: {
                         firstName: user.name || user.username || "User",
-                        actionUrl: `${process.env.VITE_APP_URL}/pricing`, // Re-subscribe link
+                        actionUrl: `${(process.env.SITE_URL || "https://carfolio.cc").replace(/\/$/, "")}/subscription`, // Re-subscribe link
                     }
                 });
 
@@ -369,7 +373,7 @@ export const processWebhook = mutation({
                     type: "subscription_failed",
                     data: {
                         firstName: user.name || user.username || "User",
-                        actionUrl: `${process.env.VITE_APP_URL}/billing`, // Update payment method
+                        actionUrl: `${(process.env.SITE_URL || "https://carfolio.cc").replace(/\/$/, "")}/subscription`, // Update payment method
                     }
                 });
 
@@ -432,6 +436,17 @@ export const debugSetSubscription = mutation({
         planId: v.optional(v.string()),
     },
     handler: async (ctx, args) => {
+        // Admin guard — prevent unauthorized subscription grants
+        const identity = await ctx.auth.getUserIdentity();
+        if (!identity) throw new ConvexError("Not authenticated");
+        const caller = await ctx.db
+            .query("users")
+            .withIndex("by_token", (q) => q.eq("tokenIdentifier", identity.tokenIdentifier))
+            .first();
+        if (!caller || caller.role !== "admin") {
+            throw new ConvexError("Admin access required");
+        }
+
         const user = await ctx.db
             .query("users")
             .withIndex("by_token", (q) => q.eq("tokenIdentifier", args.tokenIdentifier))
@@ -454,6 +469,17 @@ export const debugSetSubscription = mutation({
 
 export const debugListUsers = query({
     handler: async (ctx) => {
+        // Admin guard — prevent user data enumeration
+        const identity = await ctx.auth.getUserIdentity();
+        if (!identity) throw new ConvexError("Not authenticated");
+        const caller = await ctx.db
+            .query("users")
+            .withIndex("by_token", (q) => q.eq("tokenIdentifier", identity.tokenIdentifier))
+            .first();
+        if (!caller || caller.role !== "admin") {
+            throw new ConvexError("Admin access required");
+        }
+
         const users = await ctx.db.query("users").collect();
         return users.map(u => ({
             id: u._id,
@@ -571,16 +597,16 @@ export const createCustomerPortalSession = action({
     args: {
         returnUrl: v.string(),
     },
-    handler: async (ctx, args) => {
+    handler: async (ctx, args): Promise<{ portalUrl: string }> => {
         const identity = await ctx.auth.getUserIdentity();
         if (!identity) {
             throw new ConvexError("Not authenticated");
         }
 
-        const user = await ctx.runQuery(internal.users.getUserByToken, { tokenIdentifier: identity.tokenIdentifier });
+        const user: any = await ctx.runQuery(internal.users.getUserByToken, { tokenIdentifier: identity.tokenIdentifier });
         if (!user) throw new ConvexError("User not found");
 
-        let customerId = user.dodoCustomerId;
+        let customerId: string | undefined = user.dodoCustomerId;
 
         // Fallback: Lookup by email if not stored
         if (!customerId && identity.email) {
@@ -604,7 +630,7 @@ export const createCustomerPortalSession = action({
         const apiBase = getDodoApiBase();
 
         // POST /customers/{id}/customer-portal/session
-        const response = await fetch(`${apiBase}/customers/${customerId}/customer-portal/session`, {
+        const response: Response = await fetch(`${apiBase}/customers/${customerId}/customer-portal/session`, {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${apiKey}`,
@@ -621,7 +647,7 @@ export const createCustomerPortalSession = action({
             throw new ConvexError("Failed to create portal session");
         }
 
-        const session = await response.json();
-        return { portalUrl: session.link || session.url };
+        const session: { link?: string; url?: string } = await response.json();
+        return { portalUrl: session.link || session.url || "" };
     },
 });

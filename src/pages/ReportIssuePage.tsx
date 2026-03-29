@@ -147,7 +147,7 @@ const ReportIssuePage = () => {
                         value={formData.title}
                         onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                         maxLength={100}
-                        className="bg-white/5 border-white/10 text-white placeholder:text-slate-500"
+                        className="input-premium"
                     />
                     <p className="text-xs text-slate-500 text-right">
                         {formData.title.length}/100
@@ -166,7 +166,7 @@ const ReportIssuePage = () => {
                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                         maxLength={2000}
                         rows={6}
-                        className="bg-white/5 border-white/10 text-white placeholder:text-slate-500 resize-none"
+                        className="textarea-premium resize-none"
                     />
                     <p className="text-xs text-slate-500 text-right">
                         {formData.description.length}/2000

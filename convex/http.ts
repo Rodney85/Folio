@@ -62,6 +62,7 @@ http.route({
 
             if (payload.type === "user.deleted") {
                 const clerkUserId = payload.data.id;
+                // @ts-ignore - Convex internal mutation type inference can be excessively deep
                 await ctx.runMutation(internal.users.handleUserDeleted, { clerkUserId });
                 console.log(`✅ Completed cleanup for deleted user: ${clerkUserId}`);
             } else if (payload.type === "user.created" || payload.type === "user.updated") {
@@ -141,23 +142,17 @@ http.route({
                     const isValid = signatures.some((s) => s === computed);
 
                     if (!isValid) {
-                        console.error("Webhook signature verification FAILED");
-                        console.error("Computed:", computed);
-                        console.error("Received:", signature);
-                        console.warn("⚠️ Processing webhook despite signature mismatch (debug mode)");
-                    } else {
-                        console.log("✅ Webhook signature verified");
+                        console.error("❌ Dodo webhook signature verification FAILED — rejecting");
+                        return new Response("Invalid signature", { status: 401 });
                     }
+                    console.log("✅ Webhook signature verified");
                 } catch (err: any) {
-                    console.error("Signature verification crashed:", err.message);
-                    // Check if secret looks wrong
-                    if (!webhookSecret.startsWith("whsec_")) {
-                        console.error("⚠️ DODO_WEBHOOK_SECRET should likely start with 'whsec_'");
-                    }
+                    console.error("Signature verification error:", err.message);
+                    return new Response("Signature verification failed", { status: 500 });
                 }
             } else {
-                console.warn("⚠️ Webhook received without full signature headers — processing anyway");
-                if (!webhookSecret) console.error("❌ DODO_WEBHOOK_SECRET is missing!");
+                console.error("❌ Webhook rejected: missing signature headers or secret");
+                return new Response("Missing signature headers", { status: 400 });
             }
 
             // Parse body for processing
@@ -174,11 +169,6 @@ http.route({
             console.log("📦 Data keys:", Object.keys(data).join(", "));
 
             // Extract the product ID from the payload
-            // Dodo may send it in product_cart, product_id, or the metadata
-            // Extract the product ID from the payload
-            // Dodo may send it in product_cart, product_id, or the metadata
-            // Extract the product ID from the payload
-            // Dodo may send it in product_cart, product_id, or the metadata
             const productId =
                 data.product_cart?.[0]?.product_id ||
                 data.product_id ||
@@ -187,14 +177,6 @@ http.route({
                 undefined;
 
             const subscriptionId = data.subscription_id || data.subscription?.subscription_id || metadata?.subscriptionId || undefined;
-
-            console.log("🐛 DEBUG extraction:");
-            console.log(" - data.customer:", JSON.stringify(data.customer));
-            console.log(" - data.customer_id:", data.customer_id);
-            console.log(" - data.subscription_id:", data.subscription_id);
-            console.log(" - EXTRACTED customerId:", data.customer?.customer_id || data.customer_id);
-            console.log(" - EXTRACTED subscriptionId:", subscriptionId);
-            console.log(" - EXTRACTED productId (planId):", productId);
 
             // @ts-ignore — Convex deep type instantiation with many optional args
             await ctx.runMutation(api.dodo.processWebhook, {

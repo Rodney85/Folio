@@ -49,12 +49,15 @@ export const pricingConfig: PricingTier[] = [
 
 // Helper to reliably get the product ID from env config
 export const getProductId = (tierId: string): string => {
-  const isProd = import.meta.env.PROD; 
   if (tierId === 'og') {
-    return isProd ? import.meta.env.VITE_DODO_PRODUCT_OG_LIFETIME : (import.meta.env.VITE_DODO_PRODUCT_OG_LIFETIME || 'pdt_0945z8b0mngv1ksabchpbgq11');
+    const id = import.meta.env.VITE_DODO_PRODUCT_OG_LIFETIME;
+    if (!id) throw new Error('VITE_DODO_PRODUCT_OG_LIFETIME is not configured — check your .env file');
+    return id;
   }
   if (tierId === 'pro') {
-    return isProd ? import.meta.env.VITE_DODO_PRODUCT_PRO_MONTHLY : (import.meta.env.VITE_DODO_PRODUCT_PRO_MONTHLY || 'pdt_0h6n66rbsmsnb581cv15w462j');
+    const id = import.meta.env.VITE_DODO_PRODUCT_PRO_MONTHLY;
+    if (!id) throw new Error('VITE_DODO_PRODUCT_PRO_MONTHLY is not configured — check your .env file');
+    return id;
   }
-  return '';
+  throw new Error(`Unknown pricing tier: ${tierId}`);
 };

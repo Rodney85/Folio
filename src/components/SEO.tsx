@@ -18,8 +18,10 @@ export const SEO: React.FC<SEOProps> = ({
     image = '/mac.png',
     url,
 }) => {
-    const siteUrl = 'https://carfolio.cc'; // Updated domain
+    const siteUrl = 'https://carfolio.cc';
     const currentUrl = url ? url : siteUrl;
+    // Ensure OG image is always an absolute URL for social crawlers
+    const absoluteImage = image.startsWith('http') ? image : `${siteUrl}${image}`;
 
     return (
         <Helmet>
@@ -33,16 +35,16 @@ export const SEO: React.FC<SEOProps> = ({
             <meta property="og:type" content={type} />
             <meta property="og:title" content={title} />
             <meta property="og:description" content={description} />
-            <meta property="og:image" content={image} />
+            <meta property="og:image" content={absoluteImage} />
             <meta property="og:url" content={currentUrl} />
             <meta property="og:site_name" content={name} />
 
             {/* Twitter tags */}
             <meta name="twitter:creator" content={name} />
-            <meta name="twitter:card" content={type === 'article' ? 'summary_large_image' : 'summary'} />
+            <meta name="twitter:card" content="summary_large_image" />
             <meta name="twitter:title" content={title} />
             <meta name="twitter:description" content={description} />
-            <meta name="twitter:image" content={image} />
+            <meta name="twitter:image" content={absoluteImage} />
             <script type="application/ld+json">
                 {JSON.stringify({
                     "@context": "https://schema.org",
@@ -56,7 +58,7 @@ export const SEO: React.FC<SEOProps> = ({
                         "priceCurrency": "USD"
                     },
                     "description": description,
-                    "image": image,
+                    "image": absoluteImage,
                     "url": currentUrl
                 })}
             </script>

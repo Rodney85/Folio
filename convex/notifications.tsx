@@ -38,35 +38,36 @@ export const triggerNotification = internalMutation({
         }
 
         // 3. Determine Action URL (Link)
-        const baseUrl = process.env.SITE_URL || "https://www.carfolio.cc";
+        // Use SITE_URL (Convex env var) with production fallback
+        const baseUrl = (process.env.SITE_URL || "https://carfolio.cc").replace(/\/$/, "");
         let actionUrl = args.data?.actionUrl;
 
         if (!actionUrl) {
             switch (args.type) {
                 case "welcome":
-                    actionUrl = `${baseUrl}/profile`;
+                    actionUrl = `${baseUrl}/add-car`;  // Guide new users to add their first car
                     break;
                 case "subscription_success":
-                    actionUrl = `${baseUrl}/dashboard`;
+                    actionUrl = `${baseUrl}/cars`;  // Show their garage after subscribing
                     break;
                 case "subscription_failed":
-                    actionUrl = `${baseUrl}/settings/billing`;
+                    actionUrl = `${baseUrl}/subscription`;  // Retry payment
                     break;
                 case "garage_limit":
-                    actionUrl = `${baseUrl}/pricing`;
+                    actionUrl = `${baseUrl}/subscription`;  // Upgrade to add more cars
                     break;
                 case "talent_scout":
                 case "visionary":
-                    actionUrl = `${baseUrl}/garage`;
+                    actionUrl = `${baseUrl}/cars`;  // View their builds
                     break;
                 case "shop_manager":
-                    actionUrl = `${baseUrl}/garage?tab=parts`;
+                    actionUrl = `${baseUrl}/cars`;  // Manage their cars/parts
                     break;
                 case "influencer_stats":
-                    actionUrl = `${baseUrl}/analytics`;
+                    actionUrl = `${baseUrl}/analytics`;  // View analytics
                     break;
                 case "build_value":
-                    actionUrl = `${baseUrl}/garage?tab=value`;
+                    actionUrl = `${baseUrl}/cars`;  // View car values
                     break;
                 default:
                     actionUrl = baseUrl;

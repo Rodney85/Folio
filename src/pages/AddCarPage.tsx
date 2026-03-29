@@ -37,8 +37,9 @@ import { uploadToBackblaze } from "@/utils/storageService";
 import { trackCarAdded } from "@/utils/analytics";
 import * as carDB from "@/services/carDatabaseService";
 import { type CarTrim } from "@/services/carDatabaseService";
-import { Switch } from "@/components/ui/switch";
+
 import { processImages, convertHeicToJpeg, isHeic } from "@/utils/imageUtils";
+import { motion, AnimatePresence } from "framer-motion";
 
 // Form constants for select options
 const CURRENT_YEAR = new Date().getFullYear();
@@ -53,15 +54,13 @@ const FUEL_TYPES = [
 ];
 
 const TRANSMISSIONS = [
-  "Automatic",
   "Manual",
-  "Dual-Clutch (DCT)",
-  "CVT"
+  "Automatic",
 ];
 
 const DRIVETRAINS = [
-  "FWD",
   "RWD",
+  "FWD",
   "AWD",
   "4WD"
 ];
@@ -142,32 +141,61 @@ const CAR_MAKES = [
   "Volvo"
 ];
 
-// Common models by make (simplified list)
+// Comprehensive models by make
 const MODELS_BY_MAKE: Record<string, string[]> = {
-  "BMW": ["1 Series", "2 Series", "3 Series", "4 Series", "5 Series", "6 Series", "7 Series", "8 Series", "X1", "X3", "X5", "X6", "X7", "Z4", "i3", "i4", "i8", "M2", "M3", "M4", "M5", "M8"],
-  "Toyota": ["Avalon", "Camry", "Corolla", "GR86", "Highlander", "Land Cruiser", "Prius", "RAV4", "Sequoia", "Supra", "Tacoma", "Tundra", "Venza", "4Runner"],
-  "Honda": ["Accord", "Civic", "CR-V", "Element", "Fit", "HR-V", "Insight", "Odyssey", "Passport", "Pilot", "Ridgeline", "S2000"],
-  "Ford": ["Bronco", "Edge", "Escape", "Expedition", "Explorer", "F-150", "Fiesta", "Focus", "Fusion", "Mustang", "Ranger", "Transit"],
-  "Chevrolet": ["Blazer", "Camaro", "Colorado", "Corvette", "Equinox", "Impala", "Malibu", "Silverado", "Suburban", "Tahoe", "Traverse"],
-  "Audi": ["A1", "A3", "A4", "A5", "A6", "A7", "A8", "Q3", "Q5", "Q7", "Q8", "R8", "TT", "e-tron"],
-  "Mercedes-Benz": ["A-Class", "C-Class", "E-Class", "S-Class", "CLA", "CLS", "GLA", "GLB", "GLC", "GLE", "GLS", "G-Class", "AMG GT"]
+  "Acura": ["Integra", "ILX", "TLX", "RLX", "MDX", "RDX", "NSX", "RSX", "TSX", "TL", "ZDX"],
+  "Alfa Romeo": ["Giulia", "Stelvio", "4C", "Tonale", "GTV", "Spider", "159", "Giulietta"],
+  "Aston Martin": ["Vantage", "DB11", "DB12", "DBS", "DBX", "Rapide", "Valkyrie", "Vanquish"],
+  "Audi": ["A1", "A3", "A4", "A5", "A6", "A7", "A8", "Q3", "Q5", "Q7", "Q8", "R8", "RS3", "RS5", "RS6", "RS7", "S3", "S4", "S5", "TT", "e-tron", "e-tron GT"],
+  "Bentley": ["Continental GT", "Flying Spur", "Bentayga", "Mulsanne", "Arnage"],
+  "BMW": ["1 Series", "2 Series", "3 Series", "4 Series", "5 Series", "6 Series", "7 Series", "8 Series", "X1", "X2", "X3", "X4", "X5", "X6", "X7", "XM", "Z4", "i3", "i4", "i5", "i7", "iX", "M2", "M3", "M4", "M5", "M8"],
+  "Bugatti": ["Chiron", "Veyron", "Divo", "Centodieci", "Bolide", "Mistral"],
+  "Buick": ["Enclave", "Encore", "Encore GX", "Envista", "Envision", "Regal", "LaCrosse", "Riviera"],
+  "Cadillac": ["CT4", "CT5", "Escalade", "XT4", "XT5", "XT6", "Lyriq", "Celestiq", "CTS", "ATS", "STS", "DTS"],
+  "Chevrolet": ["Blazer", "Camaro", "Colorado", "Corvette", "Equinox", "Impala", "Malibu", "Silverado", "Suburban", "Tahoe", "Traverse", "Trailblazer", "Bolt", "Monte Carlo", "Spark", "Cruze"],
+  "Chrysler": ["300", "Pacifica", "Voyager", "Sebring", "PT Cruiser", "Crossfire"],
+  "Citroën": ["C3", "C4", "C5", "C5 Aircross", "Berlingo", "DS3", "DS4", "DS5"],
+  "Dodge": ["Challenger", "Charger", "Durango", "Hornet", "Viper", "Dart", "Journey", "Neon"],
+  "Ferrari": ["296 GTB", "488", "F8 Tributo", "812 Superfast", "SF90", "Roma", "Portofino", "LaFerrari", "458", "California", "F40", "F50", "Enzo", "Purosangue"],
+  "Fiat": ["500", "500X", "500L", "124 Spider", "Panda", "Tipo", "Punto"],
+  "Ford": ["Bronco", "Edge", "Escape", "Expedition", "Explorer", "F-150", "Fiesta", "Focus", "Fusion", "Mustang", "Mustang Mach-E", "Ranger", "Maverick", "GT", "Bronco Sport", "Lightning"],
+  "Genesis": ["G70", "G80", "G90", "GV60", "GV70", "GV80"],
+  "GMC": ["Sierra", "Canyon", "Yukon", "Acadia", "Terrain", "Hummer EV", "Envoy"],
+  "Honda": ["Accord", "Civic", "CR-V", "Element", "Fit", "HR-V", "Insight", "Odyssey", "Passport", "Pilot", "Ridgeline", "S2000", "Integra", "Prelude", "NSX", "CR-Z"],
+  "Hyundai": ["Elantra", "Sonata", "Tucson", "Santa Fe", "Kona", "Palisade", "Ioniq 5", "Ioniq 6", "Veloster", "Genesis Coupe", "Accent", "Venue"],
+  "Infiniti": ["Q50", "Q60", "Q70", "QX50", "QX55", "QX60", "QX80", "G35", "G37", "FX35"],
+  "Jaguar": ["F-Type", "XE", "XF", "XJ", "F-Pace", "E-Pace", "I-Pace", "XK", "S-Type"],
+  "Jeep": ["Wrangler", "Grand Cherokee", "Cherokee", "Compass", "Renegade", "Gladiator", "Wagoneer", "Grand Wagoneer"],
+  "Kia": ["Forte", "K5", "Stinger", "Seltos", "Sportage", "Sorento", "Telluride", "Soul", "EV6", "EV9", "Niro", "Carnival"],
+  "Koenigsegg": ["Jesko", "Gemera", "Regera", "Agera", "One:1", "CC850"],
+  "Lamborghini": ["Huracán", "Aventador", "Urus", "Gallardo", "Murciélago", "Diablo", "Countach", "Revuelto"],
+  "Land Rover": ["Range Rover", "Range Rover Sport", "Defender", "Discovery", "Range Rover Velar", "Range Rover Evoque", "Discovery Sport"],
+  "Lexus": ["IS", "ES", "GS", "LS", "RC", "LC", "NX", "RX", "GX", "LX", "UX", "LFA"],
+  "Lincoln": ["Aviator", "Corsair", "Nautilus", "Navigator", "Continental", "MKZ", "Town Car"],
+  "Lotus": ["Emira", "Evora", "Elise", "Exige", "Esprit", "Eletre"],
+  "Maserati": ["Ghibli", "Quattroporte", "Levante", "MC20", "GranTurismo", "GranCabrio", "Grecale"],
+  "Mazda": ["Mazda3", "Mazda6", "CX-3", "CX-30", "CX-5", "CX-50", "CX-9", "CX-90", "MX-5 Miata", "RX-7", "RX-8"],
+  "McLaren": ["720S", "765LT", "GT", "Artura", "570S", "600LT", "P1", "Senna", "Elva"],
+  "Mercedes-Benz": ["A-Class", "C-Class", "E-Class", "S-Class", "CLA", "CLS", "GLA", "GLB", "GLC", "GLE", "GLS", "G-Class", "AMG GT", "AMG One", "SL", "SLC", "EQS", "EQE", "Maybach"],
+  "Mini": ["Cooper", "Cooper S", "Countryman", "Clubman", "Convertible", "John Cooper Works"],
+  "Mitsubishi": ["Outlander", "Eclipse Cross", "Outlander Sport", "Mirage", "Lancer", "Lancer Evolution", "Eclipse", "3000GT"],
+  "Nissan": ["Altima", "Maxima", "Sentra", "Versa", "370Z", "Z", "GT-R", "Rogue", "Pathfinder", "Murano", "Kicks", "Frontier", "Titan", "Leaf", "Ariya", "Skyline", "Silvia", "240SX"],
+  "Pagani": ["Huayra", "Zonda", "Utopia"],
+  "Peugeot": ["208", "308", "508", "2008", "3008", "5008", "RCZ"],
+  "Porsche": ["911", "718 Cayman", "718 Boxster", "Taycan", "Panamera", "Macan", "Cayenne", "Carrera GT", "918 Spyder", "GT3", "GT4"],
+  "Ram": ["1500", "2500", "3500", "TRX", "ProMaster"],
+  "Renault": ["Clio", "Mégane", "Captur", "Kadjar", "Talisman", "Zoe", "Alpine A110"],
+  "Rolls-Royce": ["Phantom", "Ghost", "Wraith", "Dawn", "Cullinan", "Spectre", "Silver Shadow"],
+  "Subaru": ["Impreza", "WRX", "WRX STI", "BRZ", "Legacy", "Outback", "Forester", "Crosstrek", "Ascent", "Solterra"],
+  "Suzuki": ["Swift", "Jimny", "Vitara", "S-Cross", "Ignis", "Hayabusa", "Samurai"],
+  "Tesla": ["Model 3", "Model S", "Model X", "Model Y", "Cybertruck", "Roadster"],
+  "Toyota": ["Avalon", "Camry", "Corolla", "GR86", "GR Supra", "GR Corolla", "Highlander", "Land Cruiser", "Prius", "RAV4", "Sequoia", "Tacoma", "Tundra", "Venza", "4Runner", "Crown", "bZ4X", "MR2", "Celica"],
+  "Volkswagen": ["Golf", "Golf GTI", "Golf R", "Jetta", "Passat", "Arteon", "Tiguan", "Atlas", "Taos", "ID.4", "ID.Buzz", "Beetle", "Polo", "Scirocco"],
+  "Volvo": ["S60", "S90", "V60", "V90", "XC40", "XC60", "XC90", "C40", "EX30", "EX90"]
 };
 
-// Fallback common models for makes not in MODELS_BY_MAKE
-const COMMON_MODELS = [
-  "Coupe",
-  "Sedan",
-  "Hatchback",
-  "SUV",
-  "Convertible",
-  "Wagon",
-  "Crossover",
-  "Sport",
-  "GT",
-  "RS",
-  "Type-R",
-  "STI"
-];
+// Fallback: empty list — combobox lets users type anything
+const COMMON_MODELS: string[] = [];
 
 const initialCarData = {
   make: "",
@@ -213,19 +241,19 @@ const Combobox = ({ options, value, onChange, placeholder, emptyMessage }: Combo
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between bg-white/5 border-white/10 text-white hover:bg-white/10 hover:text-white font-normal"
+          className="w-full h-14 px-5 justify-between rounded-2xl bg-white/[0.03] border-white/[0.06] text-white font-medium shadow-inner shadow-black/20 hover:bg-white/[0.06] hover:border-white/10 hover:text-white transition-all duration-300"
         >
-          <span className="truncate">{value || placeholder}</span>
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          <span className={`truncate ${!value ? 'text-slate-500' : ''}`}>{value || placeholder}</span>
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-40" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[--radix-popover-trigger-width] p-0 bg-slate-950 border-white/10 z-[100]" align="start">
+      <PopoverContent className="w-[--radix-popover-trigger-width] p-0 bg-zinc-950/95 backdrop-blur-xl border-white/[0.08] rounded-2xl shadow-2xl shadow-black/50 z-[100]" align="start">
         <Command className="bg-transparent text-white">
           <CommandInput
             placeholder={`Search ${placeholder.toLowerCase()}...`}
             value={searchValue}
             onValueChange={setSearchValue}
-            className="text-white placeholder:text-slate-500 border-none focus:ring-0"
+            className="h-12 text-white placeholder:text-slate-500"
           />
           <CommandEmpty>
             <div className="flex flex-col items-center justify-center p-4">
@@ -240,14 +268,14 @@ const Combobox = ({ options, value, onChange, placeholder, emptyMessage }: Combo
                     setOpen(false);
                     setSearchValue("");
                   }}
-                  className="bg-white/10 hover:bg-white/20 border-white/20 text-white"
+                  className="bg-white/[0.06] hover:bg-white/10 border-white/[0.08] hover:border-white/15 text-white rounded-xl transition-all duration-200"
                 >
-                  Use "{searchValue}"
+                  Use &ldquo;{searchValue}&rdquo;
                 </Button>
               )}
             </div>
           </CommandEmpty>
-          <CommandList className="max-h-[250px] overflow-y-auto">
+          <CommandList className="max-h-[250px] overflow-y-auto p-1 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/10">
             <CommandGroup>
               {filteredOptions.map((option) => (
                 <CommandItem
@@ -258,10 +286,10 @@ const Combobox = ({ options, value, onChange, placeholder, emptyMessage }: Combo
                     setOpen(false);
                     setSearchValue("");
                   }}
-                  className="aria-selected:bg-white/10 text-white hover:bg-white/5 cursor-pointer"
+                  className="rounded-xl px-3 py-2.5 aria-selected:bg-blue-500/15 aria-selected:text-blue-300 text-white hover:bg-white/[0.06] cursor-pointer transition-colors duration-150"
                 >
                   <Check
-                    className={`mr-2 h-4 w-4 ${value === option ? "opacity-100" : "opacity-0"}`}
+                    className={`mr-2 h-4 w-4 text-blue-400 ${value === option ? "opacity-100" : "opacity-0"}`}
                   />
                   {option}
                 </CommandItem>
@@ -306,7 +334,6 @@ export default function AddCarPage() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [modelOptions, setModelOptions] = useState<string[]>(COMMON_MODELS);
-  const [useCustomEntry, setUseCustomEntry] = useState(false); // Toggle between API and manual entry
   const [currentStep, setCurrentStep] = useState(1); // Wizard step (1-4)
   const [availableTrims, setAvailableTrims] = useState<CarTrim[]>([]);
   const [selectedTrimId, setSelectedTrimId] = useState<string>("");
@@ -329,7 +356,7 @@ export default function AddCarPage() {
   // Fetch trims when Make, Model, and Year are filled
   useEffect(() => {
     async function fetchTrims() {
-      if (carData.make && carData.model && carData.year && !useCustomEntry) {
+      if (carData.make && carData.model && carData.year) {
         setLoadingTrims(true);
         try {
           const trims = await carDB.getTrims(carData.make, carData.model, carData.year);
@@ -347,7 +374,7 @@ export default function AddCarPage() {
       }
     }
     fetchTrims();
-  }, [carData.make, carData.model, carData.year, useCustomEntry]);
+  }, [carData.make, carData.model, carData.year]);
 
   // Handle Trim Selection
   const handleTrimSelect = (trimId: string) => {
@@ -629,16 +656,6 @@ export default function AddCarPage() {
                 <h1 className="text-2xl md:text-3xl font-bold font-heading">Add a New Car</h1>
                 <p className="text-sm text-slate-400 mt-1">Step {currentStep} of 4</p>
               </div>
-              <div className="flex items-center gap-2">
-                <Label htmlFor="custom-mode" className="text-sm text-muted-foreground cursor-pointer">
-                  Custom Entry
-                </Label>
-                <Switch
-                  id="custom-mode"
-                  checked={useCustomEntry}
-                  onCheckedChange={setUseCustomEntry}
-                />
-              </div>
             </div>
 
             {/* Progress Stepper */}
@@ -670,9 +687,17 @@ export default function AddCarPage() {
               ))}
             </div>
 
+            <AnimatePresence mode="wait">
             {/* ─── STEP 1: Your Car ─── */}
             {currentStep === 1 && (
-              <div className="space-y-6">
+              <motion.div
+                key="step1"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-6 pb-24 md:pb-0"
+              >
                 <div className="rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-sm p-5 md:p-8">
                   <div className="flex items-center gap-3 mb-6">
                     <div className="h-10 w-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
@@ -687,45 +712,23 @@ export default function AddCarPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div className="space-y-2">
                       <Label htmlFor="make">Make <span className="text-red-400">*</span></Label>
-                      {useCustomEntry ? (
-                        <Input
-                          id="make"
-                          name="make"
-                          value={carData.make}
-                          onChange={handleChange}
-                          placeholder="e.g., Rivian"
-                          className="bg-white/5 border-white/10 text-white placeholder:text-slate-500"
-                        />
-                      ) : (
-                        <Combobox
-                          options={CAR_MAKES}
-                          value={carData.make}
-                          onChange={(value) => handleSelectChange("make", value)}
-                          placeholder="Select make"
-                          emptyMessage="No makes found"
-                        />
-                      )}
+                      <Combobox
+                        options={CAR_MAKES}
+                        value={carData.make}
+                        onChange={(value) => handleSelectChange("make", value)}
+                        placeholder="Select make"
+                        emptyMessage="Type to add a custom make"
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="model">Model <span className="text-red-400">*</span></Label>
-                      {useCustomEntry ? (
-                        <Input
-                          id="model"
-                          name="model"
-                          value={carData.model}
-                          onChange={handleChange}
-                          placeholder="e.g., R1S"
-                          className="bg-white/5 border-white/10 text-white placeholder:text-slate-500"
-                        />
-                      ) : (
-                        <Combobox
-                          options={modelOptions}
-                          value={carData.model}
-                          onChange={(value) => handleSelectChange("model", value)}
-                          placeholder="Select model"
-                          emptyMessage="No models found. Type to add custom."
-                        />
-                      )}
+                      <Combobox
+                        options={modelOptions}
+                        value={carData.model}
+                        onChange={(value) => handleSelectChange("model", value)}
+                        placeholder="Select model"
+                        emptyMessage="Type to add a custom model"
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="year">Year <span className="text-red-400">*</span></Label>
@@ -733,7 +736,7 @@ export default function AddCarPage() {
                         value={carData.year}
                         onValueChange={(value) => handleSelectChange("year", value)}
                       >
-                        <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                        <SelectTrigger className="input-premium">
                           <SelectValue placeholder="Select year" />
                         </SelectTrigger>
                         <SelectContent>
@@ -772,29 +775,36 @@ export default function AddCarPage() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="package">Package / Trim <span className="text-slate-500 font-normal">(Optional)</span></Label>
-                      <Input id="package" name="package" value={carData.package} onChange={handleChange} placeholder="e.g., M Sport, Premium" className="bg-white/5 border-white/10 text-white placeholder:text-slate-500" />
+                      <Input id="package" name="package" value={carData.package} onChange={handleChange} placeholder="e.g., M Sport, Premium" className="input-premium" />
                     </div>
                   </div>
                 </div>
 
                 {/* Next button */}
-                <div className="flex justify-end">
+                <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-md border-t border-white/10 z-50 md:relative md:p-0 md:bg-transparent md:border-t-0 md:backdrop-blur-none flex justify-end">
                   <Button
                     type="button"
                     onClick={nextStep}
                     disabled={!canProceedStep1}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-5 rounded-xl font-medium"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-5 rounded-xl font-medium w-full md:w-auto"
                   >
                     Next: Specs
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
-              </div>
+              </motion.div>
             )}
 
             {/* ─── STEP 2: Specs & Details ─── */}
             {currentStep === 2 && (
-              <div className="space-y-6">
+              <motion.div
+                key="step2"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-6 pb-24 md:pb-0"
+              >
                 <div className="rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-sm p-5 md:p-8">
                   <div className="flex items-center gap-3 mb-6">
                     <div className="h-10 w-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
@@ -810,7 +820,7 @@ export default function AddCarPage() {
                     <div className="mb-6 p-4 rounded-xl border border-blue-500/30 bg-blue-500/5">
                       <Label className="text-blue-400 mb-2 block">Match your exact spec to auto-fill:</Label>
                       <Select value={selectedTrimId} onValueChange={handleTrimSelect}>
-                        <SelectTrigger className="bg-white/5 border-white/20 text-white w-full">
+                        <SelectTrigger className="input-premium">
                           <SelectValue placeholder="Select a trim model (Optional)" />
                         </SelectTrigger>
                         <SelectContent>
@@ -833,7 +843,7 @@ export default function AddCarPage() {
                         value={carData.fuelType}
                         onValueChange={(value) => handleSelectChange("fuelType", value)}
                       >
-                        <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                        <SelectTrigger className="input-premium">
                           <SelectValue placeholder="Select fuel type" />
                         </SelectTrigger>
                         <SelectContent>
@@ -847,23 +857,17 @@ export default function AddCarPage() {
                       <>
                         <div className="space-y-2">
                           <Label htmlFor="engine">Engine <span className="text-red-400">*</span></Label>
-                          <Input id="engine" name="engine" value={carData.engine} onChange={handleChange} placeholder="e.g., 2JZ-GTE" className="bg-white/5 border-white/10 text-white placeholder:text-slate-500" />
+                          <Input id="engine" name="engine" value={carData.engine} onChange={handleChange} placeholder="e.g., 2JZ-GTE" className="input-premium" />
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="transmission">Transmission <span className="text-red-400">*</span></Label>
-                          <Select
+                          <Combobox
+                            options={TRANSMISSIONS}
                             value={carData.transmission}
-                            onValueChange={(value) => handleSelectChange("transmission", value)}
-                          >
-                            <SelectTrigger className="bg-white/5 border-white/10 text-white">
-                              <SelectValue placeholder="Select transmission" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {TRANSMISSIONS.map((t) => (
-                                <SelectItem key={t} value={t}>{t}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                            onChange={(value) => handleSelectChange("transmission", value)}
+                            placeholder="Select transmission"
+                            emptyMessage="Type to add custom"
+                          />
                         </div>
                       </>
                     )}
@@ -871,19 +875,13 @@ export default function AddCarPage() {
 
                     <div className="space-y-2">
                       <Label htmlFor="drivetrain">Drivetrain <span className="text-red-400">*</span></Label>
-                      <Select
+                      <Combobox
+                        options={DRIVETRAINS}
                         value={carData.drivetrain}
-                        onValueChange={(value) => handleSelectChange("drivetrain", value)}
-                      >
-                        <SelectTrigger className="bg-white/5 border-white/10 text-white">
-                          <SelectValue placeholder="Select drivetrain" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {DRIVETRAINS.map((d) => (
-                            <SelectItem key={d} value={d}>{d}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        onChange={(value) => handleSelectChange("drivetrain", value)}
+                        placeholder="Select drivetrain"
+                        emptyMessage="Type to add custom"
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="bodyStyle">Body Style <span className="text-red-400">*</span></Label>
@@ -891,7 +889,7 @@ export default function AddCarPage() {
                         value={carData.bodyStyle}
                         onValueChange={(value) => handleSelectChange("bodyStyle", value)}
                       >
-                        <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                        <SelectTrigger className="input-premium">
                           <SelectValue placeholder="Select body style" />
                         </SelectTrigger>
                         <SelectContent>
@@ -903,23 +901,23 @@ export default function AddCarPage() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="exteriorColor">Exterior Color <span className="text-red-400">*</span></Label>
-                      <Input id="exteriorColor" name="exteriorColor" value={carData.exteriorColor} onChange={handleChange} placeholder="e.g., Alpine White" className="bg-white/5 border-white/10 text-white placeholder:text-slate-500" />
+                      <Input id="exteriorColor" name="exteriorColor" value={carData.exteriorColor} onChange={handleChange} placeholder="e.g., Alpine White" className="input-premium" />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="interiorColor">Interior Color <span className="text-slate-500 font-normal">(Optional)</span></Label>
-                      <Input id="interiorColor" name="interiorColor" value={carData.interiorColor} onChange={handleChange} placeholder="e.g., Cognac Leather" className="bg-white/5 border-white/10 text-white placeholder:text-slate-500" />
+                      <Input id="interiorColor" name="interiorColor" value={carData.interiorColor} onChange={handleChange} placeholder="e.g., Cognac Leather" className="input-premium" />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="generation">Generation <span className="text-slate-500 font-normal">(Optional)</span></Label>
-                      <Input id="generation" name="generation" value={carData.generation} onChange={handleChange} placeholder="e.g., MK4" className="bg-white/5 border-white/10 text-white placeholder:text-slate-500" />
+                      <Input id="generation" name="generation" value={carData.generation} onChange={handleChange} placeholder="e.g., MK4" className="input-premium" />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="powerHp">Power (HP) <span className="text-slate-500 font-normal">(Optional)</span></Label>
-                      <Input id="powerHp" name="powerHp" value={carData.powerHp} onChange={handleChange} placeholder="e.g., 326" className="bg-white/5 border-white/10 text-white placeholder:text-slate-500" />
+                      <Input id="powerHp" name="powerHp" value={carData.powerHp} onChange={handleChange} placeholder="e.g., 326" className="input-premium" />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="torqueLbFt">Torque (lb-ft) <span className="text-slate-500 font-normal">(Optional)</span></Label>
-                      <Input id="torqueLbFt" name="torqueLbFt" value={carData.torqueLbFt} onChange={handleChange} placeholder="e.g., 315" className="bg-white/5 border-white/10 text-white placeholder:text-slate-500" />
+                      <Input id="torqueLbFt" name="torqueLbFt" value={carData.torqueLbFt} onChange={handleChange} placeholder="e.g., 315" className="input-premium" />
                     </div>
                   </div>
 
@@ -933,28 +931,35 @@ export default function AddCarPage() {
                       onChange={handleChange}
                       placeholder="Tell us about your car — the story, the build, the vision..."
                       rows={4}
-                      className="bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:ring-blue-500 focus:border-blue-500 resize-y min-h-[100px] whitespace-pre-line"
+                      className="textarea-premium resize-y min-h-[100px] whitespace-pre-line"
                     />
                   </div>
                 </div>
 
                 {/* Navigation */}
-                <div className="flex justify-between">
-                  <Button type="button" onClick={prevStep} variant="outline" className="border-white/10 text-white hover:bg-white/5 px-6 py-5 rounded-xl">
+                <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-md border-t border-white/10 z-50 md:relative md:p-0 md:bg-transparent md:border-t-0 md:backdrop-blur-none flex justify-between gap-4">
+                  <Button type="button" onClick={prevStep} variant="outline" className="border-white/10 text-white hover:bg-white/5 px-6 py-5 rounded-xl w-full md:w-auto">
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     Back
                   </Button>
-                  <Button type="button" onClick={nextStep} disabled={!canProceedStep2} className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-800 disabled:text-slate-500 text-white px-8 py-5 rounded-xl font-medium">
+                  <Button type="button" onClick={nextStep} disabled={!canProceedStep2} className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-800 disabled:text-slate-500 text-white px-8 py-5 rounded-xl font-medium w-full md:w-auto">
                     Next: Gallery
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
-              </div>
+              </motion.div>
             )}
 
             {/* ─── STEP 3: Gallery ─── */}
             {currentStep === 3 && (
-              <div className="space-y-6">
+              <motion.div
+                key="step3"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-6 pb-24 md:pb-0"
+              >
                 <div className="rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-sm p-5 md:p-8">
                   <div className="flex items-center gap-3 mb-6">
                     <div className="h-10 w-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
@@ -1008,8 +1013,8 @@ export default function AddCarPage() {
                 </div>
 
                 {/* Navigation */}
-                <div className="flex justify-between">
-                  <Button type="button" onClick={prevStep} variant="outline" className="border-white/10 text-white hover:bg-white/5 px-6 py-5 rounded-xl">
+                <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-md border-t border-white/10 z-50 md:relative md:p-0 md:bg-transparent md:border-t-0 md:backdrop-blur-none flex justify-between gap-4">
+                  <Button type="button" onClick={prevStep} variant="outline" className="border-white/10 text-white hover:bg-white/5 px-6 py-5 rounded-xl w-full md:w-auto">
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     Back
                   </Button>
@@ -1017,18 +1022,25 @@ export default function AddCarPage() {
                     type="button"
                     onClick={nextStep}
                     disabled={!canProceedStep3}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-5 rounded-xl font-medium"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-5 rounded-xl font-medium w-full md:w-auto"
                   >
                     Next: Mods
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
-              </div>
+              </motion.div>
             )}
 
             {/* ─── STEP 4: Mods ─── */}
             {currentStep === 4 && (
-              <div className="space-y-6">
+              <motion.div
+                key="step4"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-6 pb-24 md:pb-0"
+              >
                 <div className="rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-sm p-5 md:p-8">
                   <div className="flex items-center gap-3 mb-6">
                     <div className="h-10 w-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
@@ -1159,14 +1171,14 @@ export default function AddCarPage() {
                 </div>
 
                 {/* Navigation + Submit */}
-                <div className="flex justify-between">
-                  <Button type="button" onClick={prevStep} variant="outline" className="border-white/10 text-white hover:bg-white/5 px-6 py-5 rounded-xl">
+                <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-md border-t border-white/10 z-50 md:relative md:p-0 md:bg-transparent md:border-t-0 md:backdrop-blur-none flex justify-between gap-4">
+                  <Button type="button" onClick={prevStep} variant="outline" className="border-white/10 text-white hover:bg-white/5 px-6 py-5 rounded-xl w-full md:w-auto">
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     Back
                   </Button>
                   <Button
                     type="submit"
-                    className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white px-8 py-5 rounded-xl font-semibold shadow-lg shadow-blue-500/20"
+                    className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white px-8 py-5 rounded-xl font-semibold shadow-lg shadow-blue-500/20 w-full md:w-auto"
                     disabled={loading}
                   >
                     {loading ? (
@@ -1182,8 +1194,9 @@ export default function AddCarPage() {
                     )}
                   </Button>
                 </div>
-              </div>
+              </motion.div>
             )}
+            </AnimatePresence>
           </form>
         </div>
       </div>

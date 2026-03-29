@@ -62,6 +62,12 @@ export const deleteFile = mutation({
     storageId: v.string(),
   },
   handler: async (ctx, args) => {
+    // Ensure user is authenticated before allowing file deletion
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new ConvexError("Authentication required to delete files");
+    }
+
     try {
       await ctx.storage.delete(args.storageId);
       return { success: true };

@@ -433,6 +433,40 @@
   .btn-premium-secondary:hover {
     @apply bg-white/5 border-white/20 transform -translate-y-0.5;
   }
+
+  /* Premium Form Fields */
+  .input-premium {
+    @apply h-14 px-5 rounded-2xl bg-white/[0.03] border border-white/[0.06] text-white placeholder:text-slate-500 font-medium transition-all duration-300 shadow-inner shadow-black/20;
+  }
+
+  .input-premium:hover {
+    @apply bg-white/[0.06] border-white/10;
+  }
+
+  .input-premium:focus, .input-premium:focus-visible {
+    @apply bg-white/[0.05] border-blue-500/40 ring-2 ring-blue-500/20 outline-none !important;
+  }
+
+  .textarea-premium {
+    @apply min-h-[120px] p-5 rounded-3xl bg-white/[0.03] border border-white/[0.06] text-white placeholder:text-slate-500 font-medium transition-all duration-300 shadow-inner shadow-black/20 resize-y;
+  }
+
+  .textarea-premium:hover {
+    @apply bg-white/[0.06] border-white/10;
+  }
+
+  .textarea-premium:focus, .textarea-premium:focus-visible {
+    @apply bg-white/[0.05] border-blue-500/40 ring-2 ring-blue-500/20 outline-none !important;
+  }
+
+  .label-premium {
+    @apply text-[11px] uppercase tracking-wider text-slate-400 font-bold mb-2 ml-2 block;
+  }
+
+  /* Premium Card Wrapper for forms */
+  .form-card-premium {
+    @apply rounded-[2rem] border border-white/5 bg-zinc-950/40 backdrop-blur-2xl p-6 md:p-10 shadow-2xl;
+  }
 }
 
 /* ═══════════════════════════════════════════════════

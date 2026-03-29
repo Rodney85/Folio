@@ -63,7 +63,9 @@ export default defineSchema({
     createdAt: v.optional(v.string()),
     updatedAt: v.optional(v.string()),
     order: v.optional(v.number()),
-  }).index("by_user", ["userId"]),
+  }).index("by_user", ["userId"])
+    .index("by_published", ["isPublished"])
+    .index("by_make", ["make"]),
 
   parts: defineTable({
     carId: v.id("cars"),
