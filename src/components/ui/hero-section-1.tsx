@@ -64,23 +64,14 @@ const transitionVariants = {
 export function HeroSection() {
     const location = useLocation();
     return (
-        <section id="hero-section" className="relative w-full overflow-hidden pt-32 pb-16 md:pt-48 md:pb-32 min-h-screen flex flex-col items-center" style={{ backgroundColor: '#0f172a' }}>
+        <section id="hero-section" className="relative w-full overflow-hidden pt-20 pb-16 md:pt-32 md:pb-32 min-h-screen flex flex-col items-center" style={{ backgroundColor: '#0f172a' }}>
 
             <div className="container relative z-10 mx-auto px-4 md:px-6">
                 <div className="grid gap-12 lg:grid-cols-1 lg:gap-8 items-center text-center">
                     <div className="space-y-8">
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5 }}
-                            className="inline-flex items-center rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1 text-sm font-medium text-blue-400 backdrop-blur-sm"
-                        >
-                            <span className="flex h-2 w-2 rounded-full bg-blue-500 mr-2 animate-pulse"></span>
-                            The Portfolio for Car Enthusiasts
-                        </motion.div>
 
                         <div className="space-y-4">
-                            <h1 className="mt-8 max-w-4xl mx-auto text-balance text-6xl md:text-7xl lg:mt-16 xl:text-[5.25rem] font-semibold text-white leading-tight">
+                            <h1 className="max-w-4xl mx-auto text-balance text-6xl md:text-7xl xl:text-[5.25rem] font-semibold text-white leading-tight">
                                 <SplitText>Respect Your Build.</SplitText>
                                 <span className="block text-blue-400">
                                     <SplitText>Share Your Story.</SplitText>
