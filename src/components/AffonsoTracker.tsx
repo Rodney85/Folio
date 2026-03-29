@@ -24,14 +24,9 @@ const AffonsoTracker = () => {
         
         document.head.appendChild(script);
 
-        return () => {
-            // Cleanup on unmount
-            if (document.head.contains(script)) {
-                // Not strictly removing for trackers as we want them to stay for the session,
-                // but following the guide's recommendation for proper lifecycle management.
-                document.head.removeChild(script);
-            }
-        };
+        // Intentionally no cleanup — tracking scripts must persist for the
+        // entire session so window.Affonso remains available for signup
+        // attribution on WelcomeScreen and SubscriptionPage.
     }, []);
 
     return null;

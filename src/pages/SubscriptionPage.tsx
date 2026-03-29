@@ -74,9 +74,9 @@ const SubscriptionPage = () => {
     const handleUpgrade = async (planType: "monthly" | "lifetime") => {
         setLoadingPlan(planType);
         
-        // Grab affiliate identifiers
-        const affiliateCode = sessionStorage.getItem("via") || Cookies.get("via") || undefined;
-        const affonsoReferral = Cookies.get("affonso_referral") || undefined;
+        // Grab affiliate identifiers — check all possible storage keys
+        const affiliateCode = sessionStorage.getItem("affonso_via") || sessionStorage.getItem("via") || Cookies.get("via") || undefined;
+        const affonsoReferral = Cookies.get("affonso_referral") || Cookies.get("affonso_ref") || undefined;
 
         try {
             const { checkoutUrl } = await createCheckout({
