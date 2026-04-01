@@ -17,7 +17,7 @@ function trackAffonsoLead(email: string, name?: string) {
       sessionStorage.getItem("affonso_via") ||
       document.cookie
         .split("; ")
-        .find((c) => c.startsWith("affonso_ref="))
+        .find((c) => c.startsWith("affonso_referral="))
         ?.split("=")?.[1];
 
     // Try to fire Affonso lead pixel
@@ -26,13 +26,12 @@ function trackAffonsoLead(email: string, name?: string) {
         (window as any).Affonso.signup({
           email: email,
           name: name,
-          ...(viaCode ? { referral: viaCode } : {}),
         });
         console.log("Affonso lead tracked successfully, via:", viaCode);
       } catch (err) {
         console.error("Error tracking Affonso lead:", err);
       }
-      Cookies.remove('affonso_ref');
+      Cookies.remove('affonso_referral');
     } else {
       // Pixel not ready yet — retry once after a short delay
       setTimeout(() => {
@@ -41,13 +40,12 @@ function trackAffonsoLead(email: string, name?: string) {
             (window as any).Affonso.signup({
               email: email,
               name: name,
-              ...(viaCode ? { referral: viaCode } : {}),
             });
             console.log("Affonso lead tracked (delayed) successfully, via:", viaCode);
           } catch (err) {
             console.error("Error tracking Affonso lead (delayed):", err);
           }
-          Cookies.remove('affonso_ref');
+          Cookies.remove('affonso_referral');
         }
       }, 2000);
     }

@@ -18,7 +18,7 @@ const SignUp = () => {
     if (via) {
       sessionStorage.setItem("affonso_via", via);
       // Also write into the cookie directly as a fallback
-      document.cookie = `affonso_ref=${via}; path=/; max-age=${60 * 60 * 24 * 30}; SameSite=Lax`;
+      document.cookie = `affonso_referral=${via}; path=/; max-age=${60 * 60 * 24 * 30}; SameSite=Lax`;
     }
   }, [location.search]);
 

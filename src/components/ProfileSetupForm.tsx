@@ -20,8 +20,8 @@ const ProfileSetupForm = ({ isOnboarding = false, onComplete }: ProfileSetupForm
   const { isAuthenticated } = useConvexAuth();
   const navigate = useNavigate();
   
-  // Use a type-safe mutation or cast it properly to avoid "excessively deep" errors
-  const updateProfile = useMutation(api.users.updateProfile as any);
+  // @ts-ignore - Suppressing "excessively deep type instantiation" for large Convex API
+  const updateProfile = useMutation(api.users.updateProfile);
   
   // useReverification returns an enhanced function that handles security modals automatically.
   // We wrap the user.update call. If Clerk needs verification, it will pop up a modal.
@@ -117,6 +117,28 @@ const ProfileSetupForm = ({ isOnboarding = false, onComplete }: ProfileSetupForm
 
       // Step 2: Update in Convex
       await updateProfile(profilePayload);
+      
+      // Tracking: Trigger Affonso Signup on onboarding completion to capture "all data"
+      if (isOnboarding && typeof window !== 'undefined' && (window as any).Affonso) {
+        try {
+          (window as any).Affonso.signup({
+            email: user?.primaryEmailAddress?.emailAddress,
+            name: `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || username,
+            data: {
+              username: username,
+              bio: bio,
+              instagram: instagramUsername,
+              tiktok: tiktokUsername,
+              youtube: youtubeHandle,
+              source: 'carfolio_onboarding'
+            }
+          });
+          console.log('Affonso conversion tracked: signup');
+        } catch (err) {
+          console.error('Affonso tracking failed:', err);
+        }
+      }
+
       toast.success(isOnboarding ? "Profile created!" : "Profile updated.");
       if (isOnboarding && onComplete) {
         onComplete();

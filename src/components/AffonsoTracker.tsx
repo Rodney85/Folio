@@ -15,13 +15,20 @@ const AffonsoTracker = () => {
             return;
         }
 
+        const programId = import.meta.env.VITE_AFFONSO_PROGRAM_ID;
+        if (!programId) {
+            console.warn('Affonso Program ID is missing from environment variables');
+            return;
+        }
+
         const script = document.createElement('script');
         script.async = true;
         script.defer = true;
-        script.setAttribute('data-affonso', 'cmmdbhklv0013jki1yfygr1mr');
+        script.setAttribute('data-affonso', programId);
         script.setAttribute('data-cookie_duration', '30');
         script.src = 'https://cdn.affonso.io/js/pixel.min.js';
         
+        console.log(`Initializing Affonso Tracking for Project: ${programId}`);
         document.head.appendChild(script);
 
         // Intentionally no cleanup — tracking scripts must persist for the

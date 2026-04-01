@@ -75,8 +75,9 @@ const SubscriptionPage = () => {
         setLoadingPlan(planType);
         
         // Grab affiliate identifiers — check all possible storage keys
-        const affiliateCode = sessionStorage.getItem("affonso_via") || sessionStorage.getItem("via") || Cookies.get("via") || undefined;
-        const affonsoReferral = Cookies.get("affonso_referral") || Cookies.get("affonso_ref") || undefined;
+        const affonsoReferral = Cookies.get("affonso_referral") || sessionStorage.getItem("affonso_via") || undefined;
+        // Keep affiliateCode for generic non-Affonso tracking if needed, but primary is affonsoReferral
+        const affiliateCode = affonsoReferral; 
 
         try {
             const { checkoutUrl } = await createCheckout({
