@@ -22,7 +22,7 @@ export const generateUploadUrl = mutation({
     }
 
     // Rate limit file uploads
-    checkRateLimit("uploadFile", identity.subject);
+    await checkRateLimit(ctx, "uploadFile", identity.subject);
 
     // Normalise and validate content type
     // Some browsers pass MIME types with parameters e.g. "image/jpeg; name=photo.jpg"

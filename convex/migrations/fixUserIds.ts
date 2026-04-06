@@ -8,6 +8,7 @@
  */
 
 import { internalMutation } from "../_generated/server";
+import { redactEmail } from "../lib/secureLog";
 
 export const fixUserIds = internalMutation({
   args: {},
@@ -36,7 +37,7 @@ export const fixUserIds = internalMutation({
       idMap.set(user.tokenIdentifier, clerkId); // Token → Clerk ID
       idMap.set(clerkId, clerkId); // Clerk ID → Clerk ID (identity)
 
-      console.log(`User mapping: ${user.email} → ${clerkId}`);
+      console.log(`User mapping: ${redactEmail(user.email)} → ${clerkId}`);
     }
 
     let updatedCount = 0;

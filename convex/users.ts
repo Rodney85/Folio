@@ -40,7 +40,7 @@ export const updateProfile = mutation({
     }
 
     // Rate limit profile updates
-    checkRateLimit("updateProfile", identity.subject);
+    await checkRateLimit(ctx, "updateProfile", identity.subject);
 
     // Extract user information from the token
     const tokenIdentifier = identity.tokenIdentifier;

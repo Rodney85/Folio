@@ -21,6 +21,7 @@ import { PageTransition } from "@/components/ui/page-transition";
 import { AnimatePresence } from "framer-motion";
 import { useSmoothScroll } from "./hooks/use-smooth-scroll";
 import { GrainOverlay } from "./components/ui/effects/GrainOverlay";
+import { PostHogPageTracker } from "@/components/PostHogPageTracker";
 
 // Wrapper to handle dynamic import failures (e.g., when a new deploy changes chunk hashes)
 const lazyWithRetry = (componentImport: () => Promise<any>) =>
@@ -189,14 +190,22 @@ const AuthenticatedRoutes = () => {
 };
 
 const AppContent = () => {
-  const { isSignedIn } = useUser();
+  const { isSignedIn, isLoaded } = useUser();
 
   // Only enable Lenis smooth scroll on landing page (when not signed in)
   // Lenis conflicts with nested scrollable containers in the app
   useSmoothScroll(!isSignedIn);
 
+  // Wait for Clerk to resolve auth state before rendering routes.
+  // Without this, isSignedIn is false during init which causes authenticated
+  // routes to be missing, making the catch-all "*" render a 404 on refresh.
+  if (!isLoaded) {
+    return <PageLoader />;
+  }
+
   return (
-    <BrowserRouter>
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <PostHogPageTracker />
       {isSignedIn && <ProfileOnboarding />}
       <FloatingNavBar />
       <Routes>

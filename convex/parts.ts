@@ -23,7 +23,7 @@ export const createPart = mutation({
       const user = await getUser(ctx);
 
       // Rate limit part creation
-      checkRateLimit("createPart", user.id);
+      await checkRateLimit(ctx, "createPart", user.id);
 
       // Verify car exists and belongs to user
       const car = await ctx.db.get(args.carId);

@@ -5,7 +5,7 @@ import { convex } from './context/lib/convex'
 import App from './App.tsx'
 import './index.css'
 import * as Sentry from "@sentry/react";
-import { PostHogProvider } from './components/PostHogProvider';
+
 
 // Get the Clerk publishable key from environment variables
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
@@ -38,9 +38,7 @@ Sentry.init({
 createRoot(document.getElementById("root")!).render(
   <ClerkProvider publishableKey={PUBLISHABLE_KEY} afterSignOutUrl="/">
     <ConvexProviderWithClerk useAuth={useAuth} client={convex}>
-      <PostHogProvider>
-        <App />
-      </PostHogProvider>
+      <App />
     </ConvexProviderWithClerk>
   </ClerkProvider>
 );

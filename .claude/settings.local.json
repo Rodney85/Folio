@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git:*)",
+      "Bash(claude mcp:*)",
+      "Bash(python -m py_compile lead_gen_enhanced.py)",
+      "Bash(python -m py_compile lead_gen_with_comments.py)",
+      "Bash(python -m py_compile outreach_simple.py)",
+      "Bash(python -m py_compile dashboard.py)",
+      "Bash(python -m py_compile prepare_outreach.py)",
+      "Bash(ls -1 *.py)",
+      "Bash(ls -lh *.py *.md *.txt)",
+      "WebSearch",
+      "Bash(npm audit:*)",
+      "Bash(npm ls:*)",
+      "Bash(npm run:*)",
+      "Bash([ -f \"C:/Users/rodne/AppData/Local/Temp/claude/B--Software-Personal-Carfolio-Folio-App/698e2799-933f-4a9a-8540-cf82758c6d38/tasks/af44208b1711d8c27.output\" ])"
+    ]
+  }
+}

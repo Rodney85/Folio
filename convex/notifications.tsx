@@ -2,6 +2,7 @@ import { internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { WelcomeEmail, SubscriptionSuccessEmail, SubscriptionFailedEmail, SystemNotificationEmail, SubscriptionCancelledEmail, RefundProcessedEmail, IssueReceivedEmail, IssueResolvedEmail, GarageLimitEmail, TalentScoutEmail, ShopManagerEmail, InfluencerEmail, VisionaryEmail, BuildValueEmail } from "./email/templates";
+import { secureLog } from "./lib/secureLog";
 
 // Helper to render React templates to HTML strings (since component expects HTML or React if configured)
 // Note: The component might handle React directly if configured, but often sending HTML is safer across boundaries if types mismatch
@@ -209,6 +210,6 @@ export const triggerNotification = internalMutation({
             from: fromAddress,
         });
 
-        console.log(`Notification triggered for ${email} type: ${args.type}`);
+        secureLog(`Notification triggered`, { email, type: args.type });
     },
 });

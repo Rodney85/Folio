@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { mutation, action, query } from "./_generated/server";
 import { ConvexError } from "convex/values";
 import { internal } from "./_generated/api";
+import { secureLog, redactEmail } from "./lib/secureLog";
 
 /**
  * Dodo Payments Integration — CarFolio
@@ -127,7 +128,7 @@ export const createCheckoutSession = action({
         try {
             const apiBase = getDodoApiBase();
             const endpoint = `${apiBase}/checkouts`;
-            console.log(`Creating Dodo checkout for ${identity.email} (plan: ${args.planType})`);
+            secureLog(`Creating Dodo checkout for user`, { email: identity.email, planType: args.planType });
 
             const response = await fetch(endpoint, {
                 method: "POST",
@@ -252,7 +253,7 @@ export const processWebhook = mutation({
                     }
                 });
 
-                console.log("✅ Subscription ACTIVATED & Payment Logged for:", user.name || userId);
+                secureLog("✅ Subscription ACTIVATED & Payment Logged", { userId, userName: user.name });
                 break;
 
             case "subscription.created":
@@ -290,7 +291,7 @@ export const processWebhook = mutation({
                 // Actually payment.succeeded is better for "You Paid". subscription.created is "Setup Complete".
                 // I'll leave it in payment.succeeded to avoid double emails.)
 
-                console.log("✅ Subscription ACTIVATED for user:", user.name || userId);
+                secureLog("✅ Subscription ACTIVATED", { userId, userName: user.name });
                 break;
 
             case "subscription.updated":
@@ -313,7 +314,7 @@ export const processWebhook = mutation({
                         });
                     }
                 }
-                console.log("🔄 Subscription UPDATED for user:", user.name || userId, "→", newStatus);
+                secureLog("🔄 Subscription UPDATED", { userId, userName: user.name, status: newStatus });
                 break;
 
             case "subscription.cancelled":
@@ -347,7 +348,7 @@ export const processWebhook = mutation({
                     }
                 });
 
-                console.log("❌ Subscription CANCELLED for user:", user.name || userId);
+                secureLog("❌ Subscription CANCELLED", { userId, userName: user.name });
                 break;
 
             case "payment.failed":
@@ -377,7 +378,7 @@ export const processWebhook = mutation({
                     }
                 });
 
-                console.log("❌ Payment FAILED for user:", user.name || userId);
+                secureLog("❌ Payment FAILED", { userId, userName: user.name });
                 break;
 
             case "refund.succeeded":
@@ -396,7 +397,7 @@ export const processWebhook = mutation({
                     }
                 });
 
-                console.log("💰 Refund processed for user:", user.name || userId);
+                secureLog("💰 Refund processed", { userId, userName: user.name });
                 break;
 
             default:
@@ -436,6 +437,11 @@ export const debugSetSubscription = mutation({
         planId: v.optional(v.string()),
     },
     handler: async (ctx, args) => {
+        // Disable in production - only for development/debugging
+        if (import.meta.env.MODE !== 'development') {
+            throw new ConvexError("Debug functions are disabled in production");
+        }
+
         // Admin guard — prevent unauthorized subscription grants
         const identity = await ctx.auth.getUserIdentity();
         if (!identity) throw new ConvexError("Not authenticated");
@@ -462,13 +468,18 @@ export const debugSetSubscription = mutation({
             updatedAt: Date.now(),
         });
 
-        console.log(`🔧 Debug: Set subscription for ${user.name || user.username} → ${args.status}`);
+        secureLog(`🔧 Debug: Set subscription`, { userId: args.tokenIdentifier, status: args.status, userName: user.name || user.username });
         return { success: true, userName: user.name || user.username };
     },
 });
 
 export const debugListUsers = query({
     handler: async (ctx) => {
+        // Disable in production - only for development/debugging
+        if (import.meta.env.MODE !== 'development') {
+            throw new ConvexError("Debug functions are disabled in production");
+        }
+
         // Admin guard — prevent user data enumeration
         const identity = await ctx.auth.getUserIdentity();
         if (!identity) throw new ConvexError("Not authenticated");
@@ -610,7 +621,7 @@ export const createCustomerPortalSession = action({
 
         // Fallback: Lookup by email if not stored
         if (!customerId && identity.email) {
-            console.log(`🔍 Looking up Dodo customer ID for ${identity.email}`);
+            secureLog(`🔍 Looking up Dodo customer ID`, { email: identity.email });
             customerId = await getCustomerIdByEmail(identity.email) || undefined;
 
             // Optimization: Store it for next time

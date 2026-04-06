@@ -49,3 +49,6 @@ dist-ssr
 *.sln
 *.sw?
 skills_repo/
+
+# Marketing automation scripts - keep local only
+marketing/

@@ -12,6 +12,19 @@ export default defineConfig(({ mode }) => {
     server: {
       host: "::",
       port: 8080,
+      proxy: {
+        // Reverse proxy for PostHog — bypasses adblockers in dev
+        '/ingest/static': {
+          target: 'https://us-assets.i.posthog.com',
+          changeOrigin: true,
+          rewrite: (path: string) => path.replace(/^\/ingest\/static/, ''),
+        },
+        '/ingest': {
+          target: 'https://us.i.posthog.com',
+          changeOrigin: true,
+          rewrite: (path: string) => path.replace(/^\/ingest/, ''),
+        },
+      },
     },
     plugins: [
       react(),

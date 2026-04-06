@@ -214,4 +214,11 @@ export default defineSchema({
     details: v.optional(v.any()),
     createdAt: v.optional(v.number()),
   }).index("by_user", ["userId"]),
+
+  // Rate limiting storage
+  rate_limits: defineTable({
+    key: v.string(), // Unique key: "action:userId"
+    count: v.number(),
+    resetAt: v.number(), // timestamp in ms
+  }).index("by_key", ["key"], { unique: true }),
 });

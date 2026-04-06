@@ -647,7 +647,7 @@ export default function AddCarPage() {
   return (
     <>
       <ResponsiveLayout>
-      <div className="min-h-screen bg-transparent text-white">
+      <div className="bg-transparent text-white">
         <div className="container mx-auto px-0 md:px-4 py-0 md:py-8 max-w-3xl">
           <form onSubmit={handleSubmit}>
             {/* Header */}
@@ -662,14 +662,12 @@ export default function AddCarPage() {
             <div className="flex items-center gap-1 mb-8">
               {steps.map((step, i) => (
                 <div key={step.number} className="flex items-center flex-1">
-                  <button
-                    type="button"
-                    onClick={() => setCurrentStep(step.number)}
+                  <div
                     className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium transition-all duration-200 w-full justify-center ${currentStep === step.number
-                      ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
-                      : currentStep > step.number
-                        ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                        : "bg-white/5 text-slate-500 border border-white/5"
+                        ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
+                        : currentStep > step.number
+                          ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                          : "bg-white/5 text-slate-500 border border-white/5"
                       }`}
                   >
                     {currentStep > step.number ? (
@@ -678,7 +676,7 @@ export default function AddCarPage() {
                       <step.icon className="w-4 h-4" />
                     )}
                     <span className="hidden sm:inline">{step.label}</span>
-                  </button>
+                  </div>
                   {i < steps.length - 1 && (
                     <div className={`w-4 md:w-8 h-px mx-1 flex-shrink-0 ${currentStep > step.number ? "bg-emerald-500/40" : "bg-white/10"
                       }`} />
@@ -696,7 +694,7 @@ export default function AddCarPage() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.3 }}
-                className="space-y-6 pb-24 md:pb-0"
+                className="space-y-6"
               >
                 <div className="rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-sm p-5 md:p-8">
                   <div className="flex items-center gap-3 mb-6">
@@ -779,19 +777,6 @@ export default function AddCarPage() {
                     </div>
                   </div>
                 </div>
-
-                {/* Next button */}
-                <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-md border-t border-white/10 z-50 md:relative md:p-0 md:bg-transparent md:border-t-0 md:backdrop-blur-none flex justify-end">
-                  <Button
-                    type="button"
-                    onClick={nextStep}
-                    disabled={!canProceedStep1}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-5 rounded-xl font-medium w-full md:w-auto"
-                  >
-                    Next: Specs
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </div>
               </motion.div>
             )}
 
@@ -803,7 +788,7 @@ export default function AddCarPage() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.3 }}
-                className="space-y-6 pb-24 md:pb-0"
+                className="space-y-6"
               >
                 <div className="rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-sm p-5 md:p-8">
                   <div className="flex items-center gap-3 mb-6">
@@ -935,18 +920,6 @@ export default function AddCarPage() {
                     />
                   </div>
                 </div>
-
-                {/* Navigation */}
-                <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-md border-t border-white/10 z-50 md:relative md:p-0 md:bg-transparent md:border-t-0 md:backdrop-blur-none flex justify-between gap-4">
-                  <Button type="button" onClick={prevStep} variant="outline" className="border-white/10 text-white hover:bg-white/5 px-6 py-5 rounded-xl w-full md:w-auto">
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back
-                  </Button>
-                  <Button type="button" onClick={nextStep} disabled={!canProceedStep2} className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-800 disabled:text-slate-500 text-white px-8 py-5 rounded-xl font-medium w-full md:w-auto">
-                    Next: Gallery
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </div>
               </motion.div>
             )}
 
@@ -958,7 +931,7 @@ export default function AddCarPage() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.3 }}
-                className="space-y-6 pb-24 md:pb-0"
+                className="space-y-6"
               >
                 <div className="rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-sm p-5 md:p-8">
                   <div className="flex items-center gap-3 mb-6">
@@ -1011,23 +984,6 @@ export default function AddCarPage() {
                     className="hidden"
                   />
                 </div>
-
-                {/* Navigation */}
-                <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-md border-t border-white/10 z-50 md:relative md:p-0 md:bg-transparent md:border-t-0 md:backdrop-blur-none flex justify-between gap-4">
-                  <Button type="button" onClick={prevStep} variant="outline" className="border-white/10 text-white hover:bg-white/5 px-6 py-5 rounded-xl w-full md:w-auto">
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={nextStep}
-                    disabled={!canProceedStep3}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-5 rounded-xl font-medium w-full md:w-auto"
-                  >
-                    Next: Mods
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </div>
               </motion.div>
             )}
 
@@ -1039,7 +995,7 @@ export default function AddCarPage() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.3 }}
-                className="space-y-6 pb-24 md:pb-0"
+                className="space-y-6"
               >
                 <div className="rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-sm p-5 md:p-8">
                   <div className="flex items-center gap-3 mb-6">
@@ -1169,16 +1125,71 @@ export default function AddCarPage() {
                     </div>
                   )}
                 </div>
+              </motion.div>
+            )}
+            </AnimatePresence>
 
-                {/* Navigation + Submit */}
-                <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-md border-t border-white/10 z-50 md:relative md:p-0 md:bg-transparent md:border-t-0 md:backdrop-blur-none flex justify-between gap-4">
-                  <Button type="button" onClick={prevStep} variant="outline" className="border-white/10 text-white hover:bg-white/5 px-6 py-5 rounded-xl w-full md:w-auto">
+            {/* Step Navigation - Inline (persistent, just below form content) */}
+            <div className="mt-8 pb-8">
+              {currentStep === 1 && (
+                <div className="flex justify-end">
+                  <Button
+                    type="button"
+                    onClick={nextStep}
+                    disabled={!canProceedStep1}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-5 rounded-xl font-medium"
+                  >
+                    Next: Specs
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+
+              {currentStep === 2 && (
+                <div className="flex justify-between gap-4">
+                  <Button type="button" onClick={prevStep} variant="outline" className="border-white/10 text-white hover:bg-white/5 px-6 py-5 rounded-xl">
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={nextStep}
+                    disabled={!canProceedStep2}
+                    className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-800 disabled:text-slate-500 text-white px-8 py-5 rounded-xl font-medium"
+                  >
+                    Next: Gallery
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+
+              {currentStep === 3 && (
+                <div className="flex justify-between gap-4">
+                  <Button type="button" onClick={prevStep} variant="outline" className="border-white/10 text-white hover:bg-white/5 px-6 py-5 rounded-xl">
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={nextStep}
+                    disabled={!canProceedStep3}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-5 rounded-xl font-medium"
+                  >
+                    Next: Mods
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+
+              {currentStep === 4 && (
+                <div className="flex justify-between gap-4">
+                  <Button type="button" onClick={prevStep} variant="outline" className="border-white/10 text-white hover:bg-white/5 px-6 py-5 rounded-xl">
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     Back
                   </Button>
                   <Button
                     type="submit"
-                    className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white px-8 py-5 rounded-xl font-semibold shadow-lg shadow-blue-500/20 w-full md:w-auto"
+                    className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white px-8 py-5 rounded-xl font-semibold shadow-lg shadow-blue-500/20"
                     disabled={loading}
                   >
                     {loading ? (
@@ -1194,9 +1205,8 @@ export default function AddCarPage() {
                     )}
                   </Button>
                 </div>
-              </motion.div>
-            )}
-            </AnimatePresence>
+              )}
+            </div>
           </form>
         </div>
       </div>

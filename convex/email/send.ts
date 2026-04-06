@@ -2,6 +2,7 @@ import { internalAction, internalMutation } from "../_generated/server";
 import { v } from "convex/values";
 import { internal, components } from "../_generated/api";
 import { renderTemplate } from "./templates";
+import { secureLog } from "../lib/secureLog";
 
 // Mutation to log the email in the database (for Admin Dashboard)
 export const logEmail = internalMutation({
@@ -108,7 +109,7 @@ export const send = internalAction({
         }
 
         try {
-            console.log(`Sending email to ${toAddress} from ${fromAddress}`);
+            secureLog(`Sending email`, { to: toAddress, from: fromAddress });
 
             // Call the Resend Component to dispatch the email
             // @ts-ignore - Suppress deep type instantiation error and ensure access to lib

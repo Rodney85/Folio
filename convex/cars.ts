@@ -34,7 +34,7 @@ export const createCar = mutation({
       const user = await getUser(ctx);
 
       // Rate limit car creation
-      checkRateLimit("createCar", user.id);
+      await checkRateLimit(ctx, "createCar", user.id);
 
       // Check limits for Free tier
       const isPremium = await checkIsPremium(ctx, user.tokenIdentifier);
@@ -203,7 +203,7 @@ export const updateCar = mutation({
       const user = await getUser(ctx);
 
       // Rate limit car updates
-      checkRateLimit("updateCar", user.id);
+      await checkRateLimit(ctx, "updateCar", user.id);
 
       const car = await ctx.db.get(args.carId);
 
@@ -257,7 +257,7 @@ export const deleteCar = mutation({
       const user = await getUser(ctx);
 
       // Rate limit car deletion
-      checkRateLimit("deleteCar", user.id);
+      await checkRateLimit(ctx, "deleteCar", user.id);
 
       const car = await ctx.db.get(args.carId);
 

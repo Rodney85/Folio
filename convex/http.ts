@@ -1,6 +1,7 @@
 import { httpRouter } from "convex/server";
 import { httpAction } from "./_generated/server";
 import { api, internal } from "./_generated/api";
+import { secureLog } from "./lib/secureLog";
 
 const http = httpRouter();
 
@@ -267,22 +268,22 @@ http.route({
             // Process different event types
             switch (payload.event_type) {
                 case "affiliate.created":
-                console.log("👤 New affiliate created:", payload.data.email);
+                secureLog("👤 New affiliate created", { email: payload.data.email });
                     // Handle new affiliate registration
                     break;
 
                 case "affiliate.confirmed":
-                    console.log("✅ Affiliate confirmed:", payload.data.email);
+                    secureLog("✅ Affiliate confirmed", { email: payload.data.email });
                     // Handle affiliate confirmation
                     break;
 
                 case "affiliate.updated":
-                    console.log("🔄 Affiliate updated:", payload.data.email);
+                    secureLog("🔄 Affiliate updated", { email: payload.data.email });
                     // Handle affiliate updates
                     break;
 
                 case "affiliate.deleted":
-                    console.log("🗑️ Affiliate deleted:", payload.data.email);
+                    secureLog("🗑️ Affiliate deleted", { email: payload.data.email });
                     // Handle affiliate deletion
                     break;
 

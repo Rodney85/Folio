@@ -1,4 +1,5 @@
 import { ConvexError } from "convex/values";
+import { v } from "convex/values";
 
 /**
  * Rate limiting configuration for different actions
@@ -14,53 +15,96 @@ export const RATE_LIMITS = {
 } as const;
 
 export type RateLimitAction = keyof typeof RATE_LIMITS;
-
-/**
- * In-memory rate limit tracker
- * Note: In a distributed environment, you'd want to use a shared store
- * For Convex, this works well since functions run on the same infrastructure
- */
-const rateLimitCache = new Map<string, { count: number; resetTime: number }>();
-
-/**
- * Check if an action is rate limited for a specific user
- * @param action - The action being performed
- * @param userId - The user's identifier
- * @returns true if the action should be allowed, throws if rate limited
- */
-export function checkRateLimit(action: RateLimitAction, userId: string): void {
+export async function checkRateLimit(
+    ctx: any,
+    action: RateLimitAction,
+    userId: string
+): Promise<void> {
     const limit = RATE_LIMITS[action];
     const key = `${action}:${userId}`;
     const now = Date.now();
+    const windowMs = limit.windowMs;
 
-    const entry = rateLimitCache.get(key);
+    // Get or create rate limit document atomically
+    let doc = await ctx.db
+        .query("rate_limits")
+        .withIndex("by_key", (q: any) => q.eq("key", key))
+        .first();
 
-    if (!entry || now > entry.resetTime) {
-        // First request or window has expired - start new window
-        rateLimitCache.set(key, { count: 1, resetTime: now + limit.windowMs });
-        return;
+    if (!doc) {
+        // Create initial document
+        try {
+            await ctx.db.insert("rate_limits", {
+                key,
+                count: 1,
+                resetAt: now + windowMs,
+            });
+            return; // Allowed
+        } catch (error: any) {
+            if (error.code === "unique_constraint_violation") {
+                // Another request inserted concurrently, fetch it
+                doc = await ctx.db
+                    .query("rate_limits")
+                    .withIndex("by_key", (q: any) => q.eq("key", key))
+                    .first();
+                if (!doc) {
+                    // Very unlikely, but if still not found, retry insert or fail
+                    throw new ConvexError("Rate limit system error: could not create record");
+                }
+            } else {
+                throw error;
+            }
+        }
     }
 
-    if (entry.count >= limit.max) {
-        const waitTime = Math.ceil((entry.resetTime - now) / 1000);
-        throw new ConvexError(
-            `Rate limit exceeded for ${action}. Please wait ${waitTime} seconds before trying again.`
-        );
+    // Check if the window has expired
+    if (now > doc.resetAt) {
+        // Reset the counter atomically
+        await ctx.db.patch(doc._id, {
+            count: 1,
+            resetAt: now + windowMs,
+        });
+        return; // Allowed (fresh window)
     }
 
-    // Increment counter
-    entry.count++;
-    rateLimitCache.set(key, entry);
+    // Window not expired: check limit and increment atomically
+    try {
+        await ctx.db.patch(doc._id, {
+            count: (currentCount: number) => {
+                if (currentCount >= limit.max) {
+                    const waitTime = Math.ceil((doc.resetAt - now) / 1000);
+                    throw new ConvexError(
+                        `Rate limit exceeded for ${action}. Please wait ${waitTime} seconds before trying again.`
+                    );
+                }
+                return currentCount + 1;
+            },
+            // Also refresh resetAt? No, keep existing.
+        });
+    } catch (error: any) {
+        // If our functional patch threw due to limit, rethrow
+        if (error.message.includes("Rate limit exceeded")) {
+            throw error;
+        }
+        throw error;
+    }
 }
 
 /**
- * Clean up expired rate limit entries (call periodically)
+ * Clean up expired rate limit entries (optional maintenance job)
+ * Can be called periodically to remove old records.
  */
-export function cleanupRateLimits(): void {
+export async function cleanupRateLimits(ctx: any): Promise<void> {
     const now = Date.now();
-    for (const [key, entry] of rateLimitCache.entries()) {
-        if (now > entry.resetTime) {
-            rateLimitCache.delete(key);
-        }
+    // Delete all documents where resetAt is in the past
+    // Note: This can be expensive if many rate limit records exist.
+    // Consider using TTL or a cron job that runs less frequently.
+    const expired = await ctx.db
+        .query("rate_limits")
+        .filter((q: any) => q.lt(q.field("resetAt"), now))
+        .collect();
+
+    for (const doc of expired) {
+        await ctx.db.delete(doc._id);
     }
 }
